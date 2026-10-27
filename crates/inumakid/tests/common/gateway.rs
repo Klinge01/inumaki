@@ -3,6 +3,10 @@
 //! random gateway port, dataset and upstream setup through the control
 //! API, rmcp clients over TCP (bearer) and over the control socket.
 
+// The clients return rmcp's own `ClientInitializeError` as is, so its size is
+// not ours to change.
+#![allow(clippy::result_large_err)]
+
 use std::collections::BTreeMap;
 use std::time::Duration;
 

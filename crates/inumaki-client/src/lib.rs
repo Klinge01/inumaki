@@ -4,6 +4,11 @@
 //! fixtures. It depends on no inumaki crate, so the app and the hook link
 //! it without the engine, the vault, or ONNX Runtime.
 
+// `ClientError::Status` carries the parsed error detail by value. A control
+// API error ends the call, so its size on the stack does not matter, and
+// boxing it would change every match on the public type.
+#![allow(clippy::result_large_err)]
+
 #[macro_use]
 mod macros;
 

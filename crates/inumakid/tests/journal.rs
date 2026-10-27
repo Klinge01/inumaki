@@ -358,7 +358,7 @@ async fn the_sweeper_applies_journal_retention_and_budget() {
     put(&d, "crm", &[b'a'; 1000]);
     put(&d, "quiet", &[b'q'; 1000]);
     clock.0.fetch_add(2 * 3600, Ordering::SeqCst);
-    for fill in [b'b', b'c', b'd'] {
+    for fill in *b"bcd" {
         put(&d, "crm", &[fill; 30 * 1024]);
     }
     put(&d, "quiet", &[b'r'; 1000]);

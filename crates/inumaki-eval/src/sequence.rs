@@ -901,12 +901,10 @@ mod tests {
                     }
                 }
                 (SeqLabel::Repeat, Some(e), Some(full))
-                    if !s.expect_cached && full.contains(' ') =>
+                    if !s.expect_cached && full.contains(' ') && !is_recent(&e) =>
                 {
-                    if !is_recent(&e) {
-                        repeat_back += 1;
-                        recent.push((e, full));
-                    }
+                    repeat_back += 1;
+                    recent.push((e, full));
                 }
                 _ => {}
             }

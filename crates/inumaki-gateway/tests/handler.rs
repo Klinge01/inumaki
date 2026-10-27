@@ -8,6 +8,10 @@
 //! does not hold up rebuilds (finding 3), a transient listing failure is
 //! retried (finding 4), and a map-rule key trips the tripwire (finding 5).
 
+// `fetch_update` is deprecated for `try_update` since Rust 1.99, which is newer
+// than the workspace's `rust-version`.
+#![allow(deprecated)]
+
 use std::collections::BTreeMap;
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::sync::mpsc as std_mpsc;

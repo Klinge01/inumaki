@@ -1,6 +1,6 @@
 //! The daemon's panic hook (M5, Task 8b): a panic whose message quotes
-//! content (std's own `str` slicing message prints the string) leaves only a
-//! fixed line and the source location on stderr. The check runs in a child
+//! content (an `unwrap` of an error that carries the text prints it) leaves
+//! only a fixed line and the source location on stderr. The check runs in a child
 //! process (this test binary again), so the hook and stderr are its own.
 
 use std::process::Command;
@@ -9,8 +9,9 @@ const CHILD: &str = "INUMAKI_PANIC_HOOK_CHILD";
 const CANARY: &str = "Zyxwuria Quolnath AT61 1904 3002 3457 3201";
 
 /// Child side: does nothing unless the parent set [`CHILD`]. Panics on a
-/// worker thread the way a mirror worker would (a str slice in the middle
-/// of a character), then exits 0 so the harness prints nothing of its own.
+/// worker thread the way a mirror worker would (an `unwrap` of an error that
+/// carries the text; std's `str` slicing message no longer quotes the string
+/// since Rust 1.99), then exits 0 so the harness prints nothing of its own.
 #[test]
 fn child_panics_with_content() {
     let Ok(mode) = std::env::var(CHILD) else {
@@ -19,13 +20,13 @@ fn child_panics_with_content() {
     if mode == "hook" {
         inumakid::run::install_panic_hook();
     }
-    let text = format!("\u{e4}{CANARY}");
+    let text = format!("Kunde {CANARY}");
     let r = std::thread::spawn(move || {
-        let cut = std::hint::black_box(1);
-        text[..cut].len()
+        let parsed: Result<usize, String> = Err(std::hint::black_box(text));
+        parsed.unwrap()
     })
     .join();
-    assert!(r.is_err(), "the slice panicked");
+    assert!(r.is_err(), "the unwrap panicked");
     std::process::exit(0);
 }
 

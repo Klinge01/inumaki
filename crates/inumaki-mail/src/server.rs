@@ -524,7 +524,7 @@ impl MailServer {
             Err(e) => return Err(conn.fail(e)),
         };
         drop(conn);
-        sums.sort_by(|a, b| b.uid.cmp(&a.uid));
+        sums.sort_by_key(|s| std::cmp::Reverse(s.uid));
         let f = folder.clone();
         let folder_handle = self.handles(move |hs| hs.folder_handle(&f)).await?;
         let mut rows = Vec::with_capacity(sums.len());

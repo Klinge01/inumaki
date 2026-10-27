@@ -1501,7 +1501,7 @@ fn schema_strings_are_never_passed_raw() {
             json!({ "type": "object", "required": [IDENTITY] }),
             "schema",
         ),
-        (json!({ "type": format!("{IDENTITY}") }), "schema"),
+        (json!({ "type": IDENTITY.to_string() }), "schema"),
         (
             json!({ "type": "object", "properties": { "q": { "pattern": format!("^{IDENTITY}$") } } }),
             "schema",
