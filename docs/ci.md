@@ -1,6 +1,6 @@
 # Continuous integration
 
-Three jobs run on every push and pull request.
+Three jobs run on every push and pull request. The separate `app` workflow builds the macOS `.dmg` on demand and for release tags (`docs/packaging.md`).
 
 | Job | Runner | Gated on |
 |---|---|---|

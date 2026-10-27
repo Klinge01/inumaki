@@ -1,0 +1,77 @@
+name: app
+# Builds Inumaki.app into a .dmg with scripts/package-app.sh, the same script
+# as a local build (docs/packaging.md). Every run uploads the .dmg as a
+# workflow artifact; a pushed tag `v<version>` also publishes it as a
+# pre-release on the Releases page, where anyone can download it.
+on:
+  workflow_dispatch:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: app-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  dmg:
+    # Apple Silicon only: the app is built and tested on arm64 macOS; an Intel
+    # or universal build is not made (docs/packaging.md).
+    runs-on: macos-15
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - name: tag matches the version
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          VERSION=$(grep -m1 '^version = ' Cargo.toml | sed 's/^version = "\(.*\)"$/\1/')
+          [ "$GITHUB_REF_NAME" = "v$VERSION" ] || {
+            echo "::error::tag $GITHUB_REF_NAME does not match Cargo.toml version $VERSION"; exit 1; }
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: |
+            . -> target
+            apps/inumaki-app/src-tauri -> target
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: apps/inumaki-app/package-lock.json
+      - run: scripts/package-app.sh
+      - name: checksum
+        working-directory: dist
+        run: shasum -a 256 Inumaki-*.dmg | tee SHA256SUMS
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Inumaki-macos-arm64
+          path: |
+            dist/Inumaki-*.dmg
+            dist/SHA256SUMS
+          if-no-files-found: error
+          retention-days: 30
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: dmg
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: Inumaki-macos-arm64
+          path: dist
+      - name: publish pre-release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cat > notes.md <<'EOF'
+          Apple Silicon (arm64), macOS 13 or later. Signed ad hoc, not with a Developer ID, so Gatekeeper refuses the downloaded app: right-click `Inumaki.app` → Open → Open, or run `xattr -dr com.apple.quarantine /Applications/Inumaki.app` once. See `docs/packaging.md`.
+
+          Check the download against `SHA256SUMS`: `shasum -a 256 -c SHA256SUMS`.
+          EOF
+          gh release create "$GITHUB_REF_NAME" dist/* --repo "$GITHUB_REPOSITORY" \
+            --title "inumaki $GITHUB_REF_NAME" --prerelease --notes-file notes.md --generate-notes
