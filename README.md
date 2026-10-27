@@ -24,9 +24,13 @@ inumaki is a local privacy boundary between your AI agents and cloud LLM provide
 
 The model still understands the request: it knows a person moved and a contract changed. The provider sees tokens in place of the identifiers inumaki detected. **What the detectors miss is sent as is.** inumaki reduces what a provider sees; it does not make text anonymous. The [threat model](docs/threat-model.md) says exactly where the boundary is.
 
+> **inumaki is a classifier, and it makes mistakes.** Its detectors are pattern rules and small statistical models. For every piece of text they decide whether something looks like a name, an address, or an account number, and they get it wrong in both directions: they miss identifiers, which are then sent to the provider, and they take ordinary words for names, which costs an unneeded token or a refused request. Treat it as a layer that lowers what a provider sees, not as a guarantee, and do not rely on it alone for data you cannot afford to leak.
+
 ## Why
 
 Coding agents and assistants like Claude Code and Codex now read your mail, your documents, and your tool output, and send all of it to a cloud model. For anyone who works with customer data, that is the problem: the agent needs the meaning of the text, not the identity of the people in it.
+
+The private alternative is to run the model yourself, and that takes inference hardware many people and small businesses cannot pay for. inumaki is a passion project for them: keep using the cloud models you can afford, on the machine you already have, and send less of the people in your data along with every request.
 
 inumaki sits in that path. Its design goals:
 
@@ -73,7 +77,7 @@ It all runs in `inumakid`, one local service with the models loaded once. Around
 
 ## Status
 
-**Pre-1.0 and experimental. A personal project, not a product, and not a compliance tool.** It works end to end on the maintainer's machine and is about to get its first full hands-on test round. Expect rough edges and breaking changes.
+**Pre-1.0 and experimental. A passion project, not a product, and not a compliance tool.** It works end to end on the maintainer's machine and is about to get its first full hands-on test round. Expect rough edges and breaking changes.
 
 - **Platforms:** tested on macOS (Apple Silicon). Linux builds and a `.deb` exist but have not been verified on a real install. Windows is not supported yet.
 - **Agents:** Claude Code and Codex are measured end to end; Hermes Agent and OpenClaw adapters were built from their published source and have not been run.
@@ -108,7 +112,7 @@ inumaki rehydrate --strict --dataset demo /tmp/out.txt
 
 No models? `inumaki dataset add demo --name Demo --profile offline` uses only the deterministic detectors (much lower name recall), and `inumaki tokenize FILE` works without a daemon.
 
-**The macOS app:** `scripts/package-app.sh` writes `dist/Inumaki-<version>.dmg`. Open it (right-click → Open the first time), then "Install and start", "Download models", and Connect on each detected agent. "Run the check" sends a synthetic canary through every path and shows whether it left only as tokens.
+**The macOS app:** download the `.dmg` from [Releases](https://github.com/Klinge01/inumaki/releases) (Apple Silicon), or build it with `scripts/package-app.sh`, which writes `dist/Inumaki-<version>.dmg`. Open it (right-click → Open the first time), then "Install and start", "Download models", and Connect on each detected agent. "Run the check" sends a synthetic canary through every path and shows whether it left only as tokens.
 
 **Homebrew and Debian packages** are built by `scripts/package.sh` and `scripts/package-deb.sh`; see [docs/packaging.md](docs/packaging.md).
 
@@ -125,12 +129,12 @@ All commands: [docs/cli.md](docs/cli.md). Every setting: [docs/configuration.md]
 
 ## Contributing
 
-inumaki is early, and that is the best time to shape it. Issues, ideas, bug reports, and pull requests are all welcome, and you don't need to be a privacy expert to help. Some places where help would make a real difference:
+inumaki is early, and that is the best time to shape it. Issues, ideas, bug reports, and pull requests are all welcome, and you don't need to be a privacy expert to help. That includes new functionality: improvements to what is there, and new integrations such as adapters for other agents and harnesses, MCP servers worth wrapping, and more model and mail providers. Some places where help would make a real difference:
 
 - **Try it and tell us what broke.** Install it, connect your agent, and open an issue with what happened. Reports from Linux machines are especially valuable, because nobody has run it there yet.
 - **Identifiers from your country.** Swiss, German, and other European ID numbers, tax numbers, license plates, and address formats. A recognizer with a checksum and a few synthetic test cases is a self-contained first contribution.
 - **Synthetic test cases.** Every eval case is invented data. If you find a shape inumaki misses (a name in a CSV column, a typo'd label, an unusual address), a test case that shows it is as useful as the fix.
-- **More agents and providers.** Adapters for other coding agents, and mail providers beyond the verified ones (Gmail and Microsoft 365 are open).
+- **More integrations.** Adapters for other agents and harnesses, MCP servers and model APIs beyond the ones covered, and mail providers beyond the verified ones (Gmail and Microsoft 365 are open).
 - **Platform work.** Linux verification, Windows support, signing and packaging.
 - **Precision and speed.** Fewer false positives in code and technical text, and faster cold starts, without giving up recall.
 - **Docs.** If something here confused you, it will confuse the next person too.
