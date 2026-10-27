@@ -1,0 +1,49 @@
+# Homebrew formula template. scripts/package.sh renders @URL@, @SHA256@,
+# @VERSION@ and @BUILD_REV@ (the git revision) from a `git archive` tarball under dist/ (no remote or release
+# tarball exists yet); at release time the URL becomes the tagged tarball and
+# `homepage` the repository. Unsigned (spec §16.10).
+class Inumaki < Formula
+  desc "Local privacy boundary between business apps and cloud AI (experimental until the M4 gates pass)"
+  homepage "https://github.com/OWNER/inumaki"
+  url "@URL@"
+  sha256 "@SHA256@"
+  version "@VERSION@"
+  license "Apache-2.0"
+
+  depends_on "rust" => :build
+
+  def install
+    # The `ort` crate downloads the pinned ONNX Runtime build while compiling.
+    # The revision is part of the daemon's configuration fingerprint.
+    ENV["INUMAKI_BUILD_REV"] = "@BUILD_REV@"
+    system "cargo", "build", "--release", "--locked", "-p", "inumaki-cli", "-p", "inumakid", "-p", "inumaki-mcp", "-p", "inumaki-hook"
+    bin.install "target/release/inumaki", "target/release/inumakid", "target/release/inumaki-mcp", "target/release/inumaki-hook"
+    pkgshare.install "configs/default.toml"
+    doc.install "README.md", "docs/cli.md", "docs/runbook.md", "docs/packaging.md"
+  end
+
+  def caveats
+    <<~EOS
+      Models are not bundled: run `inumaki models pull` once (about 370 MB).
+      Start the service with `brew services start inumaki`; data lives in
+      ~/Library/Application Support/inumaki (see #{doc}/runbook.md).
+      `inumaki status` reports whether this build is qualified or experimental
+      (M4 spec §13.1); see #{doc}/README.md.
+    EOS
+  end
+
+  service do
+    run [opt_bin/"inumakid"]
+    keep_alive true
+    log_path var/"log/inumakid.log"
+    error_log_path var/"log/inumakid.log"
+    environment_variables RUST_LOG: "info", INUMAKI_MANAGED_BY: "homebrew"
+  end
+
+  test do
+    assert_match version.to_s, shell_output("#{bin}/inumaki --version")
+    out = pipe_output("#{bin}/inumaki tokenize --profile offline -", "IBAN AT61 1904 3002 3457 3201")
+    assert_match "<IBAN_", out
+    refute_match "AT61", out
+  end
+end

@@ -1,0 +1,6 @@
+# Curated safety suite (spec §13.1): zero full or partial residue in accepted or
+# uncertain output. The rates below are not gated for this suite.
+max_accepted_leak_rate = 1.0
+max_block_rate = 1.0
+max_verifier_fp_rate = 1.0
+zero_residue = true

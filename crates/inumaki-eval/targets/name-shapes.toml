@@ -1,0 +1,22 @@
+# Name-shape cases (cases/name_shapes.toml and cases/structured_positions.toml,
+# dumped to harness/name-shapes.jsonl; plan 2026-10-12, review N1, integrator
+# L68; plan 2026-10-20, Task 7). A name the sanitizer drops is usually blocked
+# by the verifier, which the tuning leak counts do not show; this gate and the
+# per-id compare (scripts/harness-corpus/name-shape-outcomes.sh) do.
+# max_block_rate is the measured blocked share, rounded up, never raised later.
+# Blocked at the final fix wave (39 cases, ruling L139): shape-file-surname-hyphen
+# (both profiles), 1 of 39 cases (0.025641 rounded up to 0.0257); it was 1 of
+# 33 (0.0304) at Task 7 and 1 of 12 (0.0834) before the structured-position
+# cases (21, then 6 more) joined the set. The planned 13th
+# case, word-surname-csv, leaked before any rule (Branch undetected, R12) and
+# is not in the set.
+# Regenerate harness/name-shapes.jsonl whenever cases/name_shapes.toml or
+# cases/structured_positions.toml changes (release build, from the repository
+# root; 39 lines: 12 old plus 27 structured-position `shape-` ids):
+#   target/release/inumaki eval --cases-only --dump-corpus /tmp/cases.jsonl --json >/dev/null
+#   jq -c 'select(.id | test("^(shape|word-surname|claude-first-name)-"))' \
+#     /tmp/cases.jsonl > crates/inumaki-eval/harness/name-shapes.jsonl
+max_accepted_leak_rate = 0.0
+max_block_rate = 0.0257
+max_verifier_fp_rate = 1.0
+zero_residue = true

@@ -1,0 +1,7 @@
+# Hermes Agent configuration with an anchor and an alias (must be refused).
+model: &default
+  default: "anthropic/claude-opus-4.6"
+  provider: auto
+
+delegation:
+  model: *default

@@ -1,0 +1,18 @@
+{
+  "harness": "claude-code",
+  "files": {"claude_settings": "settings.json"},
+  "env": {"ANTHROPIC_API_KEY": ""},
+  "login": "api_key",
+  "plan": {
+    "chat": {"anthropic": "http://127.0.0.1:8787/anthropic"},
+    "proxy_client_header": "inumaki_client_golden"
+  },
+  "expect": {
+    "claude_settings": {
+      "env": {
+        "ANTHROPIC_CUSTOM_HEADERS": "X-Team: blue\nX-Inumaki-Client: inumaki_client_golden\n",
+        "ANTHROPIC_BASE_URL": "http://127.0.0.1:8787/anthropic"
+      }
+    }
+  }
+}

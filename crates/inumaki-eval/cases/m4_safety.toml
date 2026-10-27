@@ -1,0 +1,139 @@
+# Milestone 4 safety and coverage cases (spec §13.1): the README address, DACH
+# address forms, and the negatives that must not become addresses. Gated with
+# targets/safety.toml (zero residue in accepted or uncertain output).
+
+[[case]]
+id = "m4-readme-address"
+lang = "en"
+why = "The README example passed with the address visible under support-email (spec §1.1)."
+text = "Hi, I'm Sarah Leitner, contract 8439271, moved to Neubaugasse 22."
+spans = [
+  { text = "Sarah Leitner", kind = "PERSON" },
+  { text = "8439271", kind = "CONTRACT_ID" },
+  { text = "Neubaugasse 22", kind = "STREET_ADDRESS" },
+]
+
+[[case]]
+id = "m4-address-lower"
+lang = "de"
+why = "Lower-cased mail (8 % of generated documents) must still yield the address."
+text = "hallo, ich wohne jetzt in der neubaugasse 22, 1070 wien. lg sarah leitner"
+spans = [
+  { text = "neubaugasse 22", kind = "STREET_ADDRESS" },
+  { text = "1070", kind = "POSTAL_CODE" },
+  { text = "wien", kind = "CITY" },
+  { text = "sarah leitner", kind = "PERSON" },
+]
+
+[[case]]
+id = "m4-address-str-abbrev"
+lang = "de"
+why = "Abbreviated street suffix with a letter-suffixed house number."
+text = "Bitte liefern Sie an Hauptstr. 5a, 4020 Linz."
+spans = [
+  { text = "Hauptstr. 5a", kind = "STREET_ADDRESS" },
+  { text = "4020", kind = "POSTAL_CODE" },
+  { text = "Linz", kind = "CITY" },
+]
+
+[[case]]
+id = "m4-address-two-word"
+lang = "de"
+why = "Adjectival first word plus standalone suffix."
+text = "Die Filiale in der Mariahilfer Straße 7 hat geschlossen; Kontakt: Thomas Berger."
+spans = [
+  { text = "Mariahilfer Straße 7", kind = "STREET_ADDRESS" },
+  { text = "Thomas Berger", kind = "PERSON" },
+]
+
+[[case]]
+id = "m4-address-adjective-compound"
+lang = "de"
+why = "Adjectival first word plus a compound street."
+text = "Unser Büro: Wiedner Hauptstraße 12/3, 1040 Wien."
+spans = [
+  { text = "Wiedner Hauptstraße 12/3", kind = "STREET_ADDRESS" },
+  { text = "1040", kind = "POSTAL_CODE" },
+  { text = "Wien", kind = "CITY" },
+]
+
+[[case]]
+id = "m4-address-prepositional"
+lang = "de"
+why = "Street names formed with a preposition."
+text = "Sie erreichen mich Am Graben 3 oder unter der Nummer +43 660 1234567."
+spans = [
+  { text = "Am Graben 3", kind = "STREET_ADDRESS" },
+  { text = "+43 660 1234567", kind = "PHONE" },
+]
+
+[[case]]
+id = "m4-address-range-and-nr"
+lang = "de"
+why = "House-number ranges and the Nr. form."
+text = "Lange Gasse 12-14 und Bahnhofstraße Nr. 7 sind beide betroffen."
+spans = [
+  { text = "Lange Gasse 12-14", kind = "STREET_ADDRESS" },
+  { text = "Bahnhofstraße Nr. 7", kind = "STREET_ADDRESS" },
+]
+
+[[case]]
+id = "m4-address-wrapped-en"
+lang = "en"
+why = "Mail client wrapped the address across a line."
+text = "Ship it to Sonnenweg\n9, 8010 Graz please."
+spans = [
+  { text = "Sonnenweg\n9", kind = "STREET_ADDRESS" },
+  { text = "8010", kind = "POSTAL_CODE" },
+  { text = "Graz", kind = "CITY" },
+]
+
+[[case]]
+id = "m4-address-after-noun"
+lang = "de"
+why = "A preceding noun must not be swallowed into the address."
+text = "Adresse Neubaugasse 22, Telefon 0664 123 45 67."
+spans = [
+  { text = "Neubaugasse 22", kind = "STREET_ADDRESS" },
+  { text = "0664 123 45 67", kind = "PHONE" },
+]
+
+[[case]]
+id = "m4-address-negative-weg"
+lang = "de"
+why = "Weg as a noun is not a street."
+text = "Der Weg nach Hause war weit, wir haben 5 Stunden gebraucht."
+
+[[case]]
+id = "m4-address-negative-platz"
+lang = "de"
+why = "Platz as rank or workplace is not a street."
+text = "Wir sind auf Platz 3 gelandet; Arbeitsplatz 5 ist frei."
+
+[[case]]
+id = "m4-address-negative-sackgasse"
+lang = "de"
+why = "Compound nouns with a street suffix are not streets."
+text = "Die Verhandlung ist eine Sackgasse; die Straße war nass."
+
+[[case]]
+id = "m4-surname-repeat"
+lang = "de"
+why = "A bare surname after the full name is partial residue if it survives."
+text = "Sarah Leitner hat angerufen. Frau Leitner bittet um Rückruf unter 0664 123 45 67."
+spans = [
+  { text = "Sarah Leitner", kind = "PERSON" },
+  { text = "Leitner", kind = "PERSON", occurrence = 2 },
+  { text = "0664 123 45 67", kind = "PHONE" },
+]
+
+[[case]]
+id = "m4-first-name-repeat"
+lang = "en"
+why = "A bare first name after the full name is partial residue if it survives."
+text = "Markus Fuchs wrote to us. Markus wants the contract V-12345678 cancelled."
+spans = [
+  { text = "Markus Fuchs", kind = "PERSON" },
+  { text = "Markus", kind = "PERSON", occurrence = 2 },
+  { text = "V-12345678", kind = "CONTRACT_ID" },
+]

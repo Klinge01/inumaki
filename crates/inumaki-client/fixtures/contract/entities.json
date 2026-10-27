@@ -1,0 +1,6 @@
+{"entities": [
+  {"token": "<PERSON_qwxzvk1>", "kind": "PERSON", "first_use": 1790000000, "last_use": 1790000600, "uses": 4,
+   "epoch_id": 1, "current_epoch": true, "original": "Qwxzvk Zyxwuria", "surface_forms": 0},
+  {"token": "<IBAN_qwxzvk2>", "kind": "IBAN", "first_use": 1790000100, "last_use": 1790000100, "uses": 1,
+   "epoch_id": 1, "current_epoch": true, "surface_forms": 0}
+]}

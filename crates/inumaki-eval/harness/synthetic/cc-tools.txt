@@ -1,0 +1,29 @@
+Bash: Run a command in a shell that keeps its working directory between calls (environment variables do not persist). Prefer the dedicated file tools over cat, head, tail, sed, find, and grep. Wrap paths that contain spaces in double quotes. Default timeout 120000 ms, maximum 600000 ms. Set run_in_background for servers and watchers and read their output later.
+Parameters: command (string, required), description (string), timeout (number), run_in_background (boolean).
+
+Read: Return the contents of a file with line numbers, starting at line 1. The file_path must be absolute. Large files can be read in parts with offset and limit. Images and PDF documents are returned as attachments; notebooks are returned cell by cell.
+Parameters: file_path (string, required), offset (integer), limit (integer), pages (string).
+
+Edit: Replace old_string with new_string in a file that was read earlier in this conversation. Fails when old_string occurs more than once, unless replace_all is true. Keep the indentation of the original lines.
+Parameters: file_path (string, required), old_string (string, required), new_string (string, required), replace_all (boolean).
+
+Grep: Search file contents with ripgrep syntax. Filter by glob (for example "src/**/*.ts") or by type (for example "rust" or "py"). output_mode is one of "content", "files_with_matches", or "count". Use -n for line numbers and -C for context lines.
+Parameters: pattern (string, required), path (string), glob (string), type (string), output_mode (string), multiline (boolean).
+
+Glob: Match file paths against a glob pattern such as "**/*.md" and return them sorted by modification time.
+Parameters: pattern (string, required), path (string).
+
+TodoWrite: Replace the session's task list. Each item has content, status (pending, in_progress, or completed) and activeForm. Only one item should be in_progress at a time.
+Parameters: todos (array, required).
+
+Task: Start a subagent for a self-contained job. Available types: general-purpose (research and multi-step work), Explore (read-only codebase search), Plan (design an approach before coding). The subagent cannot ask the user questions; give it everything it needs in the prompt.
+Parameters: description (string, required), prompt (string, required), subagent_type (string).
+
+WebFetch: Download a URL, convert the HTML to Markdown, and answer a question about it. HTTP is upgraded to HTTPS. Redirects to another host are reported instead of followed.
+Parameters: url (string, required), prompt (string, required).
+
+NotebookEdit: Replace, insert, or delete a cell in a Jupyter notebook (.ipynb). cell_id selects the cell; edit_mode is replace, insert, or delete.
+Parameters: notebook_path (string, required), new_source (string, required), cell_id (string), cell_type (string), edit_mode (string).
+
+mcp__github__create_pull_request: Open a pull request on GitHub. Requires owner, repo, title, head, and base. Returns the pull request number and URL.
+Parameters: owner (string, required), repo (string, required), title (string, required), head (string, required), base (string, required), body (string), draft (boolean).

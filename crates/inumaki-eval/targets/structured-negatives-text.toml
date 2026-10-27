@@ -1,0 +1,13 @@
+# Negative-only precision corpus, free text (harness/structured-negatives-text.jsonl,
+# plan 2026-10-20, ruling S22): technical and office lines read as free text.
+# Every span is a false positive. PERSON is the larger Task 1 measurement
+# (10 under support-email and strict); Tasks 4 and 4b may not raise it, and it
+# is never raised to pass. Task 3 measured 9 under both profiles.
+#   inumaki eval --profile <p> --corpus crates/inumaki-eval/harness/structured-negatives-text.jsonl \
+#     --targets crates/inumaki-eval/targets/structured-negatives-text.toml
+max_accepted_leak_rate = 0.0
+max_block_rate = 1.0
+max_verifier_fp_rate = 1.0
+
+[max_detected]
+PERSON = 10

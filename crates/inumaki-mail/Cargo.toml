@@ -1,0 +1,42 @@
+[package]
+name = "inumaki-mail"
+description = "Draft-only IMAP mail connector for the inumaki gateway: search, read, and reply drafts behind opaque handles"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[features]
+# A scripted IMAP server for tests in this and other crates.
+fake-imap = []
+# Seed and inspect a mailbox over IMAP (the mail-tasks runner).
+harness = []
+
+[dependencies]
+rmcp.workspace = true
+tokio.workspace = true
+tokio-util.workspace = true
+tokio-rustls.workspace = true
+rustls.workspace = true
+webpki-roots.workspace = true
+async-imap.workspace = true
+futures-util.workspace = true
+mail-parser.workspace = true
+mail-builder.workspace = true
+html2text.workspace = true
+unicode-normalization.workspace = true
+zeroize.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+tracing.workspace = true
+getrandom.workspace = true
+
+[dev-dependencies]
+# A crate may be its own dev-dependency to turn features on for its tests.
+inumaki-mail = { path = ".", features = ["fake-imap", "harness"] }
+tempfile.workspace = true
+tracing-subscriber.workspace = true
+
+[lints]
+workspace = true

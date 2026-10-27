@@ -1,0 +1,23 @@
+# Harness-static corpus (crates/inumaki-eval/harness/harness-static.jsonl,
+# plan 2026-10-12, rulings L60, L3-04, L98, L103). The corpus holds no
+# identifying value: every PERSON span and every refusal is a false
+# positive. Never raise a value here to pass: a span only a name word
+# explains goes to the controller. Precision reading (R14), run as
+# harness-static text with the shipped configuration under support-email
+# and strict; refusals are gated separately with on_uncertain = "tokenize"
+# (targets/harness-static-tokenize.toml):
+#   inumaki eval --profile <p> --corpus crates/inumaki-eval/harness/harness-static.jsonl \
+#     --origin harness-static --targets crates/inumaki-eval/targets/harness-static.toml
+# PERSON = 25 is the acknowledged residual (list acknowledged in L98, n in
+# L103). Census-surname or ALSO_NAMES words standing alone, 22 spans:
+#   Yes 8, Bash 2, Bottom Line 2, HOME 2, Sender 2, Clarity 1, Rigor 1,
+#   NEVER 1, Title Case 1, Vague 1, Write 1.
+# Identifier keeps, an R14 exception acknowledged in L103 (a gazetteer
+# first-name run with no technical context, ruling L3-11), 3 spans:
+#   NotebookEdit 1, edit_mode 1, line_range 1.
+max_accepted_leak_rate = 0.0
+max_block_rate = 1.0
+max_verifier_fp_rate = 1.0
+
+[max_detected]
+PERSON = 25

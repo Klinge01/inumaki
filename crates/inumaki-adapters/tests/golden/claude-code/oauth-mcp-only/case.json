@@ -1,0 +1,24 @@
+{
+  "harness": "claude-code",
+  "files": {"claude_json": "claude.json"},
+  "home_files": {".claude/.credentials.json": "credentials.json"},
+  "login": "oauth",
+  "plan": {
+    "gateway": {"token": "inumaki_gw_golden", "entries": [
+      {"name": "crm", "url": "http://127.0.0.1:8789/mcp/mcp-crm"},
+      {"name": "db", "project": "/Users/qwxzvk/proj", "url": "http://127.0.0.1:8789/mcp/mcp-db"}
+    ]}
+  },
+  "expect": {
+    "claude_json": {
+      "numStartups": 12,
+      "mcpServers": {
+        "crm": {"type": "http", "url": "http://127.0.0.1:8789/mcp/mcp-crm", "headers": {"Authorization": "Bearer inumaki_gw_golden"}},
+        "notes": {"type": "http", "url": "https://notes.example/mcp"}
+      },
+      "projects": {
+        "/Users/qwxzvk/proj": {"allowedTools": [], "mcpServers": {"db": {"type": "http", "url": "http://127.0.0.1:8789/mcp/mcp-db", "headers": {"Authorization": "Bearer inumaki_gw_golden"}}}}
+      }
+    }
+  }
+}

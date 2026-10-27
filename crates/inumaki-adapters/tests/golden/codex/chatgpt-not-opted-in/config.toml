@@ -1,0 +1,10 @@
+# my codex settings
+model = "gpt-5-codex"
+
+[mcp_servers.docs]
+command = "/usr/local/bin/docs-mcp"
+args = ["--stdio"]
+env = { DOCS_TOKEN = "s3cret-qwxzvk" }
+
+[profiles.fast]
+model = "gpt-5-mini"

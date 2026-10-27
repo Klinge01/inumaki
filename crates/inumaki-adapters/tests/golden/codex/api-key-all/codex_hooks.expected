@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "^Bash$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "'/Users/qwxzvk/Library/Application Support/inumaki/bin/inumaki-hook' codex --socket '/Users/qwxzvk/Library/Application Support/inumaki/inumakid.sock'",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
+  }
+}

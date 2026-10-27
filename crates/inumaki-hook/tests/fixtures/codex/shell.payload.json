@@ -1,0 +1,15 @@
+{
+  "session_id": "00000000-0000-4000-8000-000000000011",
+  "turn_id": "00000000-0000-4000-8000-000000000012",
+  "transcript_path": "/Users/example/.codex/sessions/2026/09/29/rollout-synthetic.jsonl",
+  "cwd": "/Users/example/work",
+  "hook_event_name": "PostToolUse",
+  "model": "gpt-6-sol",
+  "permission_mode": "default",
+  "tool_name": "Bash",
+  "tool_input": {
+    "command": "cat kunden/notiz.txt"
+  },
+  "tool_response": "Termin mit Zyxwuria Quolnath am Dienstag.\n",
+  "tool_use_id": "call_SYNTHETIC0000000000000001"
+}

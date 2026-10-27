@@ -1,0 +1,8 @@
+{
+  "harness": "hermes",
+  "files": {"hermes_config": "config.yaml"},
+  "plan": {
+    "gateway": {"token": "inumaki_gw_golden", "entries": [{"name": "filesystem", "url": "http://127.0.0.1:8789/mcp/mcp-filesystem"}]}
+  },
+  "error": "cannot_edit_safely"
+}

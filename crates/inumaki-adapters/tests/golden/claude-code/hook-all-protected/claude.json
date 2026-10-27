@@ -1,0 +1,5 @@
+{
+  "mcpServers": {
+    "crm": {"type": "http", "url": "https://crm.example/mcp"}
+  }
+}

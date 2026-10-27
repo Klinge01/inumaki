@@ -1,0 +1,32 @@
+{
+  "version": "0.1.0", "uptime_s": 42,
+  "data_dir": "/Users/qwxzvk/Library/Application Support/inumaki",
+  "socket": "/Users/qwxzvk/Library/Application Support/inumaki/inumakid.sock",
+  "key_source": "keyring",
+  "models": [{"name": "gliner-multi", "threads": 2, "sessions": 2, "pool_waits": 0}],
+  "profiles": [
+    {"name": "offline", "available": true},
+    {"name": "support-email", "available": false, "reason": "model files missing under /Users/qwxzvk/models: run `inumaki models pull`"}
+  ],
+  "datasets": [
+    {"id": "qwxzvk-kunde", "label": "a1b2c3d4e5f60718", "name": "Qwxzvk Kunde GmbH", "profile": "offline",
+     "rotation_days": 30, "grace_days": 7, "epoch_id": 1, "epoch_started_at": 1790000000, "entries": 3, "kind": "generic"}
+  ],
+  "sessions": 0,
+  "cache": {"hits": 3, "misses": 5, "bytes": 2048, "evictions": 0, "entries": 4},
+  "pool_waits": 0,
+  "gateway": {
+    "listen": "127.0.0.1:8789",
+    "datasets": [
+      {"id": "qwxzvk-kunde",
+       "upstreams": [{"name": "qwxzvk-crm", "kind": "stdio", "state": "running", "restarts": 0, "stderr_bytes": 0,
+                      "contract": "ready", "schema_fingerprint": "sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"}],
+       "calls": 7, "blocked": 1, "uncertain": 0, "unresolved": 0, "unsupported": 0, "limited": 0, "clear_value_hits": 0}
+    ],
+    "tokens": 1, "uncertain_checks": {"Ner": 1}, "qualification": "unqualified",
+    "activity_dropped": 0, "journal_dropped": 0
+  },
+  "mailboxes": [{"dataset": "qwxzvk-mail", "preset": "generic", "imap_host": "imap.qwxzvk.example",
+                 "imap_port": 993, "imap_tls": true, "handles": 12}],
+  "config_source": "/Users/qwxzvk/Library/Application Support/inumaki/inumaki.toml"
+}

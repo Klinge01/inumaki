@@ -1,0 +1,31 @@
+[package]
+name = "inumaki-models"
+description = "ONNX named-entity-recognition backends for the inumaki privacy engine"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[features]
+# Tests that need downloaded models; they read INUMAKI_MODELS_DIR.
+models-tests = []
+
+[dependencies]
+inumaki-core = { path = "../inumaki-core" }
+ort.workspace = true
+ndarray.workspace = true
+tokenizers.workspace = true
+regex.workspace = true
+thiserror.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+toml.workspace = true
+sha2.workspace = true
+ureq.workspace = true
+dirs.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true
+
+[lints]
+workspace = true

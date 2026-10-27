@@ -1,0 +1,6 @@
+# Hermes Agent configuration with a flow-style mapping (must be refused).
+model:
+  default: "anthropic/claude-opus-4.6"
+  provider: auto
+
+mcp_servers: {a: {url: x}}

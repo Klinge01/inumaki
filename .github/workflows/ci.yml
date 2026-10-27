@@ -1,0 +1,124 @@
+name: ci
+on:
+  push:
+  pull_request:
+
+jobs:
+  check:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo fmt --all -- --check
+      - run: cargo clippy --workspace --all-targets -- -D warnings
+      - run: cargo test --workspace
+      - run: >
+          cargo run --release -q -p inumaki-cli -- eval --profile offline
+          --baseline crates/inumaki-eval/baselines/offline.toml
+
+  models:
+    # x86 kernels differ from the Apple Silicon reference (see docs/ci.md), so
+    # only the curated safety suite is enforced here (spec §13.1: other
+    # architectures run the safety suite against the same absolute targets);
+    # the corpus baselines are informational on this runner.
+    runs-on: ubuntu-latest
+    env:
+      INUMAKI_MODELS_DIR: ${{ github.workspace }}/.models
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - uses: actions/cache@v4
+        with:
+          path: .models
+          key: models-${{ hashFiles('models/manifest.toml') }}
+      - run: cargo run --release -q -p inumaki-cli -- models pull
+      - run: cargo run --release -q -p inumaki-cli -- models verify
+      - run: cargo test --release -p inumaki-models --features models-tests
+      - run: cargo test --release -p inumakid --features models-tests
+      - name: curated safety suite (support-email)
+        run: >
+          cargo run --release -q -p inumaki-cli -- eval --profile support-email
+          --cases-only --targets crates/inumaki-eval/targets/safety.toml
+      - name: curated safety suite (strict)
+        run: >
+          cargo run --release -q -p inumaki-cli -- eval --profile strict
+          --cases-only --targets crates/inumaki-eval/targets/safety.toml
+      - name: corpus eval (informational on x86)
+        continue-on-error: true
+        run: cargo run --release -q -p inumaki-cli -- eval --profile support-email
+      - run: cargo run --release -q -p inumaki-cli -- bench --profile support-email
+
+  reference:
+    # Required check (spec §13.1): the self-hosted Apple Silicon reference
+    # runner, the machine the committed baselines were measured on. Setup and
+    # branch protection: docs/ci.md. One runner, so runs queue.
+    runs-on: [self-hosted, macOS, ARM64, inumaki-reference]
+    concurrency:
+      group: inumaki-reference-runner
+      cancel-in-progress: false
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+      - name: models directory
+        run: |
+          mkdir -p "$HOME/inumaki-ci/models"
+          echo "INUMAKI_MODELS_DIR=$HOME/inumaki-ci/models" >> "$GITHUB_ENV"
+      - run: cargo run --release -q -p inumaki-cli -- models pull
+      - run: cargo run --release -q -p inumaki-cli -- models verify
+      - run: cargo test --workspace
+      - run: cargo test --release -p inumaki-models --features models-tests
+      - run: cargo test --release -p inumakid --features models-tests
+      - name: baseline gates (tuning corpus)
+        run: |
+          set -e
+          for p in support-email strict thorough offline; do
+            cargo run --release -q -p inumaki-cli -- eval --profile "$p" \
+              --baseline "crates/inumaki-eval/baselines/$p.toml"
+          done
+      - name: baseline gates (held-out corpus)
+        run: |
+          set -e
+          for p in support-email strict; do
+            cargo run --release -q -p inumaki-cli -- eval --profile "$p" --held-out \
+              --baseline "crates/inumaki-eval/baselines/held-out-$p.toml"
+          done
+      - name: curated safety suite
+        run: |
+          set -e
+          for p in support-email strict; do
+            cargo run --release -q -p inumaki-cli -- eval --profile "$p" --cases-only \
+              --targets crates/inumaki-eval/targets/safety.toml
+          done
+      - name: M4 targets (spec §13.1)
+        # informational until every gate in docs/quality/2026-09-25-matrix.md
+        # passes; plan 4 removes continue-on-error when it qualifies M4.
+        continue-on-error: true
+        run: |
+          set -e
+          for p in support-email strict; do
+            cargo run --release -q -p inumaki-cli -- eval --profile "$p" \
+              --targets crates/inumaki-eval/targets/m4.toml
+            cargo run --release -q -p inumaki-cli -- eval --profile "$p" --held-out \
+              --targets crates/inumaki-eval/targets/m4.toml
+          done
+      - name: bench
+        run: cargo run --release -q -p inumaki-cli -- bench --profile support-email
+      - name: bench via daemon
+        run: |
+          cargo build --release -p inumaki-cli
+          ./target/release/inumaki daemon --data-dir "$RUNNER_TEMP/inumaki-data" --socket "$RUNNER_TEMP/inumakid-ci.sock" &
+          DAEMON=$!
+          for i in $(seq 1 60); do [ -S "$RUNNER_TEMP/inumakid-ci.sock" ] && break; sleep 1; done
+          ./target/release/inumaki --socket "$RUNNER_TEMP/inumakid-ci.sock" bench --via-daemon
+          kill -TERM "$DAEMON"
+          wait "$DAEMON" || true

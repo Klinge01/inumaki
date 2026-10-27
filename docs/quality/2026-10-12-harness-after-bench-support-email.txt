@@ -1,0 +1,4 @@
+profile support-email  docs 200  avg 235 bytes
+detect   p50 16.3 ms  p95 29.1 ms  p99 31.8 ms
+process  p50 37.7 ms  p95 78.4 ms  p99 101.3 ms
+throughput 16.9 docs/s

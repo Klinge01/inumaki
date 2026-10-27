@@ -1,0 +1,12 @@
+[
+  {"name": "qwxzvk-crm", "kind": "stdio", "command": "/opt/homebrew/bin/qwxzvk-crm-mcp", "args": ["--tenant", "qwxzvk"],
+   "cwd": null, "url": null, "env": {"PATH": "/Users/qwxzvk/.local/bin:/usr/bin"}, "headers": {},
+   "env_secret": "qwxzvk-kunde/upstream/qwxzvk-crm/env", "headers_secret": null, "content_policy": {},
+   "schema_fingerprint": null, "enabled": true, "created_at": 1790000000},
+  {"name": "qwxzvk-wiki", "kind": "http", "command": null, "args": [], "cwd": null,
+   "url": "https://wiki.qwxzvk.example/mcp", "env": {}, "headers": {"X-Tenant": "qwxzvk"},
+   "env_secret": null, "headers_secret": "qwxzvk-kunde/upstream/qwxzvk-wiki/headers",
+   "content_policy": {"tools": {"qwxzvk_lookup": {}}},
+   "schema_fingerprint": "sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+   "enabled": true, "created_at": 1790000100}
+]

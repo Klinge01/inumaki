@@ -1,0 +1,50 @@
+[package]
+name = "inumaki-proxy"
+description = "Model-API proxy for the inumaki privacy engine: sanitized requests out, restored answers back"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[dependencies]
+inumaki-core = { path = "../inumaki-core" }
+axum.workspace = true
+http.workspace = true
+bytes.workspace = true
+futures.workspace = true
+tokio.workspace = true
+reqwest.workspace = true
+regex.workspace = true
+regex-automata.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+tracing.workspace = true
+zeroize.workspace = true
+sha2.workspace = true
+hmac.workspace = true
+subtle.workspace = true
+getrandom.workspace = true
+flate2.workspace = true
+rustls.workspace = true
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["test-util"] }
+tower = { version = "0.5", default-features = false, features = ["util"] }
+# The models-gated projection harness (tests/projection_equivalence.rs):
+# read-only use of the eval corpora and the real NER models.
+inumaki-models = { path = "../inumaki-models" }
+inumaki-eval = { path = "../inumaki-eval" }
+
+[features]
+# A measurement build (spec §20, 2026-10-12): step 6b also runs the full
+# re-run beside every closure projection and forwards the full re-run's
+# result, counting the differences (counts and kind labels only). Off by
+# default; never enabled by a default or release build.
+closure-shadow = []
+# Tests that need the real NER models (INUMAKI_MODELS_DIR); the projection
+# harness also needs INUMAKI_PROJECTION_HARNESS=1.
+models-tests = []
+
+[lints]
+workspace = true

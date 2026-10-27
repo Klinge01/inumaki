@@ -1,0 +1,28 @@
+{
+  "permissions": {
+    "allow": ["Bash(ls:*)"],
+    "additionalDirectories": ["/Users/qwxzvk/Inumaki"]
+  },
+  "env": {
+    "DISABLE_TELEMETRY": "1",
+    "ANTHROPIC_BASE_URL": "http://127.0.0.1:8787/anthropic",
+    "ANTHROPIC_CUSTOM_HEADERS": "X-Inumaki-Client: inumaki_client_golden"
+  },
+  "hooks": {
+    "PreToolUse": [
+      {"matcher": "Bash", "hooks": [{"type": "command", "command": "~/bin/guard.sh"}]}
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "^(Bash|PowerShell|Read|Grep|Glob|Edit|WebFetch|ReadMcpResourceTool)$|^mcp__(?!(crm|db)__).*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "'/Users/qwxzvk/Library/Application Support/inumaki/bin/inumaki-hook' claude-code --socket '/Users/qwxzvk/Library/Application Support/inumaki/inumakid.sock'",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
+  }
+}

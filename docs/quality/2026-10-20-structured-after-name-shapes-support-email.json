@@ -1,0 +1,113 @@
+{
+  "profile": "support-email",
+  "docs": 39,
+  "per_kind": {
+    "EMAIL": {
+      "gold": 0,
+      "gold_found": 0,
+      "detected": 1,
+      "detected_correct": 0,
+      "leaked": 0,
+      "partial_leaked": 0
+    },
+    "INVOICE_ID": {
+      "gold": 0,
+      "gold_found": 0,
+      "detected": 1,
+      "detected_correct": 0,
+      "leaked": 0,
+      "partial_leaked": 0
+    },
+    "PERSON": {
+      "gold": 41,
+      "gold_found": 32,
+      "detected": 40,
+      "detected_correct": 32,
+      "leaked": 0,
+      "partial_leaked": 0
+    },
+    "URL": {
+      "gold": 0,
+      "gold_found": 0,
+      "detected": 9,
+      "detected_correct": 0,
+      "leaked": 0,
+      "partial_leaked": 0
+    }
+  },
+  "pass_docs": 38,
+  "uncertain_docs": 0,
+  "blocked_docs": 1,
+  "docs_with_leak": 0,
+  "accepted_leak_docs": 0,
+  "accepted_partial_only_docs": 0,
+  "uncertain_leak_docs": 0,
+  "per_lang": {
+    "de": {
+      "docs": 32,
+      "accepted": 31,
+      "uncertain": 0,
+      "blocked": 1,
+      "accepted_leak": 0
+    },
+    "en": {
+      "docs": 7,
+      "accepted": 7,
+      "uncertain": 0,
+      "blocked": 0,
+      "accepted_leak": 0
+    }
+  },
+  "store_errors": 0,
+  "provenance": {
+    "corpus_sha256": "4df700f279563fc062ecfebb95b8cb0286565c0aa9dabed8945515f82f0bbbb5",
+    "cases": 0,
+    "generated": 0,
+    "seed": 42,
+    "family": "file",
+    "platform": "macos-aarch64",
+    "crate_version": "0.1.0",
+    "git_commit": "8259e6cf5acd661b6db0efbf86bcb6c6bc85b769",
+    "config_sha256": "31d513fdd700c02c244c04ba4bdff66821301c57a2187806f2763c7ee9a2eeac",
+    "config_source": "embedded",
+    "canonical": false,
+    "lock_sha256": "5e139127257958d64bfdd6c239d1e10b06952855433151d3a58e3d00b53e2307",
+    "models": {
+      "gliner-x-small": "d76b3349fd4bfe44573221c0912ed459f432d14317552fdc65935dabcb833c4a",
+      "kiji-pii": "b5f3311391a74470ff26c5b700a422832e5dcdb74fedc205ad5a68e70dbf487c",
+      "mbert-ner-hrl": "1213fdd405d295768b0d41d8214062f2f278f0e3acff6af67d8fd47360d2be0f"
+    },
+    "evaluated_at": 1792515682
+  },
+  "verifier_clean_trials": 39,
+  "verifier_false_positives": 7,
+  "verifier_broken_trials": 39,
+  "verifier_false_negatives": 19,
+  "latency_ms": {
+    "p50": 22.302333,
+    "p95": 54.160624999999996,
+    "p99": 68.41512499999999,
+    "mean": 28.204420974358975,
+    "max": 68.41512499999999
+  },
+  "detector_errors": 0,
+  "links": {
+    "coref_docs": 0,
+    "coref_recoverable_docs": 0,
+    "person_mentions_tokenized": 40,
+    "surface_mentions": 0,
+    "wrong_restorations": 0,
+    "wrong_links": 0,
+    "tokens_total": 41,
+    "distinct_tokens_total": 41
+  },
+  "verifier_fp_by_check": {
+    "Regex": 7
+  },
+  "verifier_fp_by_kind": {
+    "EMAIL": 1,
+    "URL": 6
+  },
+  "sequence": null,
+  "consistency_redactions": 0
+}

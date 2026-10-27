@@ -1,0 +1,8 @@
+{
+  "bundle": {
+    "active": true,
+    "targets": ["app"],
+    "externalBin": ["binaries/inumakid", "binaries/inumaki", "binaries/inumaki-mcp", "binaries/inumaki-hook"],
+    "macOS": { "signingIdentity": "-", "minimumSystemVersion": "13.0" }
+  }
+}

@@ -1,0 +1,22 @@
+# my codex settings
+model = "gpt-5-codex"
+model_provider = "inumaki"
+
+[mcp_servers.docs]
+url = "http://127.0.0.1:8789/mcp/mcp-docs"
+http_headers = { Authorization = "Bearer inumaki_gw_golden" }
+required = true
+startup_timeout_sec = 30
+
+[profiles.fast]
+model = "gpt-5-mini"
+
+[sandbox_workspace_write]
+writable_roots = ["/Users/qwxzvk/Inumaki/d1b2c3d4e5f60718/outbox"]
+
+[model_providers.inumaki]
+name = "inumaki"
+base_url = "http://127.0.0.1:8787/openai/v1"
+wire_api = "responses"
+env_key = "OPENAI_API_KEY"
+http_headers = { X-Inumaki-Client = "inumaki_client_golden" }

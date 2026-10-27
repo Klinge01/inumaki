@@ -1,0 +1,25 @@
+{
+  "harness": "openclaw",
+  "files": {"openclaw_config": "openclaw.json"},
+  "login": "api_key",
+  "plan": {
+    "gateway": {"token": "inumaki_gw_golden", "entries": [{"name": "tickets", "url": "http://127.0.0.1:8789/mcp/mcp-tickets"}]},
+    "files": {"mirror_root": "/Users/qwxzvk/Inumaki", "outboxes": []},
+    "chat": {"openai": "http://127.0.0.1:8787/openai"},
+    "proxy_client_header": "inumaki_client_golden"
+  },
+  "expect": {
+    "openclaw_config": {
+      "agents": {"defaults": {
+        "model": {"primary": "inumaki/gpt-5"},
+        "workspace": "/Users/qwxzvk",
+        "sandbox": {"mode": "all", "docker": {"binds": ["/data:/data:ro", "/Users/qwxzvk/Inumaki:/Users/qwxzvk/Inumaki:ro"]}}
+      }},
+      "mcp": {"servers": {"tickets": {"url": "http://127.0.0.1:8789/mcp/mcp-tickets", "transport": "streamable-http", "headers": {"Authorization": "Bearer inumaki_gw_golden"}}}},
+      "models": {"providers": {
+        "openai": {"apiKey": "${OPENAI_API_KEY}"},
+        "inumaki": {"baseUrl": "http://127.0.0.1:8787/openai/v1", "api": "openai-completions", "apiKey": "${OPENAI_API_KEY}", "models": [{"id": "gpt-5", "name": "gpt-5"}], "headers": {"X-Inumaki-Client": "inumaki_client_golden"}}
+      }}
+    }
+  }
+}

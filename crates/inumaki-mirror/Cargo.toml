@@ -1,0 +1,28 @@
+[package]
+name = "inumaki-mirror"
+description = "Folder mirror for inumaki: watcher, sanitized mirror writer, outbox rehydration"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[dependencies]
+inumaki-core = { path = "../inumaki-core" }
+inumaki-mail = { path = "../inumaki-mail" }
+notify.workspace = true
+notify-debouncer-full.workspace = true
+rustix.workspace = true
+libc.workspace = true
+csv.workspace = true
+encoding_rs.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+tracing.workspace = true
+getrandom.workspace = true
+unicode-normalization.workspace = true
+# The `testing` driver (hidden, used by the daemon's tests) makes temp trees.
+tempfile.workspace = true
+
+[lints]
+workspace = true

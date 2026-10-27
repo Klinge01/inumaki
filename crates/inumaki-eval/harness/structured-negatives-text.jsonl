@@ -1,0 +1,12 @@
+{"id":"struct-001","lang":"de","text":"Logs liegen unter /home/runner/work/app/app/build.log und /Users/Shared/tmp.","spans":[]}
+{"id":"struct-002","lang":"de","text":"Öffentlich: C:\\Users\\Public\\Documents\\Vorlagen","spans":[]}
+{"id":"struct-003","lang":"de","text":"Cache: /Users/admin/Library/Caches/com.example.app","spans":[]}
+{"id":"struct-004","lang":"de","text":"Siehe https://example.com/team/about und https://example.com/people/search?q=angebot","spans":[]}
+{"id":"struct-005","lang":"de","text":"Code: https://github.com/rust-lang/cargo/issues","spans":[]}
+{"id":"struct-006","lang":"de","text":"Doku: https://docs.example.com/user/guide/install.html","spans":[]}
+{"id":"struct-007","lang":"de","text":"Deploy nach /home/deploy/app/current und /var/www/html/index.php","spans":[]}
+{"id":"struct-008","lang":"de","text":"Binary: /opt/homebrew/bin/git, Config: ~/Documents/Projekte/angebot.docx","spans":[]}
+{"id":"struct-009","lang":"de","text":"Name;Typ;Standard\nport;Zahl;8080\nhost;Text;localhost","spans":[]}
+{"id":"struct-010","lang":"de","text":"| Name | Beschreibung |\n|---|---|\n| Export | Schreibt eine CSV-Datei |\n| Import | Liest eine Liste ein |","spans":[]}
+{"id":"struct-011","lang":"de","text":"Artikel;Menge;Preis\nSchrauben;100;4,50\nDübel;50;3,20","spans":[]}
+{"id":"struct-012","lang":"de","text":"Datum,Betrag,Kategorie\n2026-10-01,45.00,Büro\n2026-10-02,12.50,Reise","spans":[]}

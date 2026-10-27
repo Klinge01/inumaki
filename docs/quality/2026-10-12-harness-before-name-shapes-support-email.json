@@ -1,0 +1,92 @@
+{
+  "profile": "support-email",
+  "docs": 12,
+  "per_kind": {
+    "INVOICE_ID": {
+      "gold": 0,
+      "gold_found": 0,
+      "detected": 1,
+      "detected_correct": 0,
+      "leaked": 0,
+      "partial_leaked": 0
+    },
+    "PERSON": {
+      "gold": 14,
+      "gold_found": 12,
+      "detected": 15,
+      "detected_correct": 12,
+      "leaked": 0,
+      "partial_leaked": 0
+    }
+  },
+  "pass_docs": 11,
+  "uncertain_docs": 0,
+  "blocked_docs": 1,
+  "docs_with_leak": 0,
+  "accepted_leak_docs": 0,
+  "accepted_partial_only_docs": 0,
+  "uncertain_leak_docs": 0,
+  "per_lang": {
+    "de": {
+      "docs": 8,
+      "accepted": 7,
+      "uncertain": 0,
+      "blocked": 1,
+      "accepted_leak": 0
+    },
+    "en": {
+      "docs": 4,
+      "accepted": 4,
+      "uncertain": 0,
+      "blocked": 0,
+      "accepted_leak": 0
+    }
+  },
+  "store_errors": 0,
+  "provenance": {
+    "corpus_sha256": "b0e760cda0fd69a3a9d8cb723b41809c687fa0c6cd467f6421b73e15766a82d8",
+    "cases": 0,
+    "generated": 0,
+    "seed": 42,
+    "family": "file",
+    "platform": "macos-aarch64",
+    "crate_version": "0.1.0",
+    "git_commit": "cc0e2abf6c1657371acfa63874ed58b1852d555b",
+    "config_sha256": "a2b151c11d84cdf5795647f1127ce888e8447a8624d8ae5923726820efb54e43",
+    "config_source": "embedded",
+    "canonical": false,
+    "lock_sha256": "36696d4eae17b4ca9bd0628a361c2505b7bcf66aea98676ffbcd7c5dbbe8caa1",
+    "models": {
+      "gliner-x-small": "d76b3349fd4bfe44573221c0912ed459f432d14317552fdc65935dabcb833c4a",
+      "kiji-pii": "b5f3311391a74470ff26c5b700a422832e5dcdb74fedc205ad5a68e70dbf487c",
+      "mbert-ner-hrl": "1213fdd405d295768b0d41d8214062f2f278f0e3acff6af67d8fd47360d2be0f"
+    },
+    "evaluated_at": 1791768282
+  },
+  "verifier_clean_trials": 12,
+  "verifier_false_positives": 0,
+  "verifier_broken_trials": 12,
+  "verifier_false_negatives": 7,
+  "latency_ms": {
+    "p50": 12.520292000000001,
+    "p95": 23.331958,
+    "p99": 23.340791,
+    "mean": 14.855024249999998,
+    "max": 23.340791
+  },
+  "detector_errors": 0,
+  "links": {
+    "coref_docs": 0,
+    "coref_recoverable_docs": 0,
+    "person_mentions_tokenized": 15,
+    "surface_mentions": 0,
+    "wrong_restorations": 0,
+    "wrong_links": 0,
+    "tokens_total": 15,
+    "distinct_tokens_total": 15
+  },
+  "verifier_fp_by_check": {},
+  "verifier_fp_by_kind": {},
+  "sequence": null,
+  "consistency_redactions": 0
+}

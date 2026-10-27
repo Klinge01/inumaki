@@ -1,0 +1,55 @@
+{
+  "numStartups": 42,
+  "installMethod": "native",
+  "autoUpdates": true,
+  "theme": "dark",
+  "tipsHistory": {
+    "new-user-warmup": 7,
+    "memory-command": 3
+  },
+  "projects": {
+    "/Users/example/work/rechnungen": {
+      "allowedTools": [],
+      "hasTrustDialogAccepted": true,
+      "lastCost": 0.4211,
+      "mcpServers": {
+        "local-notes": {
+          "type": "stdio",
+          "command": "/usr/local/bin/notes-mcp",
+          "args": [
+            "--root",
+            "/Users/example/Notizen/Übersicht"
+          ],
+          "env": {
+            "NOTES_LOCALE": "de-AT"
+          }
+        }
+      }
+    },
+    "/Users/example/src/spielwiese": {
+      "allowedTools": [],
+      "hasTrustDialogAccepted": false,
+      "lastSessionId": "00000000-0000-4000-8000-000000000000"
+    }
+  },
+  "mcpServers": {
+    "filesystem": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "/Users/example/Dokumente/Kundenmappe Grüße"
+      ],
+      "env": {}
+    },
+    "crm": {
+      "type": "http",
+      "url": "https://crm.example.invalid/mcp",
+      "headers": {
+        "Authorization": "Bearer synthetic-token-000"
+      }
+    }
+  },
+  "userID": "0000000000000000000000000000000000000000000000000000000000000000"
+}

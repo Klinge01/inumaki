@@ -1,0 +1,32 @@
+# inumaki service, systemd *user* unit. Installed by the .deb at
+# /usr/lib/systemd/user/inumakid.service; enable with
+#   systemctl --user enable --now inumakid
+# and `loginctl enable-linger $USER` to keep it running while logged out.
+# Data: $XDG_DATA_HOME/inumaki (default ~/.local/share/inumaki); see
+# /usr/share/doc/inumaki/runbook.md. Logs carry counts and ids only.
+#
+# Protected mode (milestone 7, M7) will ship a *system* unit with DynamicUser=yes,
+# StateDirectory=inumaki and ProtectHome=yes so the vault gets its own user
+# (Kiji's unit is the reference, docs/research/2026-09-27-prior-art.md); a
+# user unit cannot do that, since the data lives in the user's home.
+# The app renders this file for its own user unit with ExecStart=<data dir>/bin/inumakid and INUMAKI_MANAGED_BY=app (M6 spec §7.1).
+
+[Unit]
+Description=inumaki privacy service (inumakid)
+Documentation=file:///usr/share/doc/inumaki/README.md
+# No After=default.target: a user unit wanted by default.target that also
+# orders itself after it forms an ordering cycle.
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/inumakid
+Restart=on-failure
+RestartSec=2
+Environment=RUST_LOG=info
+Environment=INUMAKI_MANAGED_BY=deb
+NoNewPrivileges=yes
+PrivateTmp=yes
+UMask=0077
+
+[Install]
+WantedBy=default.target

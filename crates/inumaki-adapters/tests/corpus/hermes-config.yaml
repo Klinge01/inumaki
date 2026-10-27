@@ -1,0 +1,28 @@
+# Hermes Agent configuration (synthetic corpus sample).
+_config_version: 46
+
+model:
+  # Default model to use.
+  default: "anthropic/claude-opus-4.6"
+  provider: auto
+  base_url: https://openrouter.ai/api/v1
+
+providers:
+  office-proxy:
+    base_url: http://127.0.0.1:4000/v1
+    key_env: OFFICE_PROXY_KEY
+    api_mode: chat_completions
+
+mcp_servers:
+  filesystem:
+    command: npx
+    args:
+      - -y
+      - "@modelcontextprotocol/server-filesystem"
+      - /Users/example/Dokumente
+    env:
+      FS_LOCALE: de-AT # inline comment
+
+display:
+  compact: false
+  skin: default

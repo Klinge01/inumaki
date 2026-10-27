@@ -1,0 +1,22 @@
+{
+  "numStartups": 12,
+  "mcpServers": {
+    "crm": {
+      "type": "http",
+      "url": "http://127.0.0.1:8789/mcp/mcp-crm",
+      "headers": {
+        "Authorization": "Bearer inumaki_gw_golden"
+      }
+    },
+    "notes": {"type": "http", "url": "https://notes.example/mcp"}
+  },
+  "projects": {
+    "/Users/qwxzvk/proj": {"allowedTools": [], "mcpServers": {"db": {
+          "type": "http",
+          "url": "http://127.0.0.1:8789/mcp/mcp-db",
+          "headers": {
+            "Authorization": "Bearer inumaki_gw_golden"
+          }
+        }}}
+  }
+}

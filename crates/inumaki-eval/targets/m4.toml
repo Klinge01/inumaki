@@ -1,0 +1,8 @@
+# M4 engineering acceptance targets (spec §13.1). Change only with a spec revision.
+max_accepted_leak_rate = 0.01
+max_block_rate = 0.20
+max_verifier_fp_rate = 0.05
+
+[min_recall]
+PERSON = 0.95
+STREET_ADDRESS = 0.95

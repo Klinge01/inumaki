@@ -1,0 +1,201 @@
+# Names and identifiers in structured positions (plan 2026-10-20, ruling
+# L121; see docs/quality/2026-10-20-structured-positions.md
+# §7.1). Tuning cases, registered in src/cases.rs since Task 7 (ruling S21).
+# harness/name-shapes.jsonl carries these ids too (the `shape-` prefix);
+# harness/structured-positions.jsonl is the stand-alone dump, rebuilt with
+# scripts/harness-corpus/cases-to-jsonl.py whenever this file changes.
+# The shape-fname-* texts are bare file-name stems, as the folder mirror
+# scans them.
+
+[[case]]
+id = "shape-fname-surname-capital"
+lang = "de"
+why = "B6: a capitalized surname in a file-name stem, as the mirror scans it."
+text = "Rechnung_Huber_2026"
+spans = [ { text = "Huber", kind = "PERSON" } ]
+
+[[case]]
+id = "shape-fname-surname-bare"
+lang = "de"
+why = "B6: a stem that is a capitalized surname."
+text = "Huber"
+spans = [ { text = "Huber", kind = "PERSON" } ]
+
+[[case]]
+id = "shape-fname-surname-lower"
+lang = "de"
+why = "B6: a stem that is a lowercase surname (no vocabulary word)."
+text = "huber"
+spans = [ { text = "huber", kind = "PERSON" } ]
+
+[[case]]
+id = "shape-fname-surname-lower-word"
+lang = "de"
+why = "B6: a lowercase surname next to a document word in a stem (S2)."
+text = "leitner-angebot"
+spans = [ { text = "leitner", kind = "PERSON" } ]
+
+[[case]]
+id = "shape-fname-first-surname-lower"
+lang = "de"
+why = "B6: a lowercase full name in a hyphenated stem."
+text = "anna-gruber-cv"
+spans = [ { text = "anna-gruber", kind = "PERSON" } ]
+
+[[case]]
+id = "shape-fname-first-surname-capital"
+lang = "de"
+why = "B6: a capitalized full name after a document abbreviation."
+text = "CV_Anna_Gruber"
+spans = [ { text = "Anna_Gruber", kind = "PERSON" } ]
+
+[[case]]
+id = "shape-fname-surname-first"
+lang = "de"
+why = "B6: surname then first name, underscore."
+text = "gruber_anna"
+spans = [ { text = "gruber_anna", kind = "PERSON" } ]
+
+[[case]]
+id = "shape-path-home-linux"
+lang = "de"
+why = "L71: a login under /home/."
+text = "Die Datei liegt unter /home/huber/projekte/angebot.txt, bitte prüfen."
+spans = [ { text = "huber", kind = "PERSON" } ]
+
+[[case]]
+id = "shape-path-home-mac"
+lang = "en"
+why = "L71: a login under /Users/."
+text = "The export is in /Users/agruber/Downloads/report.pdf now."
+spans = [ { text = "agruber", kind = "PERSON" } ]
+
+[[case]]
+id = "shape-path-home-windows"
+lang = "de"
+why = "L71: a login under C:\\Users\\."
+text = 'Speichern Sie es unter C:\Users\mhuber\Documents\Vertrag.docx ab.'
+spans = [ { text = "mhuber", kind = "PERSON" } ]
+
+[[case]]
+id = "shape-path-home-dotted"
+lang = "de"
+why = "L71: a first.last login under /home/."
+text = "Bitte die Kopie unter /home/sarah.leitner/backup prüfen."
+spans = [ { text = "sarah.leitner", kind = "PERSON" } ]
+
+[[case]]
+id = "shape-path-unc-home"
+lang = "de"
+why = "L71: a login in a Windows home share."
+text = 'Der Ordner \\fileserver\home$\agruber\Scans ist voll.'
+spans = [ { text = "agruber", kind = "PERSON" } ]
+
+[[case]]
+id = "shape-path-home-weber"
+lang = "de"
+why = "Review C1: a top DACH surname that is a stoplist word, as a login."
+text = "Die Angebote liegen unter /home/weber/angebote/ bitte prüfen."
+spans = [ { text = "weber", kind = "PERSON" } ]
+
+[[case]]
+id = "shape-path-first-name"
+lang = "de"
+why = "L71: a full name as a directory, no cue segment."
+text = "Der Lebenslauf liegt in /srv/share/bewerbungen/anna-gruber/cv.pdf bereit."
+spans = [ { text = "anna-gruber", kind = "PERSON" } ]
+
+[[case]]
+id = "shape-url-team"
+lang = "de"
+why = "L71: a surname after a /team/ segment."
+text = "Mehr Infos unter https://example.com/team/gruber, bitte ansehen."
+spans = [ { text = "gruber", kind = "PERSON" } ]
+
+[[case]]
+id = "shape-url-people-full"
+lang = "en"
+why = "L71: a full name after a /people/ segment."
+text = "Profile: https://example.org/people/anna-gruber"
+spans = [ { text = "anna-gruber", kind = "PERSON" } ]
+
+[[case]]
+id = "shape-url-staff-dotted"
+lang = "de"
+why = "L71: first.last after /mitarbeiter/."
+text = "Siehe https://intranet.example.at/mitarbeiter/sarah.leitner/kalender für Termine."
+spans = [ { text = "sarah.leitner", kind = "PERSON" } ]
+
+[[case]]
+id = "shape-url-github"
+lang = "de"
+why = "L71: an account on a code host."
+text = "Siehe https://github.com/mhuber/angebot-tool für den Code."
+spans = [ { text = "mhuber", kind = "PERSON" } ]
+
+[[case]]
+id = "shape-url-tilde"
+lang = "de"
+why = "L71: a ~user segment."
+text = "Foto: https://example.com/~leitner/urlaub.jpg"
+spans = [ { text = "leitner", kind = "PERSON" } ]
+
+[[case]]
+id = "shape-url-linkedin"
+lang = "de"
+why = "L71: a profile slug after linkedin.com/in/."
+text = "Link https://www.linkedin.com/in/anna-gruber-4711/ geschickt."
+spans = [ { text = "anna-gruber", kind = "PERSON" } ]
+
+[[case]]
+id = "shape-scp-github"
+lang = "en"
+why = "L71: an account in an scp-style git remote."
+text = "Repo: git@github.com:agruber/notizen.git"
+spans = [ { text = "agruber", kind = "PERSON" } ]
+
+# Final fix wave (ruling L139): a document word next to a lowercase or
+# two-letter surname. The document vocabulary must never clear the name next
+# to it; these shapes kept their span on main e041659.
+
+[[case]]
+id = "shape-fname-doc-lower-surname-pdf"
+lang = "de"
+why = "L139: a lowercase surname after a capitalized document word, with an extension."
+text = "Bewerbung_mueller.pdf"
+spans = [ { text = "mueller", kind = "PERSON" } ]
+
+[[case]]
+id = "shape-fname-doc-lower-surname-version"
+lang = "de"
+why = "L139: a lowercase surname between a document word and a version suffix."
+text = "Angebot_leitner_v2.docx"
+spans = [ { text = "leitner", kind = "PERSON" } ]
+
+[[case]]
+id = "shape-fname-doc-lower-surname-year"
+lang = "de"
+why = "L139: a lowercase surname between a document word and a year, as the mirror scans the stem."
+text = "Rechnung_huber_2026"
+spans = [ { text = "huber", kind = "PERSON" } ]
+
+[[case]]
+id = "shape-fname-doc-short-surname"
+lang = "de"
+why = "L139: a two-letter surname after a document word, with an extension."
+text = "Rechnung_Li_2026.pdf"
+spans = [ { text = "Li", kind = "PERSON" } ]
+
+[[case]]
+id = "shape-text-doc-short-surname"
+lang = "de"
+why = "L139: a two-letter surname after a document word in a sentence."
+text = "Bitte die Rechnung Li bis Freitag prüfen."
+spans = [ { text = "Li", kind = "PERSON" } ]
+
+[[case]]
+id = "shape-fname-doc-short-lower"
+lang = "de"
+why = "L139: a two-letter lowercase surname glued to a lowercase document word."
+text = "bewerbung_ng"
+spans = [ { text = "ng", kind = "PERSON", occurrence = 2 } ]

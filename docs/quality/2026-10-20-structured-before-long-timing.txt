@@ -1,0 +1,5 @@
+scan --config configs/default.toml --profile offline long-paths.txt (245652 bytes, 1861 lines, deterministic)
+median of 5 (/usr/bin/time -p real, 10 ms resolution): 0.03 s; runs: 0.03 0.03 0.03 0.03 0.03 
+wall-clock runs (s): 0.037 0.037 0.036 0.035 0.034
+median wall-clock: 0.036 s
+ 9:44  up 22:44, 4 users, load averages: 10.40 12.45 10.50

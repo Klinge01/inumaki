@@ -1,0 +1,13 @@
+# Hermes configuration
+model:
+  provider: openai
+  default: gpt-5
+providers:
+  openrouter:
+    base_url: https://openrouter.ai/api/v1
+mcp_servers:
+  filesystem:
+    command: npx
+    args:
+      - "-y"
+      - "@modelcontextprotocol/server-filesystem"

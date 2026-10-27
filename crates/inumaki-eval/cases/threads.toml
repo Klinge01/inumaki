@@ -1,0 +1,70 @@
+[[case]]
+id = "fwd-de"
+lang = "de"
+why = "Forwarded message headers carry a second person."
+text = """---------- Weitergeleitete Nachricht ---------
+Von: Anna Berger <anna.berger@example.at>
+Datum: 12.03.2026
+Betreff: Zählerstand
+
+Hallo, mein Zählerstand ist 4521. Anna"""
+spans = [
+  { text = "Anna Berger", kind = "PERSON" },
+  { text = "anna.berger@example.at", kind = "EMAIL" },
+  { text = "12.03.2026", kind = "DATE" },
+  { text = "Anna", kind = "PERSON", occurrence = 2 },
+]
+
+[[case]]
+id = "quoted-en"
+lang = "en"
+why = "Identifiers deep in a quoted reply."
+text = """Hi,
+please see below.
+
+> On 3 March 2026, Lukas Steiner <l.steiner@firma.de> wrote:
+> My new address is Hauptstraße 5, 8010 Graz.
+> Lukas"""
+spans = [
+  { text = "3 March 2026", kind = "DATE" },
+  { text = "Lukas Steiner", kind = "PERSON" },
+  { text = "l.steiner@firma.de", kind = "EMAIL" },
+  { text = "Hauptstraße 5", kind = "STREET_ADDRESS" },
+  { text = "8010", kind = "POSTAL_CODE" },
+  { text = "Graz", kind = "CITY" },
+  { text = "Lukas", kind = "PERSON", occurrence = 2 },
+]
+
+[[case]]
+id = "deep-quote-de"
+lang = "de"
+why = "Double-quoted history with a contract number and phone."
+text = """Danke!
+
+>> Frau Novak, Ihre Vertragsnummer V12345678 wurde geändert.
+>> Rückfragen: 01 234 56 78"""
+spans = [
+  { text = "Novak", kind = "PERSON" },
+  { text = "V12345678", kind = "CONTRACT_ID" },
+  { text = "01 234 56 78", kind = "PHONE" },
+]
+
+[[case]]
+id = "two-people-titles"
+lang = "de"
+why = "Academic titles and two people in one sentence."
+text = "Bitte informieren Sie Herrn Dr. Maximilian Gruber und Frau Elisabeth Wagner über den Termin."
+spans = [
+  { text = "Maximilian Gruber", kind = "PERSON" },
+  { text = "Elisabeth Wagner", kind = "PERSON" },
+]
+
+[[case]]
+id = "mixed-language-dob"
+lang = "mixed"
+why = "German and English in one sentence, with a date of birth."
+text = "Hallo, I am writing for my mother, Frau Ingrid Hofer, geboren am 03.04.1951."
+spans = [
+  { text = "Ingrid Hofer", kind = "PERSON" },
+  { text = "03.04.1951", kind = "DATE_OF_BIRTH" },
+]

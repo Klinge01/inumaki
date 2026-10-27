@@ -1,0 +1,38 @@
+[package]
+name = "inumaki-core"
+description = "Detection, tokenization, verification, and rehydration engine for the inumaki privacy proxy"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[features]
+# Test hooks for other crates' tests (`consistency::live_layers_on_this_thread`).
+# Enabled only through dev-dependencies.
+test-support = []
+# Task 5 Step 6: every leak check also runs today's per-call check and
+# prints a counts-only stderr line per difference. Test builds only; never
+# enabled by default or by a release build. No dependency.
+leak-crosscheck = []
+
+[dependencies]
+regex.workspace = true
+aho-corasick.workspace = true
+rayon.workspace = true
+getrandom.workspace = true
+zeroize.workspace = true
+dashmap.workspace = true
+unicode-normalization.workspace = true
+serde.workspace = true
+toml.workspace = true
+thiserror.workspace = true
+tracing.workspace = true
+sha2.workspace = true
+
+[dev-dependencies]
+proptest.workspace = true
+serde_json.workspace = true
+tempfile.workspace = true
+
+[lints]
+workspace = true

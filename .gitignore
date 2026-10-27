@@ -1,0 +1,43 @@
+# Rust
+/target/
+**/*.rs.bk
+*.pdb
+
+# Models are downloaded, never committed
+/models/*
+!/models/manifest.toml
+
+# Local config with keys
+*.local.toml
+.env
+.env.*
+
+# Editors / OS
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# Eval outputs
+/eval-out/
+
+# Agent working files: plans, specs, status notes, progress ledgers and
+# local agent settings stay local; they are not part of the published project.
+.worktrees/
+/.superpowers/
+/docs/superpowers/
+.claude/settings.local.json
+/CLAUDE.md
+
+# App build outputs
+/apps/inumaki-app/node_modules/
+/apps/inumaki-app/dist/
+/apps/inumaki-app/src-tauri/target/
+/apps/inumaki-app/src-tauri/gen/
+
+# Packaging outputs
+/dist/
+/apps/inumaki-app/src-tauri/binaries/
+
+# Logs and scratch output
+*.log

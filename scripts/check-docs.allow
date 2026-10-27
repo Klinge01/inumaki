@@ -1,0 +1,10 @@
+# Exceptions for scripts/check-docs.sh, one `file:target` per line.
+# `file:target@LINE` skips one target on one line; `file:target` skips it
+# everywhere in the file; `file:*` skips the backticked-path rule (rule d) for
+# that whole file. Prefer the per-line form.
+# Keep this list small; every entry needs a reason.
+
+# Research notes cite paths inside other people's repositories (CloakPipe,
+# pii-shield, GLiNER, ...) as evidence. They are not paths in this repository.
+docs/research/2026-09-27-prior-art.md:*
+docs/research/2026-09-27-latency-scan.md:*

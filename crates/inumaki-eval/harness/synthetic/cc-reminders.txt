@@ -1,0 +1,21 @@
+<system-reminder>
+The following skills are available. Invoke one with the Skill tool when the task matches its description.
+- code-review: Review the current diff for correctness bugs and report findings ranked by severity.
+- release-notes: Draft release notes from the merged pull requests since the last tag.
+- db-migrations: Write and check a database migration with a rollback step.
+</system-reminder>
+<system-reminder>
+Contents of CLAUDE.md (project instructions, checked into the repository):
+
+# Project notes
+Build with `pnpm build`, test with `pnpm test`. The API layer lives in `src/server`, the UI in `src/web`. Use Mermaid for architecture diagrams in docs. Every SKILL.md stays under 200 lines. The reviewer bot rejects pull requests without a changelog entry.
+</system-reminder>
+<system-reminder>
+The task list has not changed for a while. If the work has several steps, update it with TodoWrite. Ignore this reminder if it does not apply, and do not mention it to the user.
+</system-reminder>
+<system-reminder>
+Note: src/checkout/payment.ts was modified by the user or a linter after you last read it. Read it again before editing.
+</system-reminder>
+<system-reminder>
+Plan mode is active. Do not edit files or run commands that change state. Explore the code, then present the plan for approval with ExitPlanMode.
+</system-reminder>

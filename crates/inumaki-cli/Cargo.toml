@@ -1,0 +1,87 @@
+[package]
+name = "inumaki-cli"
+description = "Command line interface for the inumaki privacy engine"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "inumaki"
+path = "src/main.rs"
+
+[dependencies]
+inumaki-core = { path = "../inumaki-core" }
+inumaki-models = { path = "../inumaki-models" }
+inumaki-eval = { path = "../inumaki-eval" }
+inumakid = { path = "../inumakid" }
+inumaki-adapters = { path = "../inumaki-adapters" }
+inumaki-client = { path = "../inumaki-client" }
+inumaki-proxy = { path = "../inumaki-proxy" }
+inumaki-vault = { path = "../inumaki-vault" }
+inumaki-mail = { path = "../inumaki-mail", features = ["harness"] }
+clap.workspace = true
+anyhow.workspace = true
+serde_json.workspace = true
+hyper.workspace = true
+sha2.workspace = true
+rpassword.workspace = true
+zeroize.workspace = true
+rmcp.workspace = true
+tokio.workspace = true
+axum.workspace = true
+http.workspace = true
+futures.workspace = true
+tower = { version = "0.5", default-features = false, features = ["util"] }
+tempfile.workspace = true
+serde.workspace = true
+toml.workspace = true
+
+[dev-dependencies]
+assert_cmd = "2"
+predicates = "3"
+inumaki-mail = { path = "../inumaki-mail", features = ["fake-imap"] }
+
+[features]
+# A closure-shadow measurement build (spec §20, 2026-10-12): `bench` prints
+# the divergence counts. Off by default; never enabled by a release build.
+closure-shadow = ["inumaki-proxy/closure-shadow"]
+# The leak-index crosscheck build (closure projection Task 5 Step 6): each
+# difference from today's leak check is one stderr line, kind labels only.
+# Off by default; never enabled by a release build.
+leak-crosscheck = ["inumaki-core/leak-crosscheck"]
+
+[lints]
+workspace = true
+
+# `.deb` metadata for cargo-deb (spec §16.10), built by scripts/package-deb.sh
+# inside a Debian container. Ships the four binaries, the systemd user unit,
+# the default configuration, and the docs. Unsigned.
+[package.metadata.deb]
+name = "inumaki"
+# Placeholders until the open-source release decides the project address (ruling C):
+# never a personal address.
+maintainer = "inumaki maintainers <maintainers@inumaki.invalid>"
+copyright = "2026, the inumaki authors"
+license-file = ["../../LICENSE", "0"]
+extended-description = """\
+Local privacy boundary between business applications and cloud AI providers: \
+detects identifying information, replaces it with opaque per-dataset tokens, \
+verifies the sanitized text, and rehydrates responses locally. This build is \
+labelled experimental until the milestone 4 quality gates pass; see \
+/usr/share/doc/inumaki/README.md. Models are downloaded with `inumaki models pull`."""
+depends = "$auto"
+section = "utils"
+priority = "optional"
+assets = [
+  ["target/release/inumaki", "usr/bin/", "755"],
+  ["target/release/inumakid", "usr/bin/", "755"],
+  ["target/release/inumaki-mcp", "usr/bin/", "755"],
+  ["target/release/inumaki-hook", "usr/bin/", "755"],
+  ["../../configs/default.toml", "usr/share/inumaki/default.toml", "644"],
+  ["../../packaging/systemd/inumakid.service", "usr/lib/systemd/user/inumakid.service", "644"],
+  ["../../README.md", "usr/share/doc/inumaki/README.md", "644"],
+  ["../../docs/cli.md", "usr/share/doc/inumaki/cli.md", "644"],
+  ["../../docs/runbook.md", "usr/share/doc/inumaki/runbook.md", "644"],
+  ["../../docs/packaging.md", "usr/share/doc/inumaki/packaging.md", "644"],
+]

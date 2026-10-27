@@ -1,0 +1,8 @@
+{"id": "0123456789abcdef0123456789abcdef", "harness": "claude-code",
+ "results": {
+  "gateway": {"status": "passed", "reason": null, "upstream_requests": 2, "canary_in_upstream": false,
+              "tokens_seen": true, "rehydrated_in_output": true},
+  "mirror": {"status": "not_checked", "reason": "mirror_unavailable", "upstream_requests": 0,
+             "canary_in_upstream": false, "tokens_seen": false, "rehydrated_in_output": false},
+  "proxy": {"status": "failed", "reason": "canary_in_upstream", "upstream_requests": 2, "canary_in_upstream": true,
+            "tokens_seen": true, "rehydrated_in_output": true}}}

@@ -1,0 +1,61 @@
+[[case]]
+id = "sig-de-full"
+lang = "de"
+why = "Signature blocks are dense with identifiers."
+text = """Vielen Dank!
+
+Mit freundlichen Grüßen
+Sarah Leitner
+Geschäftsführerin
+Leitner & Partner GmbH
+Neubaugasse 22, 1070 Wien
+Tel. +43 660 1234567
+sarah.leitner@leitner-partner.at"""
+spans = [
+  { text = "Sarah Leitner", kind = "PERSON", occurrence = 1 },
+  { text = "Leitner & Partner GmbH", kind = "ORGANIZATION" },
+  { text = "Neubaugasse 22", kind = "STREET_ADDRESS" },
+  { text = "1070", kind = "POSTAL_CODE" },
+  { text = "Wien", kind = "CITY" },
+  { text = "+43 660 1234567", kind = "PHONE" },
+  { text = "sarah.leitner@leitner-partner.at", kind = "EMAIL" },
+]
+
+[[case]]
+id = "sig-en-short"
+lang = "en"
+why = "English signature with a nickname and a pipe-separated title line."
+text = """Thanks,
+Tom
+
+Thomas Gruber | Head of Support | Example GmbH
+M: +43 664 9876543"""
+spans = [
+  { text = "Tom", kind = "PERSON", occurrence = 1 },
+  { text = "Thomas Gruber", kind = "PERSON" },
+  { text = "Example GmbH", kind = "ORGANIZATION" },
+  { text = "+43 664 9876543", kind = "PHONE" },
+]
+
+[[case]]
+id = "sig-lowercase"
+lang = "de"
+why = "Lower-case names from a phone signature."
+text = """lg
+kathi weiß
+0676 555 12 34"""
+spans = [
+  { text = "kathi weiß", kind = "PERSON" },
+  { text = "0676 555 12 34", kind = "PHONE" },
+]
+
+[[case]]
+id = "sig-bank"
+lang = "de"
+why = "IBAN followed by a BIC, the usual invoice layout."
+text = """Bankverbindung: Erste Bank, IBAN AT61 1904 3002 3457 3201, BIC GIBAATWWXXX
+Inhaber: Markus Huber"""
+spans = [
+  { text = "AT61 1904 3002 3457 3201", kind = "IBAN" },
+  { text = "Markus Huber", kind = "PERSON" },
+]

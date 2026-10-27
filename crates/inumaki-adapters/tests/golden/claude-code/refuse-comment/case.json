@@ -1,0 +1,8 @@
+{
+  "harness": "claude-code",
+  "files": {"claude_json": "claude.json", "claude_settings": "settings.json"},
+  "plan": {
+    "chat": {"anthropic": "http://127.0.0.1:8787/anthropic"}
+  },
+  "error": "cannot_edit_safely"
+}

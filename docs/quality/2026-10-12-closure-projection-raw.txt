@@ -1,0 +1,478 @@
+closure projection (roadmap 4d, lane L2) raw measurements, Task 7a (correctness). Counts, kinds, rc, loads only.
+branch l2/closure-projection head 695d13e, BASELINE_SHA 41e87d4 (main, not moved; no rebase). 2026-10-12
+Machine load was very high throughout (1-min load 17 to 171, other lanes active); correctness runs only, no latency conclusions from the bench lines here.
+
+== step 0 (each rc, test counts)
+cargo check -p inumaki-core -p inumaki-proxy -p inumaki-cli: rc=0
+cargo test -p inumaki-core --lib engine::project::: rc=0, 10 passed
+cargo test -p inumaki-proxy --lib -- pipeline_tests::projection:: pipeline_tests::closure:: pipeline_tests::released:: closure::: rc=0, 32 passed
+cargo test -p inumaki-proxy --features closure-shadow --lib -- shadow:: status:: pipeline_tests::projection::: rc=0, 17 passed
+cargo test -p inumaki-core --lib -- consistency:: verify::: rc=0, 52 passed
+cargo test -p inumaki-vault --test namespace --test epochs: rc=0, 11 + 16 passed
+
+== build
+CARGO_TARGET_DIR=target-shadow cargo build --release -q -p inumaki-cli --features closure-shadow,leak-crosscheck: rc=0, 8m35s (load ~22 at end)
+
+== crosscheck (binary target-shadow/release/inumaki; count of 'leak-crosscheck:' stderr lines)
+eval support-email rc=0 crosscheck_diffs=0 secs=391 load=19.77 21.34 22.13
+eval strict rc=0 crosscheck_diffs=0 secs=346 load=26.39 22.44 21.93
+eval thorough rc=0 crosscheck_diffs=0 secs=454 load=22.89 23.37 22.19
+eval offline rc=0 crosscheck_diffs=0 secs=3 load=21.69 23.12 22.11
+held-out support-email rc=0 crosscheck_diffs=0 secs=32 load=16.45 21.65 21.61
+held-out strict rc=0 crosscheck_diffs=0 secs=54 load=24.30 22.87 22.06
+safety support-email rc=0 crosscheck_diffs=0 secs=10 load=24.35 22.96 22.10
+safety strict rc=0 crosscheck_diffs=0 secs=12 load=24.52 23.04 22.14
+sequences support-email rc=0 crosscheck_diffs=0 secs=24 load=21.14 22.32 21.91
+sequences strict rc=0 crosscheck_diffs=0 secs=23 load=16.97 21.24 21.53
+total crosscheck_diffs=0 over 10 runs
+
+== shadow runs (bench --via-proxy, binary target-shadow/release/inumaki; stderr empty in all; each run's 'closure shadow:' block, lines with zero count are not printed by the report: no D2, R1, R2 lines appeared in any run)
+--- support-email MAILS=0
+cold first turn      19257.3 ms
+refused turns        0
+incremental cache    hits 2550  misses 102
+leak index stale     0  failed 0
+closure shadow:
+attempted 237
+projected 237
+abandoned 0
+invariant_violations 0
+D1 EMAIL 158
+D1 ORGANIZATION 432
+D1 PERSON 175
+D1 STREET_ADDRESS 48
+--- support-email MAILS=5
+cold first turn      43183.3 ms
+refused turns        0
+incremental cache    hits 2989  misses 173
+leak index stale     0  failed 0
+closure shadow:
+attempted 242
+projected 242
+abandoned 0
+invariant_violations 0
+D1 EMAIL 162
+D1 ORGANIZATION 428
+D1 PERSON 159
+D1 STREET_ADDRESS 46
+--- support-email TRANSFORMS=1 MAILS=5
+cold first turn      refused (451)
+refused turns        29
+incremental cache    hits 679  misses 47
+leak index stale     0  failed 0
+first refusal        blocked by inumaki (kinds: PERSON; checks: Ner). Nothing was sent. 
+closure shadow:
+attempted 49
+projected 49
+abandoned 0
+invariant_violations 0
+D1 CITY 1
+D1 EMAIL 114
+D1 INVOICE_ID 4
+D1 ORGANIZATION 202
+D1 PERSON 47
+D1 STREET_ADDRESS 13
+--- strict
+cold first turn      750927.8 ms
+refused turns        0
+incremental cache    hits 21900  misses 438
+leak index stale     0  failed 0
+closure shadow:
+attempted 0
+projected 0
+abandoned 0
+invariant_violations 0
+--- offline
+cold first turn      26273.3 ms
+refused turns        0
+incremental cache    hits 21900  misses 438
+leak index stale     0  failed 0
+closure shadow:
+attempted 0
+projected 0
+abandoned 0
+invariant_violations 0
+--- HELD-OUT support-email MAILS=0
+cold first turn      refused (451)
+refused turns        51
+incremental cache    hits 0  misses 0
+leak index stale     0  failed 0
+first refusal        blocked by inumaki (kinds: CONTRACT_ID; checks: Regex). Nothing was sent. 
+closure shadow:
+attempted 0
+projected 0
+abandoned 0
+invariant_violations 0
+--- HELD-OUT support-email MAILS=5
+cold first turn      refused (451)
+refused turns        51
+incremental cache    hits 0  misses 0
+leak index stale     0  failed 0
+first refusal        blocked by inumaki (kinds: PERSON; checks: Ner). Nothing was sent. 
+closure shadow:
+attempted 0
+projected 0
+abandoned 0
+invariant_violations 0
+--- HELD-OUT support-email TRANSFORMS=1 MAILS=5
+cold first turn      refused (451)
+refused turns        51
+incremental cache    hits 0  misses 0
+leak index stale     0  failed 0
+first refusal        blocked by inumaki (kinds: PERSON; checks: Ner). Nothing was sent. 
+closure shadow:
+attempted 0
+projected 0
+abandoned 0
+invariant_violations 0
+--- HELD-OUT strict
+cold first turn      refused (451)
+refused turns        51
+incremental cache    hits 0  misses 0
+leak index stale     0  failed 0
+first refusal        blocked by inumaki (kinds: PERSON; checks: Ner). Nothing was sent. 
+closure shadow:
+attempted 0
+projected 0
+abandoned 0
+invariant_violations 0
+--- HELD-OUT offline
+cold first turn      refused (451)
+refused turns        51
+incremental cache    hits 0  misses 0
+leak index stale     0  failed 0
+first refusal        blocked by inumaki (kinds: CONTRACT_ID; checks: Regex). Nothing was sent. 
+closure shadow:
+attempted 0
+projected 0
+abandoned 0
+invariant_violations 0
+(bench exit codes: m0 0, m5 0, tr 0, strict 0, offline 0; all five HELD-OUT runs exit 3 = first turn refused 451, so their shadow blocks are all zero and carry no information)
+shadow totals support-email, untransformed non-refused (MAILS=0 and MAILS=5): attempted 479 projected 479 abandoned 0 invariant_violations 0; D1 EMAIL 320 ORGANIZATION 860 PERSON 334 STREET_ADDRESS 94; D2/R1/R2 none
+shadow totals support-email, transformed (TRANSFORMS=1, 29 of 51 turns refused): attempted 49 projected 49 abandoned 0; D1 CITY 1 EMAIL 114 INVOICE_ID 4 ORGANIZATION 202 PERSON 47 STREET_ADDRESS 13
+all support-email shadow runs together: attempted 528 projected 528 abandoned 0 invariant_violations 0; D1 CITY 1 EMAIL 434 INVOICE_ID 4 ORGANIZATION 1062 PERSON 381 STREET_ADDRESS 107; D2 0; R1 0; R2 0
+strict and offline (untransformed): attempted 0 (projection did not run on these profiles)
+
+== harness (INUMAKI_PROJECTION_HARNESS=1, shards i/12, i=0..11, default DOCS=200 per family; cargo test --release -p inumaki-proxy --features models-tests --test projection_equivalence)
+shard 0/12: rc=0  (i)+(ii) shard 0/12: attempted 278 projected 276
+shard 1/12: rc=0  (i)+(ii) shard 1/12: attempted 250 projected 250
+shard 2/12: rc=0  (i)+(ii) shard 2/12: attempted 318 projected 318
+shard 3/12: rc=0  (i)+(ii) shard 3/12: attempted 305 projected 304
+shard 4/12: rc=0  (i)+(ii) shard 4/12: attempted 280 projected 278
+shard 5/12: rc=0  (i)+(ii) shard 5/12: attempted 301 projected 300
+shard 6/12: rc=0  (i)+(ii) shard 6/12: attempted 324 projected 323
+shard 7/12: rc=0  (i)+(ii) shard 7/12: attempted 311 projected 309
+shard 8/12: rc=0  (i)+(ii) shard 8/12: attempted 312 projected 312
+shard 9/12: rc=0  (i)+(ii) shard 9/12: attempted 329 projected 328
+shard 10/12: rc=0  (i)+(ii) shard 10/12: attempted 288 projected 288
+shard 11/12: rc=0  (i)+(ii) shard 11/12: attempted 274 projected 273
+load at the end of each shard (1m 5m 15m):
+  shard 0 rc=0
+  shard 1 rc=0 load=47.24 49.95 47.23
+  shard 2 rc=0 load=57.15 52.72 48.72
+  shard 3 rc=0 load=44.13 49.77 48.16
+  shard 4 rc=0 load=57.43 51.81 49.10
+  shard 5 rc=0 load=92.95 66.02 55.07
+  shard 6 rc=0 load=171.26 103.63 72.78
+  shard 7 rc=0 load=155.63 135.54 95.79
+  shard 8 rc=0 load=123.50 133.00 102.71
+  shard 9 rc=0 load=110.04 121.54 103.21
+  shard 10 rc=0 load=79.56 106.98 99.95
+  shard 11 rc=0 load=103.21 104.63 99.89
+  HALLDONE
+summed per source:
+gold-in-clear {'attempted': 845, 'projected': 843, 't0_not_pass': 6, 'invariant': 0, 'form_in_clear': 0, 'd2_words_already_sent': 110, 'd2_words_outside': 0, 'abandoned': {'SentenceMerge': 2}, 'd1': {'EMAIL': 6, 'STREET_ADDRESS': 10, 'CITY': 6, 'PERSON': 1, 'ORGANIZATION': 2}, 'd2': {'Blocked[Ner/PERSON][PERSON]': 3}}
+capitalized {'attempted': 2725, 'projected': 2716, 't0_not_pass': 6, 'invariant': 0, 'form_in_clear': 0, 'd2_words_already_sent': 332, 'd2_words_outside': 0, 'abandoned': {'Regex': 9}, 'd1': {'EMAIL': 12, 'ORGANIZATION': 160, 'PERSON': 34, 'STREET_ADDRESS': 28, 'CITY': 17, 'INVOICE_ID': 5}, 'd2': {'Blocked[Ner/PERSON][PERSON]': 14}}
+own-gold {'attempted': 3523, 'projected': 4, 't0_not_pass': 28, 'invariant': 0, 'form_in_clear': 0, 'd2_words_already_sent': 0, 'd2_words_outside': 0, 'abandoned': {'Empty': 3519}, 'd1': {}, 'd2': {}}
+adversarial {'attempted': 21, 'projected': 2, 't0_not_pass': 0, 'invariant': 0, 'form_in_clear': 0, 'd2_words_already_sent': 0, 'd2_words_outside': 0, 'abandoned': {'Empty': 19}, 'd1': {'URL': 2}, 'd2': {}}
+(i)+(ii) {'attempted': 3570, 'projected': 3559, 't0_not_pass': 0, 'invariant': 0, 'form_in_clear': 0, 'd2_words_already_sent': 442, 'd2_words_outside': 0, 'abandoned': {}, 'd1': {'EMAIL': 18, 'ORGANIZATION': 162, 'PERSON': 35, 'STREET_ADDRESS': 38, 'CITY': 23, 'INVOICE_ID': 5}, 'd2': {'Blocked[Ner/PERSON][PERSON]': 17}}
+(i)+(ii) abandoned = gold-in-clear {SentenceMerge: 2} + capitalized {Regex: 9} (the combined line does not print abandoned): 11
+(i)+(ii) projected 3559 >= 2000 (minimum, ruling L2-13). Hard asserts (invariant 0, form_in_clear 0, d2_words_outside 0) held in all 12 shards (every shard rc=0). d2_words_already_sent (i)+(ii) = 442, d2_words_outside = 0.
+
+=== TASK 7b: latency A/B (bench --via-proxy), baseline 41e87d4 vs head 695d13e ===
+Builds: baseline = detached worktree 41e87d4 + print-only patch (adds `max` to the 'added per turn' line);
+head = detached worktree 695d13e + the SAME print-only patch (separate target dirs). The plain head build in the l2-proxy worktree was also built (rc=0).
+Load = 1-minute load average from `uptime` at run start / end. Gate: start load < 8 (all 12 runs met it). Order per scenario: base r1, head r1, base r2, head r2.
+scenario        run  side  start1m end1m  cold_turn_ms   p50     p95      max   refused  leak-index(stale/failed)  first-byte p50/p95
+support-email MAILS=0  r1 base    7.12   6.68     10828.8 ms     678.1   7083.3  25215.4    0        n/a   711.1/57423.7
+support-email MAILS=0  r1 head    6.68   7.02     12405.5 ms     670.2   1073.8   1107.0    0        0/0   654.0/1139.5
+support-email MAILS=0  r2 base    7.02   7.88     11071.0 ms     742.2   7322.2  24997.9    0        n/a   759.1/58846.9
+support-email MAILS=0  r2 head    7.88   7.83     10880.8 ms     648.9   1027.9   1077.7    0        0/0   659.5/1148.2
+support-email MAILS=5  r1 base    7.83  10.35     25929.4 ms     872.1   8690.7  63950.1    0        n/a   744.6/38590.6
+support-email MAILS=5  r1 head    7.84   7.05     13932.2 ms     567.9    867.7   1160.3    0        0/0   581.3/993.0
+support-email MAILS=5  r2 base    7.05   6.40     16903.6 ms     612.0   6944.2  51589.6    0        n/a   692.2/30327.9
+support-email MAILS=5  r2 head    6.40   6.93     17780.5 ms     662.6   1036.4   1341.6    0        0/0   674.9/1089.2
+offline                r1 base    6.93   6.49      7500.4 ms      91.3    119.1    163.0    0        n/a   82.9/118.3
+offline                r1 head    6.49   6.37      1808.6 ms      44.4     53.8     72.4    0        0/0   30.7/71.7
+offline                r2 base    6.37   6.24      7617.8 ms      91.7    132.4    168.1    0        n/a   80.5/116.1
+offline                r2 head    6.24   6.46      1747.4 ms      42.6     53.0     66.8    0        0/0   27.8/66.2
+
+Ratios (head/base), per round (p50, p95, max):
+  support-email MAILS=0  r1: p50 0.99x  p95 0.152x  max 0.044x
+  support-email MAILS=0  r2: p50 0.87x  p95 0.140x  max 0.043x
+  support-email MAILS=5  r1: p50 0.65x  p95 0.100x  max 0.018x
+  support-email MAILS=5  r2: p50 1.08x  p95 0.149x  max 0.026x
+  offline                r1: p50 0.49x  p95 0.452x  max 0.444x
+  offline                r2: p50 0.46x  p95 0.400x  max 0.397x
+
+=== TASK 7b: held-out support-email, MAILS=0 (INUMAKI_BENCH_FAMILY=held-out) ===
+NOT load-gated (correctness check, not a latency number); loads below are 1m at start/end.
+base: rc=0 start 29.62 end 52.67
+proxy bench  wire messages  profile support-email  history 0 mails ~0 tokens  system 20 KB  untransformed synthetic mails
+cold first turn      27113.3 ms
+added per turn (50)  p50 1571.7 ms  p95 14939.2 ms  max 54651.4 ms
+refused turns        0
+incremental cache    hits 2550  misses 102
+first restored byte  2262.5 ms  (p50 of 20 streamed turns; p95 141977.8 ms; scripted upstream time subtracted)
+
+head: rc=3 start 52.67 end 29.98
+proxy bench  wire messages  profile support-email  history 0 mails ~0 tokens  system 20 KB  untransformed synthetic mails
+cold first turn      refused (451)
+refused turns        51
+first refused turn   0
+incremental cache    hits 0  misses 0
+leak index stale     0  failed 0
+first refusal        blocked by inumaki (kinds: CONTRACT_ID; checks: Regex). Nothing was sent. Edit or rewind the message.
+first restored byte  refused or errored on all 20 streamed turns
+
+RESULT: the held-out turn-0 451 refusal is NOT pre-existing: baseline 41e87d4 serves all 51 turns (rc=0); head 695d13e refuses 51/51 (rc=3, CONTRACT_ID/Regex on the 20 KB system text).
+SUPERSEDED: invalid comparison (the baseline bench had no INUMAKI_BENCH_FAMILY knob, so its "held-out" run used the tuning corpus); the conclusion above is wrong, see the L2-23 section at the end of this file (PRE-EXISTING).
+
+=== TASK 7b: Step 5 per-stage timings (throwaway instrumented copy of 695d13e; prints kinds, counts, byte lengths, microseconds only) ===
+Runs: bench --via-proxy, support-email MAILS=0 / MAILS=5, offline; run alone but NOT load-gated (1m load at start/end: se0 27.96/31.48, se5 31.48/20.53, offline 20.53/18.76); absolute ms are load-inflated, use the shares.
+Requests: first = cold turn, next 50 = turns 1-50, last 20 = streamed turns. Fields (ms): dict = store-dictionary search; dry = dry sanitize; rx0 = regex re-scan of the input inside the dry phase; lidx = store leak-index fetch; verify = whole verifier (includes leak, its regex re-scan, bare-identifier scan, NER none, combination); leak = check_leak alone; caller = caller check; real = real sanitize + consistency check.
+leakpath: 1 = store index hit, 2 = stale index -> per-call build, 3 = no index -> per-call build.
+
+## inst-se0: requests=71 (first=cold, next 50=turns 1-50, last 20=streamed?)
+ [cold] n=1 request total ms p50 18820 p95 18820 max 18820 sum 18820
+   projections calls=0 outcomes={}
+   check_leak outside projection (full re-run/engine verify): n=4 paths={'index': 4} us p50 0.72 p95 0.78 max 0.78 ms sum 1.7
+   full re-runs in closure: n=1
+     not_hit_derived/miss: 1  us p50 1012.9 max 1012.9 sum 1012.9 ms
+   tier store=base: n=1 us p50 1.32 p99 1.32 max 1.32 ms sum 1.3
+   tier store=mid: n=1 us p50 7.20 p99 7.20 max 7.20 ms sum 7.2
+   tier store=top: n=3 us p50 1.95 p99 4.85 max 4.85 ms sum 8.6
+   tier session=base: n=1 us p50 0.03 p99 0.03 max 0.03 ms sum 0.0
+ [turns1-50] n=50 request total ms p50 1119 p95 1733 max 1887 sum 55076
+   projections calls=50 outcomes={'Projected': 50}
+   Projected: n=50
+     total_us  p50     5.84 p95    50.47 max   143.23 ms  sum     783.6 ms  share-of-total 100.0%
+     dict      p50     0.15 p95     1.09 max     7.52 ms  sum      23.5 ms  share-of-total 3.0%
+     dry       p50     0.00 p95     0.02 max     0.03 ms  sum       0.3 ms  share-of-total 0.0%
+     rx0       p50     2.23 p95    21.53 max    63.49 ms  sum     266.4 ms  share-of-total 34.0%
+     lidx      p50     0.01 p95     0.12 max    15.05 ms  sum      16.1 ms  share-of-total 2.0%
+     verify    p50     2.64 p95    31.71 max   141.44 ms  sum     462.7 ms  share-of-total 59.0%
+     leak      p50     0.47 p95     2.98 max    13.61 ms  sum      52.6 ms  share-of-total 6.7%
+     caller    p50     0.02 p95     0.14 max     0.18 ms  sum       1.5 ms  share-of-total 0.2%
+     real      p50     0.01 p95     0.08 max     0.15 ms  sum       0.9 ms  share-of-total 0.1%
+     leakpath in projection (1 index,2 stale,3 none) = {'1': 50}
+   all calls: n=50
+     total_us  p50     5.84 p95    50.47 max   143.23 ms  sum     783.6 ms  share-of-total 100.0%
+     dict      p50     0.15 p95     1.09 max     7.52 ms  sum      23.5 ms  share-of-total 3.0%
+     dry       p50     0.00 p95     0.02 max     0.03 ms  sum       0.3 ms  share-of-total 0.0%
+     rx0       p50     2.23 p95    21.53 max    63.49 ms  sum     266.4 ms  share-of-total 34.0%
+     lidx      p50     0.01 p95     0.12 max    15.05 ms  sum      16.1 ms  share-of-total 2.0%
+     verify    p50     2.64 p95    31.71 max   141.44 ms  sum     462.7 ms  share-of-total 59.0%
+     leak      p50     0.47 p95     2.98 max    13.61 ms  sum      52.6 ms  share-of-total 6.7%
+     caller    p50     0.02 p95     0.14 max     0.18 ms  sum       1.5 ms  share-of-total 0.2%
+     real      p50     0.01 p95     0.08 max     0.15 ms  sum       0.9 ms  share-of-total 0.1%
+     leakpath in projection (1 index,2 stale,3 none) = {'1': 50}
+   check_leak outside projection (full re-run/engine verify): n=72 paths={'index': 72} us p50 0.33 p95 0.71 max 0.79 ms sum 26.8
+   full re-runs in closure: n=0
+   tier store=base: n=2 us p50 39.91 p99 39.91 max 39.91 ms sum 62.4
+   tier store=mid: n=5 us p50 12.36 p99 18.92 max 18.92 ms sum 65.6
+   tier store=top: n=72 us p50 3.77 p99 6.69 max 7.51 ms sum 241.6
+   tier session=base: n=1 us p50 11.74 p99 11.74 max 11.74 ms sum 11.7
+   tier session=mid: n=6 us p50 8.51 p99 13.37 max 13.37 ms sum 45.4
+   tier session=delta: n=43 us p50 1.86 p99 10.42 max 10.42 ms sum 86.1
+ [rest] n=20 request total ms p50 1297 p95 2532 max 3315 sum 31265
+   projections calls=187 outcomes={'Projected': 187}
+   Projected: n=187
+     total_us  p50     5.41 p95    41.70 max   135.31 ms  sum    2195.4 ms  share-of-total 100.0%
+     dict      p50     0.14 p95     0.78 max    11.84 ms  sum      59.8 ms  share-of-total 2.7%
+     dry       p50     0.00 p95     0.01 max     0.23 ms  sum       1.5 ms  share-of-total 0.1%
+     rx0       p50     1.97 p95    18.04 max   129.81 ms  sum     934.3 ms  share-of-total 42.6%
+     lidx      p50     0.01 p95     0.03 max     0.26 ms  sum       3.0 ms  share-of-total 0.1%
+     verify    p50     2.49 p95    24.48 max    77.49 ms  sum    1133.5 ms  share-of-total 51.6%
+     leak      p50     0.45 p95     2.75 max    40.72 ms  sum     213.5 ms  share-of-total 9.7%
+     caller    p50     0.02 p95     0.10 max     4.24 ms  sum      10.0 ms  share-of-total 0.5%
+     real      p50     0.01 p95     0.02 max     0.23 ms  sum       2.3 ms  share-of-total 0.1%
+     leakpath in projection (1 index,2 stale,3 none) = {'1': 187}
+   all calls: n=187
+     total_us  p50     5.41 p95    41.70 max   135.31 ms  sum    2195.4 ms  share-of-total 100.0%
+     dict      p50     0.14 p95     0.78 max    11.84 ms  sum      59.8 ms  share-of-total 2.7%
+     dry       p50     0.00 p95     0.01 max     0.23 ms  sum       1.5 ms  share-of-total 0.1%
+     rx0       p50     1.97 p95    18.04 max   129.81 ms  sum     934.3 ms  share-of-total 42.6%
+     lidx      p50     0.01 p95     0.03 max     0.26 ms  sum       3.0 ms  share-of-total 0.1%
+     verify    p50     2.49 p95    24.48 max    77.49 ms  sum    1133.5 ms  share-of-total 51.6%
+     leak      p50     0.45 p95     2.75 max    40.72 ms  sum     213.5 ms  share-of-total 9.7%
+     caller    p50     0.02 p95     0.10 max     4.24 ms  sum      10.0 ms  share-of-total 0.5%
+     real      p50     0.01 p95     0.02 max     0.23 ms  sum       2.3 ms  share-of-total 0.1%
+     leakpath in projection (1 index,2 stale,3 none) = {'1': 187}
+   check_leak outside projection (full re-run/engine verify): n=28 paths={'index': 28} us p50 0.51 p95 0.75 max 0.75 ms sum 14.9
+   full re-runs in closure: n=0
+   tier store=mid: n=2 us p50 13.08 p99 13.08 max 13.08 ms sum 19.0
+   tier store=top: n=27 us p50 3.15 p99 12.46 max 12.46 ms sum 94.1
+   tier session=base: n=1 us p50 32.03 p99 32.03 max 32.03 ms sum 32.0
+   tier session=mid: n=1 us p50 3.29 p99 3.29 max 3.29 ms sum 3.3
+   tier session=delta: n=18 us p50 1.77 p99 6.62 max 6.62 ms sum 35.9
+## inst-se5: requests=71 (first=cold, next 50=turns 1-50, last 20=streamed?)
+ [cold] n=1 request total ms p50 25563 p95 25563 max 25563 sum 25563
+   projections calls=0 outcomes={}
+   check_leak outside projection (full re-run/engine verify): n=21 paths={'index': 21} us p50 0.10 p95 0.68 max 0.71 ms sum 3.3
+   full re-runs in closure: n=5
+     not_hit_derived/miss: 5  us p50 808.6 max 1383.0 sum 4634.6 ms
+   tier store=base: n=1 us p50 1.23 p99 1.23 max 1.23 ms sum 1.2
+   tier store=mid: n=1 us p50 11.34 p99 11.34 max 11.34 ms sum 11.3
+   tier store=top: n=12 us p50 2.51 p99 5.44 max 5.44 ms sum 31.4
+   tier session=base: n=1 us p50 0.00 p99 0.00 max 0.00 ms sum 0.0
+ [turns1-50] n=50 request total ms p50 815 p95 1322 max 1797 sum 46477
+   projections calls=111 outcomes={'Projected': 111}
+   Projected: n=111
+     total_us  p50     4.52 p95     9.80 max    80.53 ms  sum     672.5 ms  share-of-total 100.0%
+     dict      p50     0.11 p95     0.27 max     2.81 ms  sum      17.6 ms  share-of-total 2.6%
+     dry       p50     0.00 p95     0.01 max     0.07 ms  sum       0.5 ms  share-of-total 0.1%
+     rx0       p50     1.85 p95     3.40 max    38.25 ms  sum     274.0 ms  share-of-total 40.7%
+     lidx      p50     0.01 p95     0.03 max     0.09 ms  sum       1.2 ms  share-of-total 0.2%
+     verify    p50     2.35 p95     5.18 max    38.23 ms  sum     358.3 ms  share-of-total 53.3%
+     leak      p50     0.42 p95     0.92 max     6.53 ms  sum      59.3 ms  share-of-total 8.8%
+     caller    p50     0.01 p95     0.03 max     0.23 ms  sum       2.3 ms  share-of-total 0.3%
+     real      p50     0.01 p95     0.02 max     0.04 ms  sum       1.0 ms  share-of-total 0.1%
+     leakpath in projection (1 index,2 stale,3 none) = {'1': 111}
+   all calls: n=111
+     total_us  p50     4.52 p95     9.80 max    80.53 ms  sum     672.5 ms  share-of-total 100.0%
+     dict      p50     0.11 p95     0.27 max     2.81 ms  sum      17.6 ms  share-of-total 2.6%
+     dry       p50     0.00 p95     0.01 max     0.07 ms  sum       0.5 ms  share-of-total 0.1%
+     rx0       p50     1.85 p95     3.40 max    38.25 ms  sum     274.0 ms  share-of-total 40.7%
+     lidx      p50     0.01 p95     0.03 max     0.09 ms  sum       1.2 ms  share-of-total 0.2%
+     verify    p50     2.35 p95     5.18 max    38.23 ms  sum     358.3 ms  share-of-total 53.3%
+     leak      p50     0.42 p95     0.92 max     6.53 ms  sum      59.3 ms  share-of-total 8.8%
+     caller    p50     0.01 p95     0.03 max     0.23 ms  sum       2.3 ms  share-of-total 0.3%
+     real      p50     0.01 p95     0.02 max     0.04 ms  sum       1.0 ms  share-of-total 0.1%
+     leakpath in projection (1 index,2 stale,3 none) = {'1': 111}
+   check_leak outside projection (full re-run/engine verify): n=71 paths={'index': 71} us p50 0.39 p95 0.64 max 0.85 ms sum 27.1
+   full re-runs in closure: n=0
+   tier store=base: n=2 us p50 44.44 p99 44.44 max 44.44 ms sum 67.7
+   tier store=mid: n=4 us p50 16.75 p99 18.54 max 18.54 ms sum 54.3
+   tier store=top: n=68 us p50 3.23 p99 7.15 max 8.16 ms sum 234.9
+   tier session=base: n=2 us p50 20.26 p99 20.26 max 20.26 ms sum 31.3
+   tier session=mid: n=5 us p50 6.13 p99 8.96 max 8.96 ms sum 32.1
+   tier session=delta: n=43 us p50 1.62 p99 3.02 max 3.02 ms sum 71.2
+ [rest] n=20 request total ms p50 963 p95 1477 max 1793 sum 21175
+   projections calls=131 outcomes={'Projected': 131}
+   Projected: n=131
+     total_us  p50     4.42 p95     5.74 max    40.78 ms  sum     668.9 ms  share-of-total 100.0%
+     dict      p50     0.12 p95     0.18 max     0.82 ms  sum      18.1 ms  share-of-total 2.7%
+     dry       p50     0.00 p95     0.01 max     0.02 ms  sum       0.3 ms  share-of-total 0.1%
+     rx0       p50     1.81 p95     2.49 max    17.79 ms  sum     282.1 ms  share-of-total 42.2%
+     lidx      p50     0.01 p95     0.02 max     0.04 ms  sum       1.2 ms  share-of-total 0.2%
+     verify    p50     2.33 p95     3.05 max    21.35 ms  sum     346.8 ms  share-of-total 51.8%
+     leak      p50     0.45 p95     0.75 max     1.10 ms  sum      63.8 ms  share-of-total 9.5%
+     caller    p50     0.01 p95     0.02 max     0.20 ms  sum       2.5 ms  share-of-total 0.4%
+     real      p50     0.00 p95     0.01 max     0.03 ms  sum       0.8 ms  share-of-total 0.1%
+     leakpath in projection (1 index,2 stale,3 none) = {'1': 131}
+   all calls: n=131
+     total_us  p50     4.42 p95     5.74 max    40.78 ms  sum     668.9 ms  share-of-total 100.0%
+     dict      p50     0.12 p95     0.18 max     0.82 ms  sum      18.1 ms  share-of-total 2.7%
+     dry       p50     0.00 p95     0.01 max     0.02 ms  sum       0.3 ms  share-of-total 0.1%
+     rx0       p50     1.81 p95     2.49 max    17.79 ms  sum     282.1 ms  share-of-total 42.2%
+     lidx      p50     0.01 p95     0.02 max     0.04 ms  sum       1.2 ms  share-of-total 0.2%
+     verify    p50     2.33 p95     3.05 max    21.35 ms  sum     346.8 ms  share-of-total 51.8%
+     leak      p50     0.45 p95     0.75 max     1.10 ms  sum      63.8 ms  share-of-total 9.5%
+     caller    p50     0.01 p95     0.02 max     0.20 ms  sum       2.5 ms  share-of-total 0.4%
+     real      p50     0.00 p95     0.01 max     0.03 ms  sum       0.8 ms  share-of-total 0.1%
+     leakpath in projection (1 index,2 stale,3 none) = {'1': 131}
+   check_leak outside projection (full re-run/engine verify): n=28 paths={'index': 28} us p50 0.55 p95 1.09 max 1.10 ms sum 16.6
+   full re-runs in closure: n=0
+   tier store=mid: n=3 us p50 12.88 p99 16.18 max 16.18 ms sum 35.3
+   tier store=top: n=27 us p50 2.96 p99 8.71 max 8.71 ms sum 86.6
+   tier session=mid: n=2 us p50 5.88 p99 5.88 max 5.88 ms sum 9.3
+   tier session=delta: n=18 us p50 1.73 p99 4.53 max 4.53 ms sum 30.0
+## inst-off: requests=71 (first=cold, next 50=turns 1-50, last 20=streamed?)
+ [cold] n=1 request total ms p50 3026 p95 3026 max 3026 sum 3026
+   projections calls=0 outcomes={}
+   check_leak outside projection (full re-run/engine verify): n=399 paths={'index': 399} us p50 0.35 p95 0.81 max 1.15 ms sum 152.9
+   full re-runs in closure: n=11
+     not_hit_derived/miss: 11  us p50 5.7 max 6.6 sum 62.5 ms
+   tier store=base: n=6 us p50 62.22 p99 110.83 max 110.83 ms sum 345.8
+   tier store=mid: n=16 us p50 10.87 p99 22.26 max 22.26 ms sum 187.7
+   tier store=top: n=226 us p50 2.73 p99 5.64 max 5.93 ms sum 627.8
+   tier session=base: n=1 us p50 0.01 p99 0.01 max 0.01 ms sum 0.0
+ [turns1-50] n=50 request total ms p50 37 p95 62 max 86 sum 1955
+   projections calls=0 outcomes={}
+   check_leak outside projection (full re-run/engine verify): n=50 paths={'index': 50} us p50 1.10 p95 1.81 max 2.02 ms sum 61.4
+   full re-runs in closure: n=0
+   tier store=mid: n=4 us p50 19.02 p99 19.70 max 19.70 ms sum 58.4
+   tier store=top: n=50 us p50 2.92 p99 5.54 max 5.54 ms sum 144.2
+   tier session=base: n=1 us p50 54.87 p99 54.87 max 54.87 ms sum 54.9
+   tier session=mid: n=4 us p50 7.06 p99 8.85 max 8.85 ms sum 24.4
+   tier session=delta: n=45 us p50 1.51 p99 3.23 max 3.23 ms sum 68.9
+ [rest] n=20 request total ms p50 42 p95 108 max 201 sum 1093
+   projections calls=0 outcomes={}
+   check_leak outside projection (full re-run/engine verify): n=20 paths={'index': 20} us p50 1.44 p95 2.21 max 2.28 ms sum 30.9
+   full re-runs in closure: n=0
+   tier store=base: n=1 us p50 136.68 p99 136.68 max 136.68 ms sum 136.7
+   tier store=mid: n=1 us p50 23.27 p99 23.27 max 23.27 ms sum 23.3
+   tier store=top: n=21 us p50 2.68 p99 7.20 max 7.20 ms sum 62.6
+   tier session=base: n=1 us p50 68.98 p99 68.98 max 68.98 ms sum 69.0
+   tier session=mid: n=1 us p50 13.77 p99 13.77 max 13.77 ms sum 13.8
+   tier session=delta: n=18 us p50 1.86 p99 3.34 max 3.34 ms sum 29.8
+
+Tier builds over the whole run (cold + 50 turns + 20 streamed), ms:
+ inst-se0  (store=StoreDictCache: base = full rebuild, mid = merge of top into middle tier, top = delta; session = Session::closure_dict)
+   store=base     n=   3 p50   22.50 p99   39.91 max   39.91
+   store=mid      n=   8 p50   12.36 p99   18.92 max   18.92
+   store=top      n= 102 p50    3.65 p99    7.51 max   12.46
+   session=base   n=   3 p50   11.74 p99   32.03 max   32.03
+   session=mid    n=   7 p50    6.42 p99   13.37 max   13.37
+   session=delta  n=  61 p50    1.82 p99    6.62 max   10.42
+ inst-se5  (store=StoreDictCache: base = full rebuild, mid = merge of top into middle tier, top = delta; session = Session::closure_dict)
+   store=base     n=   3 p50   23.22 p99   44.44 max   44.44
+   store=mid      n=   8 p50   12.88 p99   18.54 max   18.54
+   store=top      n= 107 p50    3.03 p99    8.16 max    8.71
+   session=base   n=   3 p50   11.04 p99   20.26 max   20.26
+   session=mid    n=   7 p50    5.88 p99    8.96 max    8.96
+   session=delta  n=  61 p50    1.62 p99    3.02 max    4.53
+ inst-off  (store=StoreDictCache: base = full rebuild, mid = merge of top into middle tier, top = delta; session = Session::closure_dict)
+   store=base     n=   7 p50   62.22 p99  136.68 max  136.68
+   store=mid      n=  21 p50   10.89 p99   23.27 max   23.27
+   store=top      n= 297 p50    2.72 p99    5.67 max    7.20
+   session=base   n=   3 p50   54.87 p99   68.98 max   68.98
+   session=mid    n=   5 p50    7.06 p99   13.77 max   13.77
+   session=delta  n=  63 p50    1.53 p99    3.23 max    3.34
+Projection per turn (turns 1-50): se0 mean 1.0 projected leaves/turn (max 25), projection = 0.94% of request time on average (max 28.0%); se5 mean 2.22 (max 69), 0.91% (max 20.9%); offline 0 projections (zero closure re-runs in turns 1-50).
+
+== held-out baseline with the family knob (L2-23) ==
+baseline 41e87d4 + throwaway patch (only INUMAKI_BENCH_FAMILY=held-out -> GenFamily::HeldOut in bench_proxy.rs)
+cmd: INUMAKI_BENCH_FAMILY=held-out INUMAKI_BENCH_MAILS=0 inumaki bench --via-proxy --profile support-email
+rc 3; cold first turn refused (451), no cold ms printed; refused turns 51 (of 51); first refused turn 0
+first refusal labels: kinds: CONTRACT_ID; checks: Regex (identical to head 695d13e)
+verdict: PRE-EXISTING (baseline refuses the same way; not a regression of the head)
+
+== Task 0 cost profile (the "before" numbers cited in the quality doc; counts, ms, loads only) ==
+PROFILED_SHA 182d6ed (main), release build with throwaway stderr counters (kinds, counts, byte lengths, microseconds). 71 sanitize_request calls per run (1 cold, 50 turns, 20 streamed).
+1-minute load at start / end: offline 16.50 / 14.50; support-email MAILS=0 14.30 / 13.94; support-email MAILS=5 13.94 / 9.49. Range 9.5 to 16.5, never below 8: absolute ms are inflated, the shares are the figure to read.
+Bench output (inflated): offline added/turn p50 161.5 ms p95 213.0 ms, cold 12767 ms; support-email MAILS=0 p50 1042 p95 10337 ms, cold 13235 ms; MAILS=5 p50 810 p95 9868 ms, cold 21671 ms.
+Shares of summed sanitize_request time, turns 1-50 (offline / se MAILS=0 / se MAILS=5):
+  engine leaf_verdict, step 6 misses: 75.6% / 44.2% / 27.1%
+  step 6b hit re-runs: 0 / 55.0% / 72.3%
+  check_leak pattern+automaton build: 64.0% / 2.6% / 3.7%  (offline: 84.7% of engine time)
+  check_leak search: 0.0% / 0.0% / 0.0%
+  StoreDictCache.get build (base+delta): 4.7% / 0.2% / 0.1%
+  Session::closure_dict build: 4.3% / 0.2% / 0.1%
+  step 6b ClosureDict::from_view: 1.2% / 0.2% / 0.2%
+  step 6b total: 10.5% / 55.5% / 72.6%
+Hit re-runs share of turn time over all 70 warm requests: MAILS=0 79.1%, MAILS=5 79.5%. Streamed turns: 91.1% (MAILS=0), 87.5% (MAILS=5). Cold turn: engine 98 to 99.9% of the turn.
+Hit re-runs per turn: MAILS=0 turns 1-50: 50 re-runs, 62.7 s, mean 1.25 s each; streamed 187 re-runs, 206.3 s, mean 1.10 s. MAILS=5 turns 1-50: 111, 111.2 s, mean 1.00 s; streamed 131, 121.6 s, mean 0.93 s. Slowest turns: one round with up to 69 re-runs (66 s). Offline: 449 of 450 leaves are hits, zero re-runs.
+check_leak per call (calls; patterns p50/p95/max; leak_patterns() p50; pattern+AC build p50/p95; search p50/p95; candidate bytes p50):
+  offline 469; 8327/16335/17671; 13.9 ms; 28.6/86.3 ms; 39/51 us; 2116
+  se MAILS=0 434; 6117/6989/7477; 19.1 ms; 30.4/38.5 ms; 48/83 us; 2317
+  se MAILS=5 450; 6117/7166/7838; 19.1 ms; 30.3/34.8 ms; 47/56 us; 2312
+check_leak build time by entries: about 1.2 ms under 500 patterns, 13 ms at 2500, 34 ms at 6500, 86 ms at 16000; build more than 99.8% of check_leak. check_leak build+search p50 30.3 ms per call at the support-email bench store (6117 patterns).
+Offline cold turn: check_leak build 77.2% (388 leaves, 399 check_leak calls).
+RESIDUAL_A evidence (offline, 70 warm requests): top decile (7 requests, mean 191 ms) vs middle band (21, mean 125 ms), gap 66.6 ms:
+  StoreDictCache.get base rebuild: top 38.1 ms, mid 0.0, excess 38.1 = 57% of the gap
+  Session::closure_dict rebuild: top 19.8, mid 4.5, excess 15.2 = 23%
+  check_leak build: top 89.3, mid 83.5, excess 5.8 = 9%
+  step 6b from_view / unsettled / before: top 7.4, mid 7.6, excess -0.4 = 0%
+Base rebuilds in the 70 warm requests: StoreDictCache base 4 requests (4 of the top 7, 0 of the middle 21); Session::closure_dict base 2 of the top 7. A base rebuild cost 60 to 71 ms at a 16 to 17 thousand pattern store.

@@ -1,0 +1,182 @@
+# L3 engine follow-up: proxy bench (raw)
+# After: commit 7a9b40c (branch l3/engine-proxy), release, reference machine macos-aarch64, 2026-10-10 18:43-18:58.
+# Each run's start and end uptime is printed with it; other agents' jobs shared the machine (1-minute load 5.3-7.1, no eval running).
+# Timing depends on that load; refusal counts do not (the bench is deterministic).
+
+## Before (plan base afa0422, from the plan's "Before numbers"; release, seed 42; not re-run; load 10-12 recorded for the offline row only)
+# INUMAKI_BENCH_MAILS=0 ... --profile support-email               31/51 refused: 21 PERSON/Ner, 10 PERSON/Policy
+# INUMAKI_BENCH_MAILS=5 ...                                        51/51 refused (PERSON/Policy)
+# INUMAKI_BENCH_TRANSFORMS=1 INUMAKI_BENCH_MAILS=5 ...             51/51 refused (PERSON/Policy)
+# inumaki bench --via-proxy --profile offline (193 mails)          0/51; cold 9.9 s, p50 60.8 ms
+
+## After
+## INUMAKI_BENCH_MAILS=0 inumaki bench --via-proxy --profile support-email
+start 2026-10-10 18:43:00  18:43  up 1 day, 15:33, 4 users, load averages: 5.94 6.75 7.92
+proxy bench  wire messages  profile support-email  history 0 mails ~0 tokens  system 20 KB  untransformed synthetic mails
+cold first turn      7795.0 ms
+added per turn (50)  p50 579.0 ms  p95 6111.6 ms
+refused turns        0
+incremental cache    hits 2550  misses 102
+first restored byte  612.4 ms  (p50 of 20 streamed turns; p95 49398.7 ms; scripted upstream time subtracted)
+rc=0
+end 18:46:42  18:46  up 1 day, 15:37, 4 users, load averages: 6.75 6.55 7.54
+
+## INUMAKI_BENCH_MAILS=5 inumaki bench --via-proxy --profile support-email
+start 2026-10-10 18:46:47  18:46  up 1 day, 15:37, 4 users, load averages: 6.53 6.51 7.52
+proxy bench  wire messages  profile support-email  history 5 mails ~2588 tokens  system 20 KB  untransformed synthetic mails
+cold first turn      13966.5 ms
+added per turn (50)  p50 588.9 ms  p95 6254.9 ms
+refused turns        0
+incremental cache    hits 2989  misses 173
+first restored byte  640.3 ms  (p50 of 20 streamed turns; p95 28695.4 ms; scripted upstream time subtracted)
+rc=0
+end 18:50:34  18:50  up 1 day, 15:41, 4 users, load averages: 6.95 7.14 7.57
+
+## INUMAKI_BENCH_TRANSFORMS=1 INUMAKI_BENCH_MAILS=5 inumaki bench --via-proxy --profile support-email
+start 2026-10-10 18:50:40  18:50  up 1 day, 15:41, 4 users, load averages: 6.72 7.09 7.55
+proxy bench  wire messages  profile support-email  history 5 mails ~2648 tokens  system 20 KB  transformed synthetic mails
+cold first turn      refused (451)
+added per turn (22)  p50 722.5 ms  p95 10244.0 ms
+refused turns        29
+first refused turn   0
+incremental cache    hits 679  misses 47
+first refusal        blocked by inumaki (kinds: PERSON; checks: Ner). Nothing was sent. Edit or rewind the message.
+first restored byte  658.1 ms  (p50 of 19 streamed turns; p95 2090.2 ms; scripted upstream time subtracted; 1 refused or errored)
+rc=0
+end 18:56:00  18:56  up 1 day, 15:46, 4 users, load averages: 6.22 6.45 7.08
+# Per-turn reasons for the run above, from a throwaway build of 7a9b40c with one stderr line per turn (index, status,
+# refusal message: kinds and check ids only; never committed), run 17:49-17:57 at load 15.3-13.7 (its timing not used):
+#   turns 0-5, 7-25: PERSON; Ner (25)        turns 6, 37, 43, 48: PERSON; Leak, Policy (4)        29/51, same as the clean run
+
+## inumaki bench --via-proxy --profile offline
+start 2026-10-10 18:56:06  18:56  up 1 day, 15:47, 4 users, load averages: 6.20 6.44 7.08
+proxy bench  wire messages  profile offline  history 193 mails ~100484 tokens  system 20 KB  untransformed synthetic mails
+cold first turn      12557.2 ms
+added per turn (50)  p50 143.4 ms  p95 160.2 ms
+refused turns        0
+incremental cache    hits 21900  misses 438
+first restored byte  146.1 ms  (p50 of 20 streamed turns; p95 152.9 ms; scripted upstream time subtracted)
+rc=0
+end 18:56:29  18:56  up 1 day, 15:47, 4 users, load averages: 6.15 6.41 7.05
+
+## offline, same-load A/B against main 496f988 (alternated, 18:56-18:58)
+## main offline via-proxy 18:56  up 1 day, 15:47, 4 users, load averages: 5.82 6.33 7.02
+cold first turn      10880.8 ms
+added per turn (50)  p50 67.7 ms  p95 74.5 ms
+refused turns        0
+incremental cache    hits 21900  misses 438
+first restored byte  59.2 ms  (p50 of 20 streamed turns; p95 65.3 ms; scripted upstream time subtracted)
+## head offline via-proxy 18:56  up 1 day, 15:47, 4 users, load averages: 5.78 6.29 6.98
+cold first turn      12851.9 ms
+added per turn (50)  p50 139.9 ms  p95 159.8 ms
+refused turns        0
+incremental cache    hits 21900  misses 438
+first restored byte  144.7 ms  (p50 of 20 streamed turns; p95 148.4 ms; scripted upstream time subtracted)
+## main offline via-proxy 18:57  up 1 day, 15:48, 4 users, load averages: 5.32 6.16 6.92
+cold first turn      11776.7 ms
+added per turn (50)  p50 69.6 ms  p95 73.8 ms
+refused turns        0
+incremental cache    hits 21900  misses 438
+first restored byte  62.8 ms  (p50 of 20 streamed turns; p95 66.9 ms; scripted upstream time subtracted)
+## head offline via-proxy 18:57  up 1 day, 15:48, 4 users, load averages: 5.42 6.12 6.89
+cold first turn      12980.1 ms
+added per turn (50)  p50 146.5 ms  p95 162.8 ms
+refused turns        0
+incremental cache    hits 21900  misses 438
+first restored byte  144.6 ms  (p50 of 20 streamed turns; p95 150.5 ms; scripted upstream time subtracted)
+
+## Large-store timing (brief Step 3b): /usr/bin/time -p inumaki eval --profile support-email --via-service --json --report-json <scratch>
+# main 496f988 stands in for the plan base afa0422: core and configs equal afa0422 except rehydrate.rs; its service adds only
+# the M8-2 released-text record (one digest insert per passed block). Back to back, nothing else of ours running.
+## 3b main 496f988 start 18:58:08 18:58  up 1 day, 15:49, 4 users, load averages: 5.63 6.12 6.86
+report written (scratch, not committed)
+real 246.11
+user 546.20
+sys 26.38
+rc=0
+end 19:02:14 19:02  up 1 day, 15:53, 4 users, load averages: 5.78 5.93 6.59
+latency_ms p50 68.3 p95 112.2 p99 132.9; pass 967 blocked 1100 accepted leak docs 9
+## 3b head 7a9b40c start 19:02:19 19:02  up 1 day, 15:53, 4 users, load averages: 5.64 5.90 6.57
+report written (scratch, not committed)
+real 314.95
+user 669.85
+sys 29.96
+rc=0
+end 19:07:34 19:07  up 1 day, 15:58, 4 users, load averages: 4.88 5.42 6.15
+latency_ms p50 100.6 p95 161.4 p99 204.4; pass 2060 blocked 7 accepted leak docs 3
+
+## StoreDict build attribution (throwaway build of 7a9b40c timing each engine StoreDict build and fingerprint; counts and
+## microseconds only; never committed)
+# eval --profile support-email --via-service, 19:10-19:16, load 7.00 -> 5.36:
+#   engine build        n 2223  working-set entries median 3880 max 4098  build median 24 909 us  p95 28 465 us  total 44.9 s
+#   engine fingerprint  n 2318  entries median 3881                        median 185 us  p95 236 us             total 0.4 s
+#   (no service-side re-check dictionary build occurred in this run)
+#   44.9 s of the 68.9 s wall-time difference above (about two thirds).
+# bench --via-proxy --profile offline, 19:10, load 9.28 -> 7.62 (start above 8: used for attribution only, not as a timing):
+#   engine build        n 469   session entries median 3402 max 14007  build median 15 180 us  p95 48 316 us  total 8.6 s
+#     at >= 90% of the max entries (the last turns): n 38, build median 48 564 us (about 3.5 us per entry)
+#   engine fingerprint  n 469   median 97 us  p95 350 us  total 0.06 s
+#   about two thirds of the +72-77 ms added per turn in the offline A/B above.
+
+## After 7e (head 2948e24, 2026-10-11)
+# Task 7e, ruling L62: the StoreDict cache lives on the store. Release builds, reference machine macos-aarch64, 21:12-21:20.
+# main = 496f988 (detached throwaway worktree), head = 2948e24 (code of 7e; the doc commit on top changes no code).
+# Alternated; other agents' jobs may have shared the machine; each run started only at a 1-minute load below 8 (the 5- and 15-minute
+# averages were still high from the head build that finished just before). Timing depends on that load.
+
+## offline, same-load A/B against main 496f988 (alternated, 21:12): inumaki bench --via-proxy --profile offline
+## main offline via-proxy 21:12:01 21:12  up 2 days, 18:02, 5 users, load averages: 6.35 30.12 30.27
+proxy bench  wire messages  profile offline  history 193 mails ~100484 tokens  system 20 KB  untransformed synthetic mails
+cold first turn      10302.2 ms
+added per turn (50)  p50 62.2 ms  p95 68.1 ms
+refused turns        0
+incremental cache    hits 21900  misses 438
+first restored byte  55.0 ms  (p50 of 20 streamed turns; p95 56.5 ms; scripted upstream time subtracted)
+rc=0
+end 21:12:17 21:12  up 2 days, 18:03, 5 users, load averages: 5.62 28.79 29.79
+## head offline via-proxy 21:12:20 21:12  up 2 days, 18:03, 5 users, load averages: 5.65 28.41 29.66
+proxy bench  wire messages  profile offline  history 193 mails ~100484 tokens  system 20 KB  untransformed synthetic mails
+cold first turn      5781.6 ms
+added per turn (50)  p50 71.2 ms  p95 93.7 ms
+refused turns        0
+incremental cache    hits 21900  misses 438
+first restored byte  61.2 ms  (p50 of 20 streamed turns; p95 90.9 ms; scripted upstream time subtracted)
+rc=0
+end 21:12:32 21:12  up 2 days, 18:03, 5 users, load averages: 5.32 27.59 29.35
+## main offline via-proxy 21:12:32 21:12  up 2 days, 18:03, 5 users, load averages: 5.32 27.59 29.35
+proxy bench  wire messages  profile offline  history 193 mails ~100484 tokens  system 20 KB  untransformed synthetic mails
+cold first turn      10113.3 ms
+added per turn (50)  p50 62.1 ms  p95 69.3 ms
+refused turns        0
+incremental cache    hits 21900  misses 438
+first restored byte  54.9 ms  (p50 of 20 streamed turns; p95 57.2 ms; scripted upstream time subtracted)
+rc=0
+end 21:12:47 21:12  up 2 days, 18:03, 5 users, load averages: 5.55 26.55 28.95
+## head offline via-proxy 21:12:47 21:12  up 2 days, 18:03, 5 users, load averages: 5.55 26.55 28.95
+proxy bench  wire messages  profile offline  history 193 mails ~100484 tokens  system 20 KB  untransformed synthetic mails
+cold first turn      5819.5 ms
+added per turn (50)  p50 71.6 ms  p95 92.9 ms
+refused turns        0
+incremental cache    hits 21900  misses 438
+first restored byte  63.7 ms  (p50 of 20 streamed turns; p95 91.1 ms; scripted upstream time subtracted)
+rc=0
+end 21:12:58 21:12  up 2 days, 18:03, 5 users, load averages: 5.16 25.77 28.64
+
+## Large-store timing (brief Step 3b), after 7e: /usr/bin/time -p inumaki eval --profile support-email --via-service --json --report-json <scratch>
+# Back to back (main, then head), report files in scratch, not committed. Same corpus (2 067 documents) as the 3b section above.
+## 3b main start 21:13:02 21:13  up 2 days, 18:03, 5 users, load averages: 4.91 25.38 28.49
+report written to <scratch>/rep-main.json
+real 208.50
+user 472.43
+sys 24.81
+rc=0
+end 21:16:30 21:16  up 2 days, 18:07, 5 users, load averages: 5.79 15.41 23.47
+latency_ms p50 57.3 p95 95.6 p99 114.6; pass 967 blocked 1100 accepted leak docs 9
+## 3b head start 21:16:38 21:16  up 2 days, 18:07, 5 users, load averages: 5.65 15.22 23.36
+report written to <scratch>/rep-head.json
+real 234.18
+user 564.85
+sys 28.49
+rc=0
+end 21:20:32 21:20  up 2 days, 18:11, 5 users, load averages: 4.26 9.38 18.82
+latency_ms p50 65.1 p95 110.7 p99 134.6; pass 2060 blocked 7 accepted leak docs 3

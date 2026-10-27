@@ -1,0 +1,205 @@
+{
+  "profile": "strict",
+  "docs": 2000,
+  "per_kind": {
+    "CITY": {
+      "gold": 589,
+      "gold_found": 18,
+      "detected": 74,
+      "detected_correct": 18,
+      "leaked": 0,
+      "partial_leaked": 0
+    },
+    "CONTRACT_ID": {
+      "gold": 202,
+      "gold_found": 197,
+      "detected": 197,
+      "detected_correct": 197,
+      "leaked": 0,
+      "partial_leaked": 0
+    },
+    "CREDIT_CARD": {
+      "gold": 211,
+      "gold_found": 211,
+      "detected": 211,
+      "detected_correct": 211,
+      "leaked": 0,
+      "partial_leaked": 0
+    },
+    "CUSTOMER_ID": {
+      "gold": 440,
+      "gold_found": 427,
+      "detected": 427,
+      "detected_correct": 427,
+      "leaked": 0,
+      "partial_leaked": 0
+    },
+    "DATE": {
+      "gold": 1207,
+      "gold_found": 1207,
+      "detected": 1211,
+      "detected_correct": 1211,
+      "leaked": 0,
+      "partial_leaked": 0
+    },
+    "DATE_OF_BIRTH": {
+      "gold": 117,
+      "gold_found": 117,
+      "detected": 113,
+      "detected_correct": 113,
+      "leaked": 0,
+      "partial_leaked": 0
+    },
+    "EMAIL": {
+      "gold": 1504,
+      "gold_found": 1504,
+      "detected": 1504,
+      "detected_correct": 1504,
+      "leaked": 0,
+      "partial_leaked": 0
+    },
+    "IBAN": {
+      "gold": 326,
+      "gold_found": 325,
+      "detected": 325,
+      "detected_correct": 325,
+      "leaked": 0,
+      "partial_leaked": 0
+    },
+    "INVOICE_ID": {
+      "gold": 332,
+      "gold_found": 328,
+      "detected": 328,
+      "detected_correct": 328,
+      "leaked": 0,
+      "partial_leaked": 0
+    },
+    "LICENSE_PLATE": {
+      "gold": 99,
+      "gold_found": 93,
+      "detected": 93,
+      "detected_correct": 93,
+      "leaked": 0,
+      "partial_leaked": 0
+    },
+    "ORGANIZATION": {
+      "gold": 725,
+      "gold_found": 368,
+      "detected": 911,
+      "detected_correct": 368,
+      "leaked": 0,
+      "partial_leaked": 0
+    },
+    "PERSON": {
+      "gold": 4107,
+      "gold_found": 3505,
+      "detected": 4255,
+      "detected_correct": 3505,
+      "leaked": 15,
+      "partial_leaked": 0
+    },
+    "PHONE": {
+      "gold": 1059,
+      "gold_found": 1059,
+      "detected": 1063,
+      "detected_correct": 1059,
+      "leaked": 0,
+      "partial_leaked": 0
+    },
+    "POSTAL_CODE": {
+      "gold": 589,
+      "gold_found": 533,
+      "detected": 533,
+      "detected_correct": 533,
+      "leaked": 0,
+      "partial_leaked": 0
+    },
+    "STREET_ADDRESS": {
+      "gold": 806,
+      "gold_found": 802,
+      "detected": 810,
+      "detected_correct": 802,
+      "leaked": 1,
+      "partial_leaked": 0
+    }
+  },
+  "pass_docs": 1650,
+  "uncertain_docs": 0,
+  "blocked_docs": 350,
+  "docs_with_leak": 16,
+  "accepted_leak_docs": 16,
+  "accepted_partial_only_docs": 0,
+  "uncertain_leak_docs": 0,
+  "per_lang": {
+    "de": {
+      "docs": 1076,
+      "accepted": 912,
+      "uncertain": 0,
+      "blocked": 164,
+      "accepted_leak": 9
+    },
+    "en": {
+      "docs": 733,
+      "accepted": 589,
+      "uncertain": 0,
+      "blocked": 144,
+      "accepted_leak": 5
+    },
+    "mixed": {
+      "docs": 191,
+      "accepted": 149,
+      "uncertain": 0,
+      "blocked": 42,
+      "accepted_leak": 2
+    }
+  },
+  "store_errors": 0,
+  "provenance": {
+    "corpus_sha256": "ae3d4bf5fb92153223bea05bd0176411e80bbe53c2215d55f0c5a4ac547e343e",
+    "cases": 0,
+    "generated": 2000,
+    "seed": 42,
+    "family": "tuning",
+    "platform": "macos-aarch64",
+    "crate_version": "0.1.0",
+    "git_commit": "c802ed21cdd374fc25130ed687ea6af0441cb9f6",
+    "config_sha256": "3444550e71961e61dffb034ed4c8c9610837d7d73aa991d66520b0ef02e72c3c",
+    "lock_sha256": "a3b4956cbd171b64dc0feb1c5e58038cf2615e7d25de41afa6e3f17ebe619995",
+    "models": {
+      "gliner-x-small": "d76b3349fd4bfe44573221c0912ed459f432d14317552fdc65935dabcb833c4a",
+      "kiji-pii": "b5f3311391a74470ff26c5b700a422832e5dcdb74fedc205ad5a68e70dbf487c",
+      "mbert-ner-hrl": "1213fdd405d295768b0d41d8214062f2f278f0e3acff6af67d8fd47360d2be0f"
+    },
+    "evaluated_at": 1791190330
+  },
+  "verifier_clean_trials": 2000,
+  "verifier_false_positives": 45,
+  "verifier_broken_trials": 1677,
+  "verifier_false_negatives": 301,
+  "latency_ms": {
+    "p50": 77.518208,
+    "p95": 163.76945800000001,
+    "p99": 229.410542,
+    "mean": 86.2241314095,
+    "max": 365.037667
+  },
+  "detector_errors": 0,
+  "links": {
+    "coref_docs": 509,
+    "coref_recoverable_docs": 258,
+    "person_mentions_tokenized": 3347,
+    "surface_mentions": 148,
+    "wrong_restorations": 0,
+    "wrong_links": 1,
+    "tokens_total": 9780,
+    "distinct_tokens_total": 8888
+  },
+  "verifier_fp_by_check": {
+    "Leak": 6,
+    "Ner": 39
+  },
+  "verifier_fp_by_kind": {
+    "PERSON": 45
+  },
+  "sequence": null
+}

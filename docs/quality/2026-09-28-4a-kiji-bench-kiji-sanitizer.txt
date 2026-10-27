@@ -1,0 +1,4 @@
+profile kiji-sanitizer  docs 200  avg 235 bytes
+detect   p50 21.5 ms  p95 49.3 ms  p99 62.0 ms
+process  p50 80.0 ms  p95 206.1 ms  p99 238.5 ms
+throughput 8.7 docs/s

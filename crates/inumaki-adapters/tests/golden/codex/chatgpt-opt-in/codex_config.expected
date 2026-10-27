@@ -1,0 +1,18 @@
+# my codex settings
+model = "gpt-5-codex"
+model_provider = "inumaki"
+
+[mcp_servers.docs]
+command = "/usr/local/bin/docs-mcp"
+args = ["--stdio"]
+env = { DOCS_TOKEN = "s3cret-qwxzvk" }
+
+[profiles.fast]
+model = "gpt-5-mini"
+
+[model_providers.inumaki]
+name = "inumaki"
+base_url = "http://127.0.0.1:8787/codex"
+wire_api = "responses"
+requires_openai_auth = true
+http_headers = { X-Inumaki-Client = "inumaki_client_golden" }

@@ -1,0 +1,51 @@
+From: Anna Berger <anna.berger@example.test>
+Reply-To: Anna Berger <anna.reply@example.test>
+To: support@musterfirma.example
+Subject: Unterlagen
+Date: Tue, 30 Sep 2026 16:30:00 +0200
+Message-ID: <att-1@example.test>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="mixed"
+
+--mixed
+Content-Type: text/plain; charset=utf-8
+
+Anbei die Unterlagen.
+--mixed
+Content-Type: application/pdf; name="Rechnung Zyxwuria Quolnath.pdf"
+Content-Disposition: attachment; filename="Rechnung Zyxwuria Quolnath.pdf"
+Content-Transfer-Encoding: base64
+
+JVBERi0xLjQKJcOkw7zDtsOfCjEgMCBvYmoKPDwvVHlwZS9DYXRhbG9nPj4KZW5kb2JqCg==
+--mixed
+Content-Type: image/png; name="logo.png"
+Content-Disposition: inline; filename="logo.png"
+Content-Transfer-Encoding: base64
+
+iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==
+--mixed
+Content-Type: message/rfc822
+Content-Disposition: attachment; filename="weitergeleitet.eml"
+
+From: Peter Fuchs <peter.fuchs@example.test>
+To: anna.berger@example.test
+Subject: Original
+Date: Mon, 29 Sep 2026 09:00:00 +0200
+Message-ID: <nested-1@example.test>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="inner"
+
+--inner
+Content-Type: text/plain; charset=utf-8
+
+Hallo Anna, hier das Original von Peter Fuchs.
+--inner
+Content-Type: message/rfc822
+
+From: deep@example.test
+Subject: Deep
+Content-Type: text/plain
+
+Should stay a listed attachment, not be rendered.
+--inner--
+--mixed--

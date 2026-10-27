@@ -1,0 +1,7 @@
+Sehr geehrte Damen und Herren,
+meine Kundennummer lautet 382910. Sie erreichen mich unter +43 660 1234567
+oder sarah.leitner@example.at. Meine IBAN ist AT61 1904 3002 3457 3201.
+Geboren am 12.03.1985 in 1010 Wien. Kennzeichen W-12345A.
+UID: ATU12345678. Server 192.168.1.10, siehe https://example.at/kunden/382910.
+Karte 4111 1111 1111 1111. SVNR 1237 010180. Steuer-ID 86095742719.
+Termin am 24.09.2026. Straße mit Umlaut: Hauptstraße 12, 1010 Wien.

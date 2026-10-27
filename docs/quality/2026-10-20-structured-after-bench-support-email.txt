@@ -1,0 +1,29 @@
+Task 7 after-measurement: bench --profile support-email, alternating main build (9a77f52 = main behaviour plus the --outcomes flag) and this build, two runs each; load averages from uptime at each start
+--- main run 1
+17:05  up 1 day,  6:05, 11 users, load averages: 4.86 7.03 9.25
+profile support-email  docs 200  avg 235 bytes
+detect   p50 18.0 ms  p95 36.3 ms  p99 38.8 ms
+process  p50 44.3 ms  p95 88.6 ms  p99 112.3 ms
+throughput 14.7 docs/s
+exit=0
+--- main run 2
+17:06  up 1 day,  6:06, 11 users, load averages: 5.23 6.91 9.13
+profile support-email  docs 200  avg 235 bytes
+detect   p50 18.9 ms  p95 32.7 ms  p99 41.8 ms
+process  p50 45.4 ms  p95 93.5 ms  p99 123.0 ms
+throughput 14.1 docs/s
+exit=0
+--- head run 1
+17:05  up 1 day,  6:06, 11 users, load averages: 5.03 6.96 9.19
+profile support-email  docs 200  avg 235 bytes
+detect   p50 17.6 ms  p95 33.1 ms  p99 50.3 ms
+process  p50 41.3 ms  p95 92.8 ms  p99 129.5 ms
+throughput 15.0 docs/s
+exit=0
+--- head run 2
+17:06  up 1 day,  6:06, 11 users, load averages: 5.77 6.95 9.11
+profile support-email  docs 200  avg 235 bytes
+detect   p50 19.6 ms  p95 33.7 ms  p99 37.2 ms
+process  p50 45.7 ms  p95 96.9 ms  p99 109.4 ms
+throughput 14.2 docs/s
+exit=0

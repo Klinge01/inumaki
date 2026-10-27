@@ -1,0 +1,12 @@
+// OpenClaw configuration
+{
+  agents: {
+    defaults: {
+      model: { primary: 'openai/gpt-5' },
+      workspace: '/Users/qwxzvk',
+      sandbox: { mode: 'all', docker: { binds: ['/data:/data:ro',], }, },
+    },
+  },
+  mcp: { servers: { tickets: { command: 'tickets-mcp', env: { TICKETS_TOKEN: 's3cret-qwxzvk' } } } },
+  models: { providers: { openai: { apiKey: '${OPENAI_API_KEY}' } } },
+}

@@ -1,0 +1,6 @@
+{
+  "env": {
+    "ANTHROPIC_CUSTOM_HEADERS": "X-Team: blue\nX-Inumaki-Client: inumaki_client_golden\n",
+    "ANTHROPIC_BASE_URL": "http://127.0.0.1:8787/anthropic"
+  }
+}

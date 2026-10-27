@@ -1,0 +1,128 @@
+[[case]]
+id = "name-may"
+lang = "de"
+why = "Surname that is also a word."
+text = "Thomas May hat angerufen, Rückruf erbeten."
+spans = [ { text = "Thomas May", kind = "PERSON" } ]
+
+[[case]]
+id = "name-rose-hunter"
+lang = "en"
+why = "Both name parts are ordinary English words."
+text = "Please forward this to Rose Hunter in accounting."
+spans = [ { text = "Rose Hunter", kind = "PERSON" } ]
+
+[[case]]
+id = "word-may-negative"
+lang = "mixed"
+why = "May as a month must not become a person."
+text = "Im May haben wir Sommerpause; bitte melden Sie sich im Juni."
+
+[[case]]
+id = "name-koenig"
+lang = "de"
+why = "Surname König with an honorific."
+text = "Herr König aus der Buchhaltung meldet sich."
+spans = [ { text = "König", kind = "PERSON" } ]
+
+[[case]]
+id = "word-koenig-negative"
+lang = "de"
+why = "König as a word."
+text = "Der Kunde ist König, sagt man bei uns."
+
+[[case]]
+id = "name-berg"
+lang = "de"
+why = "One-syllable surname that is a common noun."
+text = "Frau Berg bittet um Rückruf."
+spans = [ { text = "Berg", kind = "PERSON" } ]
+
+[[case]]
+id = "address-without-number"
+lang = "de"
+why = "Address described without house number (concept doc §36)."
+text = "Ich wohne gegenüber der Kirche in der Hauptstraße in Mödling."
+spans = [
+  { text = "Hauptstraße", kind = "STREET_ADDRESS" },
+  { text = "Mödling", kind = "CITY" },
+]
+
+[[case]]
+id = "address-wrapped"
+lang = "de"
+why = "Name and address broken across lines by mail clients."
+text = """Bitte liefern Sie an Sarah
+Leitner, Neubaugasse
+22, 1070 Wien."""
+spans = [
+  { text = "Sarah\nLeitner", kind = "PERSON" },
+  { text = "Neubaugasse\n22", kind = "STREET_ADDRESS" },
+  { text = "1070", kind = "POSTAL_CODE" },
+  { text = "Wien", kind = "CITY" },
+]
+
+[[case]]
+id = "public-figure"
+lang = "de"
+why = "Public figures are identifiable by name alone."
+text = "Wie Alexander Van der Bellen gestern sagte, ist das wichtig."
+spans = [ { text = "Alexander Van der Bellen", kind = "PERSON" } ]
+
+[[case]]
+id = "rare-combination"
+lang = "de"
+why = "Profession, small employer and small town together identify one person."
+text = "Ich bin der einzige Elektriker bei der Muster GmbH in Mank."
+spans = [
+  { text = "Muster GmbH", kind = "ORGANIZATION" },
+  { text = "Mank", kind = "CITY" },
+]
+
+[[case]]
+id = "international-name"
+lang = "en"
+why = "Non-European name with a hyphen."
+text = "Our customer Ngozi Okonkwo-Adeyemi called from Lagos."
+spans = [
+  { text = "Ngozi Okonkwo-Adeyemi", kind = "PERSON" },
+  { text = "Lagos", kind = "CITY" },
+]
+
+[[case]]
+id = "double-barrelled"
+lang = "de"
+why = "Hyphenated first and last names."
+text = "Frau Anna-Lena Müller-Lüdenscheidt wartet auf Antwort."
+spans = [ { text = "Anna-Lena Müller-Lüdenscheidt", kind = "PERSON" } ]
+
+[[case]]
+id = "transliterated"
+lang = "de"
+why = "Umlauts typed as ae/oe/ue."
+text = "Herr Juergen Mueller aus Koeln"
+spans = [
+  { text = "Juergen Mueller", kind = "PERSON" },
+  { text = "Koeln", kind = "CITY" },
+]
+
+[[case]]
+id = "typo-name"
+lang = "de"
+why = "Misspelled first name and lower-case surname."
+text = "hallo, hier ist sraah leitner wegen der rechnung"
+spans = [ { text = "sraah leitner", kind = "PERSON" } ]
+
+[[case]]
+id = "name-reversed"
+lang = "de"
+why = "Surname-first order defeats the dictionary matcher (M1 carry-over, needs NER)."
+text = "Kontakt: Leitner, Sarah (Buchhaltung), Durchwahl 22."
+spans = [ { text = "Leitner, Sarah", kind = "PERSON" } ]
+
+[[case]]
+id = "name-inflected"
+lang = "de"
+why = "Genitive form of a surname alone (M1 carry-over, needs NER or morphology)."
+text = "Frau Leitners Rechnung ist noch offen."
+spans = [ { text = "Leitners", kind = "PERSON" } ]

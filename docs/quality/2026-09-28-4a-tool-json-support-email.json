@@ -1,0 +1,139 @@
+{
+  "profile": "support-email",
+  "docs": 300,
+  "per_kind": {
+    "CITY": {
+      "gold": 348,
+      "gold_found": 0,
+      "detected": 0,
+      "detected_correct": 0,
+      "leaked": 0,
+      "partial_leaked": 0
+    },
+    "CONTRACT_ID": {
+      "gold": 1378,
+      "gold_found": 0,
+      "detected": 0,
+      "detected_correct": 0,
+      "leaked": 0,
+      "partial_leaked": 0
+    },
+    "CUSTOMER_ID": {
+      "gold": 1719,
+      "gold_found": 0,
+      "detected": 0,
+      "detected_correct": 0,
+      "leaked": 0,
+      "partial_leaked": 0
+    },
+    "EMAIL": {
+      "gold": 1210,
+      "gold_found": 0,
+      "detected": 0,
+      "detected_correct": 0,
+      "leaked": 0,
+      "partial_leaked": 0
+    },
+    "IBAN": {
+      "gold": 284,
+      "gold_found": 0,
+      "detected": 0,
+      "detected_correct": 0,
+      "leaked": 0,
+      "partial_leaked": 0
+    },
+    "INVOICE_ID": {
+      "gold": 736,
+      "gold_found": 0,
+      "detected": 0,
+      "detected_correct": 0,
+      "leaked": 0,
+      "partial_leaked": 0
+    },
+    "PERSON": {
+      "gold": 2002,
+      "gold_found": 0,
+      "detected": 0,
+      "detected_correct": 0,
+      "leaked": 0,
+      "partial_leaked": 0
+    },
+    "PHONE": {
+      "gold": 290,
+      "gold_found": 0,
+      "detected": 0,
+      "detected_correct": 0,
+      "leaked": 0,
+      "partial_leaked": 0
+    },
+    "POSTAL_CODE": {
+      "gold": 348,
+      "gold_found": 0,
+      "detected": 0,
+      "detected_correct": 0,
+      "leaked": 0,
+      "partial_leaked": 0
+    },
+    "STREET_ADDRESS": {
+      "gold": 348,
+      "gold_found": 0,
+      "detected": 0,
+      "detected_correct": 0,
+      "leaked": 0,
+      "partial_leaked": 0
+    }
+  },
+  "pass_docs": 18,
+  "uncertain_docs": 0,
+  "blocked_docs": 282,
+  "docs_with_leak": 0,
+  "accepted_leak_docs": 0,
+  "accepted_partial_only_docs": 0,
+  "uncertain_leak_docs": 0,
+  "per_lang": {
+    "de": {
+      "docs": 177,
+      "accepted": 5,
+      "uncertain": 0,
+      "blocked": 172,
+      "accepted_leak": 0
+    },
+    "en": {
+      "docs": 123,
+      "accepted": 13,
+      "uncertain": 0,
+      "blocked": 110,
+      "accepted_leak": 0
+    }
+  },
+  "store_errors": 0,
+  "provenance": {
+    "corpus_sha256": "9797f874b0e2b4a5253171e59fc5c130ab9149bed4243e93554965a90267f7ac",
+    "cases": 0,
+    "generated": 300,
+    "seed": 4243,
+    "family": "tool-json+tuning",
+    "platform": "macos-aarch64",
+    "crate_version": "0.1.0",
+    "git_commit": "0646b4bc7cae2f324ff6c4ecb46918a95d909a45",
+    "config_sha256": "777c530d1089c23369711f1ceb56f175c16b1a8d5ac28f84c79cf9a065c88133",
+    "lock_sha256": "d32d2f237264ec226eef0e8992096c24745c08904873c887b7c3ae81214a3ada",
+    "models": {
+      "gliner-x-small": "d76b3349fd4bfe44573221c0912ed459f432d14317552fdc65935dabcb833c4a",
+      "mbert-ner-hrl": "1213fdd405d295768b0d41d8214062f2f278f0e3acff6af67d8fd47360d2be0f"
+    },
+    "evaluated_at": 1790646080
+  },
+  "verifier_clean_trials": 0,
+  "verifier_false_positives": 0,
+  "verifier_broken_trials": 0,
+  "verifier_false_negatives": 0,
+  "latency_ms": {
+    "p50": 0.0,
+    "p95": 0.0,
+    "p99": 0.0,
+    "mean": 0.0,
+    "max": 0.0
+  },
+  "detector_errors": 0
+}

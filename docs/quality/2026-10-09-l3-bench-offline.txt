@@ -1,0 +1,78 @@
+# L3 engine follow-up: offline detect latency (raw)
+# commit 7a9b40c (branch l3/engine-proxy), release, reference machine macos-aarch64, 2026-10-10
+# command: target/release/inumaki bench --profile offline   (200 generated documents, seed 42, transforms on)
+# Each run is preceded by its uptime line; other agents' jobs shared the machine (1-minute load 5-7, no eval running).
+
+# run 1  2026-10-10 18:42:36  uptime: 18:42  up 1 day, 15:33, 4 users, load averages: 6.25 6.88 8.00
+profile offline  docs 200  avg 235 bytes
+detect   p50 0.2 ms  p95 0.4 ms  p99 0.7 ms
+process  p50 0.4 ms  p95 0.7 ms  p99 0.8 ms
+throughput 1624.5 docs/s
+rc=0
+# run 2  2026-10-10 18:42:36  uptime: 18:42  up 1 day, 15:33, 4 users, load averages: 6.25 6.88 8.00
+profile offline  docs 200  avg 235 bytes
+detect   p50 0.2 ms  p95 0.4 ms  p99 1.2 ms
+process  p50 0.4 ms  p95 0.7 ms  p99 1.0 ms
+throughput 1633.2 docs/s
+rc=0
+
+# Same-load A/B against main 496f988 (its core and configs equal the plan base afa0422 except rehydrate.rs), alternated:
+# main run 1 18:42  up 1 day, 15:33, 4 users, load averages: 5.75 6.76 7.94
+detect   p50 0.2 ms  p95 0.4 ms  p99 0.5 ms
+process  p50 0.3 ms  p95 0.6 ms  p99 0.7 ms
+throughput 1856.8 docs/s
+# head run 1 18:42  up 1 day, 15:33, 4 users, load averages: 5.75 6.76 7.94
+detect   p50 0.2 ms  p95 0.4 ms  p99 0.4 ms
+process  p50 0.4 ms  p95 0.7 ms  p99 0.8 ms
+throughput 1604.4 docs/s
+# main run 2 18:42  up 1 day, 15:33, 4 users, load averages: 5.75 6.76 7.94
+detect   p50 0.2 ms  p95 0.4 ms  p99 0.6 ms
+process  p50 0.3 ms  p95 0.6 ms  p99 0.7 ms
+throughput 1875.0 docs/s
+# head run 2 18:42  up 1 day, 15:33, 4 users, load averages: 5.75 6.76 7.94
+detect   p50 0.2 ms  p95 0.4 ms  p99 0.6 ms
+process  p50 0.4 ms  p95 0.7 ms  p99 0.7 ms
+throughput 1694.4 docs/s
+
+# Regex stage alone (throwaway diag build, never committed: RegexDetector::detect per bench document, 3 rounds; then
+# ADDRESS_PATTERN and the whole regex detector over one line of capitalized -er words and 4-digit numbers, no line break).
+# The text has no street suffix, so ADDRESS_PATTERN never completes a match and must reject every -er prefix: the
+# case a backtracking engine would blow up on. The pattern runs on the regex crate (finite automata); time is linear.
+# Two alternated rounds, 18:42-18:43: run 1 of both builds started at 1-minute load 5.75, run 2 at 5.61. An earlier
+# round at load 7.4-8.2 with an eval alongside is not used.
+== main 496f988 regex run 1
+T10 regex-stage round 0 docs 200 p50 0.092 ms p95 0.242 ms p99 0.384 ms total 23.4 ms
+T10 regex-stage round 1 docs 200 p50 0.076 ms p95 0.152 ms p99 0.177 ms total 15.5 ms
+T10 regex-stage round 2 docs 200 p50 0.075 ms p95 0.150 ms p99 0.161 ms total 15.2 ms
+T10 long-no-newline 131100 bytes ADDRESS_PATTERN 0.2 ms (0 matches) RegexDetector 56.2 ms (1900 spans)
+T10 long-no-newline 262200 bytes ADDRESS_PATTERN 0.4 ms (0 matches) RegexDetector 111.5 ms (3800 spans)
+T10 long-no-newline 524331 bytes ADDRESS_PATTERN 0.8 ms (0 matches) RegexDetector 221.5 ms (7599 spans)
+T10 long-no-newline 1048593 bytes ADDRESS_PATTERN 1.6 ms (0 matches) RegexDetector 441.7 ms (15197 spans)
+T10 long-no-newline 2097186 bytes ADDRESS_PATTERN 3.0 ms (0 matches) RegexDetector 915.1 ms (30394 spans)
+== head 7a9b40c regex run 1
+T10 regex-stage round 0 docs 200 p50 0.102 ms p95 0.281 ms p99 0.375 ms total 33.4 ms
+T10 regex-stage round 1 docs 200 p50 0.083 ms p95 0.174 ms p99 0.190 ms total 17.0 ms
+T10 regex-stage round 2 docs 200 p50 0.083 ms p95 0.169 ms p99 0.184 ms total 16.5 ms
+T10 long-no-newline 131100 bytes ADDRESS_PATTERN 0.2 ms (0 matches) RegexDetector 66.9 ms (1900 spans)
+T10 long-no-newline 262200 bytes ADDRESS_PATTERN 0.4 ms (0 matches) RegexDetector 135.9 ms (3800 spans)
+T10 long-no-newline 524331 bytes ADDRESS_PATTERN 0.8 ms (0 matches) RegexDetector 271.4 ms (7599 spans)
+T10 long-no-newline 1048593 bytes ADDRESS_PATTERN 1.5 ms (0 matches) RegexDetector 530.9 ms (15197 spans)
+T10 long-no-newline 2097186 bytes ADDRESS_PATTERN 3.0 ms (0 matches) RegexDetector 1045.1 ms (30394 spans)
+== main 496f988 regex run 2
+T10 regex-stage round 0 docs 200 p50 0.093 ms p95 0.235 ms p99 0.338 ms total 23.7 ms
+T10 regex-stage round 1 docs 200 p50 0.084 ms p95 0.171 ms p99 0.186 ms total 16.4 ms
+T10 regex-stage round 2 docs 200 p50 0.080 ms p95 0.170 ms p99 0.196 ms total 16.5 ms
+T10 long-no-newline 131100 bytes ADDRESS_PATTERN 0.3 ms (0 matches) RegexDetector 60.0 ms (1900 spans)
+T10 long-no-newline 262200 bytes ADDRESS_PATTERN 0.5 ms (0 matches) RegexDetector 112.8 ms (3800 spans)
+T10 long-no-newline 524331 bytes ADDRESS_PATTERN 0.8 ms (0 matches) RegexDetector 224.2 ms (7599 spans)
+T10 long-no-newline 1048593 bytes ADDRESS_PATTERN 1.6 ms (0 matches) RegexDetector 482.8 ms (15197 spans)
+T10 long-no-newline 2097186 bytes ADDRESS_PATTERN 2.9 ms (0 matches) RegexDetector 939.3 ms (30394 spans)
+== head 7a9b40c regex run 2
+T10 regex-stage round 0 docs 200 p50 0.109 ms p95 0.279 ms p99 0.383 ms total 32.7 ms
+T10 regex-stage round 1 docs 200 p50 0.091 ms p95 0.188 ms p99 0.216 ms total 18.3 ms
+T10 regex-stage round 2 docs 200 p50 0.090 ms p95 0.187 ms p99 0.219 ms total 18.2 ms
+T10 long-no-newline 131100 bytes ADDRESS_PATTERN 0.2 ms (0 matches) RegexDetector 70.0 ms (1900 spans)
+T10 long-no-newline 262200 bytes ADDRESS_PATTERN 0.4 ms (0 matches) RegexDetector 136.2 ms (3800 spans)
+T10 long-no-newline 524331 bytes ADDRESS_PATTERN 0.7 ms (0 matches) RegexDetector 277.9 ms (7599 spans)
+T10 long-no-newline 1048593 bytes ADDRESS_PATTERN 1.6 ms (0 matches) RegexDetector 554.9 ms (15197 spans)
+T10 long-no-newline 2097186 bytes ADDRESS_PATTERN 3.2 ms (0 matches) RegexDetector 1165.5 ms (30394 spans)

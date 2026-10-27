@@ -1,0 +1,219 @@
+{
+  "profile": "kiji-sanitizer",
+  "docs": 2058,
+  "per_kind": {
+    "CITY": {
+      "gold": 603,
+      "gold_found": 548,
+      "detected": 598,
+      "detected_correct": 548,
+      "leaked": 0,
+      "partial_leaked": 0
+    },
+    "CONTRACT_ID": {
+      "gold": 207,
+      "gold_found": 202,
+      "detected": 202,
+      "detected_correct": 202,
+      "leaked": 0,
+      "partial_leaked": 0
+    },
+    "CREDIT_CARD": {
+      "gold": 213,
+      "gold_found": 213,
+      "detected": 213,
+      "detected_correct": 213,
+      "leaked": 0,
+      "partial_leaked": 0
+    },
+    "CUSTOMER_ID": {
+      "gold": 441,
+      "gold_found": 428,
+      "detected": 428,
+      "detected_correct": 428,
+      "leaked": 0,
+      "partial_leaked": 0
+    },
+    "DATE": {
+      "gold": 1211,
+      "gold_found": 1210,
+      "detected": 1214,
+      "detected_correct": 1214,
+      "leaked": 0,
+      "partial_leaked": 0
+    },
+    "DATE_OF_BIRTH": {
+      "gold": 119,
+      "gold_found": 119,
+      "detected": 118,
+      "detected_correct": 115,
+      "leaked": 0,
+      "partial_leaked": 0
+    },
+    "EMAIL": {
+      "gold": 1508,
+      "gold_found": 1507,
+      "detected": 1511,
+      "detected_correct": 1507,
+      "leaked": 0,
+      "partial_leaked": 0
+    },
+    "IBAN": {
+      "gold": 328,
+      "gold_found": 302,
+      "detected": 495,
+      "detected_correct": 302,
+      "leaked": 0,
+      "partial_leaked": 0
+    },
+    "INVOICE_ID": {
+      "gold": 333,
+      "gold_found": 329,
+      "detected": 329,
+      "detected_correct": 329,
+      "leaked": 0,
+      "partial_leaked": 0
+    },
+    "IP_ADDRESS": {
+      "gold": 0,
+      "gold_found": 0,
+      "detected": 1,
+      "detected_correct": 0,
+      "leaked": 0,
+      "partial_leaked": 0
+    },
+    "LICENSE_PLATE": {
+      "gold": 100,
+      "gold_found": 94,
+      "detected": 94,
+      "detected_correct": 94,
+      "leaked": 0,
+      "partial_leaked": 0
+    },
+    "NATIONAL_ID": {
+      "gold": 1,
+      "gold_found": 1,
+      "detected": 1,
+      "detected_correct": 1,
+      "leaked": 0,
+      "partial_leaked": 0
+    },
+    "ORGANIZATION": {
+      "gold": 728,
+      "gold_found": 88,
+      "detected": 1029,
+      "detected_correct": 88,
+      "leaked": 0,
+      "partial_leaked": 0
+    },
+    "PERSON": {
+      "gold": 4139,
+      "gold_found": 2370,
+      "detected": 2887,
+      "detected_correct": 2370,
+      "leaked": 0,
+      "partial_leaked": 0
+    },
+    "PHONE": {
+      "gold": 1068,
+      "gold_found": 1068,
+      "detected": 1082,
+      "detected_correct": 1068,
+      "leaked": 0,
+      "partial_leaked": 0
+    },
+    "POSTAL_CODE": {
+      "gold": 596,
+      "gold_found": 596,
+      "detected": 597,
+      "detected_correct": 596,
+      "leaked": 0,
+      "partial_leaked": 0
+    },
+    "SECRET": {
+      "gold": 3,
+      "gold_found": 2,
+      "detected": 2,
+      "detected_correct": 2,
+      "leaked": 0,
+      "partial_leaked": 0
+    },
+    "STREET_ADDRESS": {
+      "gold": 820,
+      "gold_found": 814,
+      "detected": 821,
+      "detected_correct": 814,
+      "leaked": 0,
+      "partial_leaked": 0
+    },
+    "URL": {
+      "gold": 0,
+      "gold_found": 0,
+      "detected": 1,
+      "detected_correct": 0,
+      "leaked": 0,
+      "partial_leaked": 0
+    }
+  },
+  "pass_docs": 30,
+  "uncertain_docs": 0,
+  "blocked_docs": 2028,
+  "docs_with_leak": 0,
+  "accepted_leak_docs": 0,
+  "accepted_partial_only_docs": 0,
+  "uncertain_leak_docs": 0,
+  "per_lang": {
+    "de": {
+      "docs": 1123,
+      "accepted": 21,
+      "uncertain": 0,
+      "blocked": 1102,
+      "accepted_leak": 0
+    },
+    "en": {
+      "docs": 742,
+      "accepted": 7,
+      "uncertain": 0,
+      "blocked": 735,
+      "accepted_leak": 0
+    },
+    "mixed": {
+      "docs": 193,
+      "accepted": 2,
+      "uncertain": 0,
+      "blocked": 191,
+      "accepted_leak": 0
+    }
+  },
+  "store_errors": 0,
+  "provenance": {
+    "corpus_sha256": "e22f8a8959741e9b5b9ad286ca35f7bfd71102b81dc2b6eafa1dc63bb24ccf74",
+    "cases": 58,
+    "generated": 2000,
+    "seed": 42,
+    "family": "tuning",
+    "platform": "macos-aarch64",
+    "crate_version": "0.1.0",
+    "git_commit": "901ee587468e772122ed4749f287fbbdbb44d64c",
+    "config_sha256": "076721a757051ae9b170ba44891f80e0c4738769c29f1889c68d5d380826dcb0",
+    "lock_sha256": "d32d2f237264ec226eef0e8992096c24745c08904873c887b7c3ae81214a3ada",
+    "models": {
+      "gliner-x-small": "d76b3349fd4bfe44573221c0912ed459f432d14317552fdc65935dabcb833c4a",
+      "kiji-pii": "b5f3311391a74470ff26c5b700a422832e5dcdb74fedc205ad5a68e70dbf487c",
+      "mbert-ner-hrl": "1213fdd405d295768b0d41d8214062f2f278f0e3acff6af67d8fd47360d2be0f"
+    },
+    "evaluated_at": 1790651321
+  },
+  "verifier_clean_trials": 2045,
+  "verifier_false_positives": 2011,
+  "verifier_broken_trials": 1667,
+  "verifier_false_negatives": 0,
+  "latency_ms": {
+    "p50": 107.208917,
+    "p95": 236.264959,
+    "p99": 314.686458,
+    "mean": 115.31281294606435,
+    "max": 567.7888330000001
+  },
+  "detector_errors": 0
+}

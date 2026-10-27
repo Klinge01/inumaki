@@ -1,0 +1,43 @@
+{
+  "version": 1,
+  "tools": {
+    "record": {
+      "result": {
+        "/customer/id": { "identifier": "CUSTOMER_ID" },
+        "/customer/name": "free_text",
+        "/customer/iban": "free_text",
+        "/customer/count": "quantity",
+        "/customer/tags/*": "free_text",
+        "/customer/active": "preserve"
+      }
+    },
+    "lookup": {
+      "arguments": {
+        "/customer_id": { "identifier": "CUSTOMER_ID" },
+        "/note": "free_text"
+      },
+      "result": {
+        "/customer/id": { "identifier": "CUSTOMER_ID" },
+        "/customer/name": "free_text"
+      }
+    },
+    "echo": {
+      "result": { "/received": "free_text" }
+    },
+    "nested": {
+      "result": {
+        "/echo/filter/names/*": "free_text",
+        "/echo/filter/n": "quantity"
+      }
+    },
+    "dynamic": {
+      "result": { "/by_name": { "map": "quantity" } }
+    }
+  },
+  "prompts": {
+    "greet": { "arguments": { "/name": "free_text" } }
+  },
+  "resource_templates": {
+    "mem://note/{id}": { "params": { "id": "free_text" } }
+  }
+}

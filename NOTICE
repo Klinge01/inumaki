@@ -1,0 +1,39 @@
+inumaki
+Copyright 2026 the inumaki authors
+Licensed under the Apache License, Version 2.0.
+
+This product includes software derived from gline-rs
+(https://github.com/fbilhaut/gline-rs), Copyright Frédérik Bilhaut,
+licensed under the Apache License, Version 2.0: the GLiNER word splitter,
+prompt encoding, span tensor layout and span scoring in
+crates/inumaki-models/src/gliner.rs.
+
+Models are not distributed with inumaki. `inumaki models pull` downloads them
+from Hugging Face under their own licenses:
+- knowledgator/gliner-x-small — Apache License 2.0.
+- onnx-community/bert-base-multilingual-cased-ner-hrl-ONNX, an ONNX export of
+  Davlan/bert-base-multilingual-cased-ner-hrl — Academic Free License 3.0.
+
+This product includes a first-name list compiled from two open data sets
+(crates/inumaki-core/data/first_names_dach.txt, built by
+scripts/first-names/build.sh); the list is supporting evidence for detection
+and is distributed under the terms of its sources:
+- "Vornamen der geborenen Kinder seit 1984" (OGDEXT_VORNAMEN_1), Statistik
+  Austria, https://data.statistik.gv.at, licensed under CC BY 4.0
+  (https://creativecommons.org/licenses/by/4.0/).
+- "Liste der häufigen Vornamen in Berlin", Landesamt für Bürger- und
+  Ordnungsangelegenheiten Berlin, prepared by BerlinOnline GmbH,
+  https://github.com/berlin/haeufige-vornamen-berlin, data licensed under
+  CC BY 3.0 DE (https://creativecommons.org/licenses/by/3.0/de/); the
+  repository's code is MIT-licensed and not included.
+The list was filtered (minimum counts, minimum length, a stop list) and
+normalized; it is not the original data set.
+
+This product includes text from OpenAI Codex (https://github.com/openai/codex,
+tag rust-v0.159.2, commit ff6aec96948b70d94983af2641a6b67c94faeff5),
+Copyright 2025 OpenAI, licensed under the Apache License, Version 2.0: the
+prompt templates and model-catalog instruction strings in
+crates/inumaki-eval/harness/harness-static.jsonl (documents whose id starts
+with "codex/"), used as evaluation data only. Template variables were
+substituted (scripts/harness-corpus/build.py). The upstream NOTICE reads
+"OpenAI Codex / Copyright 2025 OpenAI".

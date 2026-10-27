@@ -1,0 +1,141 @@
+[[case]]
+id = "iban-bic"
+lang = "de"
+why = "IBAN directly followed by BIC (M1 final review C1)."
+text = "IBAN AT61 1904 3002 3457 3201 BIC BKAUATWW"
+spans = [ { text = "AT61 1904 3002 3457 3201", kind = "IBAN" } ]
+
+[[case]]
+id = "card-after-year"
+lang = "de"
+why = "Digit group before a card (M1 carry-over)."
+text = "Jahr 2024 4111 1111 1111 1111"
+spans = [ { text = "4111 1111 1111 1111", kind = "CREDIT_CARD" } ]
+
+[[case]]
+id = "card-cvv"
+lang = "de"
+why = "CVV right after the card number."
+text = "Karte 4111 1111 1111 1111 123 gueltig"
+spans = [ { text = "4111 1111 1111 1111", kind = "CREDIT_CARD" } ]
+
+[[case]]
+id = "phone-formats"
+lang = "de"
+why = "Parenthesized area code and a German number."
+text = "Tel. (0664) 123 45 67 oder +49 30 12345678"
+spans = [
+  { text = "(0664) 123 45 67", kind = "PHONE" },
+  { text = "+49 30 12345678", kind = "PHONE" },
+]
+
+[[case]]
+id = "customer-labels"
+lang = "de"
+why = "Label-triggered business identifiers."
+text = "Kundennummer: K-928174, Vertragsnummer: V-20240117"
+spans = [
+  { text = "K-928174", kind = "CUSTOMER_ID" },
+  { text = "V-20240117", kind = "CONTRACT_ID" },
+]
+
+[[case]]
+id = "invoice-short-label"
+lang = "de"
+why = "Short label forms (Rechnung, Vertrag) without -nummer must still trigger the domain rules."
+text = "Zu Rechnung RE-2026-04711 vom 12.03.2026 und Vertrag V-20240117 bitte Rückruf."
+spans = [
+  { text = "RE-2026-04711", kind = "INVOICE_ID" },
+  { text = "12.03.2026", kind = "DATE" },
+  { text = "V-20240117", kind = "CONTRACT_ID" },
+]
+
+[[case]]
+id = "url-with-email"
+lang = "de"
+why = "Email nested in a preserved URL (M1 final review C2)."
+text = "Portal: https://portal.example.at/kunden?email=sarah.leitner@example.at"
+spans = [ { text = "sarah.leitner@example.at", kind = "EMAIL" } ]
+
+[[case]]
+id = "secret-repeated"
+lang = "de"
+why = "A removed secret repeated without its label (M1 final review C3)."
+text = "api_key: 9f8e7d6c5b4a3210ffee. Bitte teste mit 9f8e7d6c5b4a3210ffee im Header."
+spans = [ { text = "9f8e7d6c5b4a3210ffee", kind = "SECRET" } ]
+
+[[case]]
+id = "password-quoted"
+lang = "de"
+why = "Quoted password with a space."
+text = "password=\"Sommer 2024\" bitte nicht weitergeben"
+spans = [ { text = "Sommer 2024", kind = "SECRET" } ]
+
+[[case]]
+id = "svnr"
+lang = "de"
+why = "Austrian social security number."
+text = "Meine SVNR ist 1237 010180."
+spans = [ { text = "1237 010180", kind = "NATIONAL_ID" } ]
+
+[[case]]
+id = "plate"
+lang = "de"
+why = "Austrian licence plate."
+text = "Kennzeichen W-12345A"
+spans = [ { text = "W-12345A", kind = "LICENSE_PLATE" } ]
+
+[[case]]
+id = "dob"
+lang = "de"
+why = "Date of birth after a label."
+text = "geboren am 12.03.1985"
+spans = [ { text = "12.03.1985", kind = "DATE_OF_BIRTH" } ]
+
+[[case]]
+id = "neg-accident"
+lang = "de"
+why = "Sensitive but not identifying (concept doc §22)."
+text = "Meine Tochter hatte letzte Woche einen Unfall, deshalb muss ich den Termin verschieben."
+
+[[case]]
+id = "neg-tariff"
+lang = "de"
+why = "Plain request without identifiers."
+text = "Mein Tarif läuft nächsten Monat aus. Gibt es ein besseres Angebot?"
+
+[[case]]
+id = "neg-cities"
+lang = "de"
+why = "Cities alone are preserved and must not count as leaks."
+text = "Wir liefern nach Wien, Graz und Linz."
+spans = [
+  { text = "Wien", kind = "CITY" },
+  { text = "Graz", kind = "CITY" },
+  { text = "Linz", kind = "CITY" },
+]
+
+[[case]]
+id = "neg-products"
+lang = "de"
+why = "Product and brand names are not people."
+text = "Das Apple iPhone 15 und das Samsung Galaxy S24 sind lieferbar."
+
+[[case]]
+id = "neg-date"
+lang = "de"
+why = "An appointment date is preserved."
+text = "Der Termin am 24.09.2026 um 10 Uhr passt."
+spans = [ { text = "24.09.2026", kind = "DATE" } ]
+
+[[case]]
+id = "neg-version"
+lang = "en"
+why = "Version strings look like IP addresses."
+text = "Error in version 1.2.3.4 on server localhost:8080"
+
+[[case]]
+id = "neg-en-greeting"
+lang = "en"
+why = "Greeting and closing only."
+text = "Dear Support Team, thank you for the quick help. Best regards"

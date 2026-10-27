@@ -1,0 +1,85 @@
+{
+  "profile": "support-email",
+  "docs": 107,
+  "per_kind": {
+    "DATE": {
+      "gold": 0,
+      "gold_found": 0,
+      "detected": 5,
+      "detected_correct": 0,
+      "leaked": 0,
+      "partial_leaked": 0
+    },
+    "PERSON": {
+      "gold": 0,
+      "gold_found": 0,
+      "detected": 7,
+      "detected_correct": 0,
+      "leaked": 0,
+      "partial_leaked": 0
+    }
+  },
+  "pass_docs": 106,
+  "uncertain_docs": 0,
+  "blocked_docs": 1,
+  "docs_with_leak": 0,
+  "accepted_leak_docs": 0,
+  "accepted_partial_only_docs": 0,
+  "uncertain_leak_docs": 0,
+  "per_lang": {
+    "de": {
+      "docs": 107,
+      "accepted": 106,
+      "uncertain": 0,
+      "blocked": 1,
+      "accepted_leak": 0
+    }
+  },
+  "store_errors": 0,
+  "provenance": {
+    "corpus_sha256": "1ae5aae743ac9050e0cc12e4eb6457be8d91abe9e712c53a0092642a1516f815",
+    "cases": 0,
+    "generated": 0,
+    "seed": 42,
+    "family": "file+file-name",
+    "platform": "macos-aarch64",
+    "crate_version": "0.1.0",
+    "git_commit": "d6aa53f22d3b2866a03af321c3ca89c67d51477d",
+    "config_sha256": "31d513fdd700c02c244c04ba4bdff66821301c57a2187806f2763c7ee9a2eeac",
+    "config_source": "embedded",
+    "canonical": false,
+    "lock_sha256": "5e139127257958d64bfdd6c239d1e10b06952855433151d3a58e3d00b53e2307",
+    "models": {
+      "gliner-x-small": "d76b3349fd4bfe44573221c0912ed459f432d14317552fdc65935dabcb833c4a",
+      "kiji-pii": "b5f3311391a74470ff26c5b700a422832e5dcdb74fedc205ad5a68e70dbf487c",
+      "mbert-ner-hrl": "1213fdd405d295768b0d41d8214062f2f278f0e3acff6af67d8fd47360d2be0f"
+    },
+    "evaluated_at": 1792507127
+  },
+  "verifier_clean_trials": 0,
+  "verifier_false_positives": 0,
+  "verifier_broken_trials": 0,
+  "verifier_false_negatives": 0,
+  "latency_ms": {
+    "p50": 5.796291999999999,
+    "p95": 9.728167,
+    "p99": 14.7925,
+    "mean": 6.348448168224299,
+    "max": 15.617209
+  },
+  "detector_errors": 0,
+  "links": {
+    "coref_docs": 0,
+    "coref_recoverable_docs": 0,
+    "person_mentions_tokenized": 7,
+    "surface_mentions": 0,
+    "wrong_restorations": 0,
+    "wrong_links": 0,
+    "tokens_total": 7,
+    "distinct_tokens_total": 7
+  },
+  "verifier_fp_by_check": {},
+  "verifier_fp_by_kind": {},
+  "sequence": null,
+  "consistency_redactions": 0
+}

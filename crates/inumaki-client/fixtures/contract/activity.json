@@ -1,0 +1,9 @@
+{"records": [
+  {"id": "0123456789abcdef0123456789abcdef", "at": 1790000600, "dataset": "qwxzvk-kunde", "front_door": "gateway",
+   "upstream": "a1b2c3d4e5f60718", "direction": "result", "verdict": "released", "checks": ["Leak"],
+   "kinds": [{"kind": "PERSON", "count": 2}, {"kind": "IBAN", "count": 1}], "tripwire": false, "bytes": 1234,
+   "released": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"},
+  {"id": "fedcba9876543210fedcba9876543210", "at": 1790000700, "dataset": "qwxzvk-akten", "front_door": "hook",
+   "upstream": null, "direction": "result", "verdict": "blocked", "checks": ["ClearValue"],
+   "kinds": [{"kind": "PERSON", "count": 1}], "tripwire": true, "bytes": 88, "released": null}
+]}

@@ -1,0 +1,6 @@
+{"label": "local diagnostic output — not approved for transmission", "outcome": "pass", "profile": "offline",
+ "retried": false,
+ "spans": [{"start": 6, "end": 21, "kind": "PERSON", "action": "tokenize", "source": "Known", "original": "Qwxzvk Zyxwuria"}],
+ "reasons": [], "replacements": 1, "candidate": "Hallo <PERSON_a7f2>, Ticket qwxzvk-17",
+ "limitations": ["text inside images is not inspected"],
+ "expiry": {"rotation_days": 30, "grace_days": 7, "epoch_started_at": 1790000000}}

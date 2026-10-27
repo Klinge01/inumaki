@@ -1,0 +1,94 @@
+# Name shapes the harness-static precision rules must never drop (plan
+# 2026-10-12, review 1 C1-C3, integrator ruling L68). Tuning cases, so the
+# tuning baselines' gated leak counts and the safety suite cover them.
+# Shapes no detector finds today (/home/huber/, C:\Users\mhuber\,
+# https://…/team/gruber) are not here: they leak before any rule, would fail
+# the safety suite's zero-residue target, and a precision rule cannot touch
+# an undetected span (ruling R12; integrator L71: a known recall gap, the
+# next plan "path and URL name recall"). The same holds for a bare vocabulary-word
+# surname in a CSV row (`Nachname;Vorname;Ort` / `Branch;Anna;Graz`): `Branch`
+# is not detected today (recall gap, ruling R12), so that case is not here.
+
+[[case]]
+id = "shape-file-surname"
+lang = "de"
+why = "A surname inside a file name (C1)."
+text = "Im Anhang finden Sie Rechnung_Huber_2026.pdf mit allen Positionen."
+spans = [ { text = "Huber", kind = "PERSON" } ]
+
+[[case]]
+id = "shape-file-surname-hyphen"
+lang = "de"
+why = "A surname inside a hyphenated file name (N2). Blocked before any rule in the planner's scan; its target comes from Task 1."
+text = "Im Anhang finden Sie Rechnung-Huber-2026.pdf mit allen Positionen."
+spans = [ { text = "Huber", kind = "PERSON" } ]
+
+[[case]]
+id = "shape-file-surname-bare"
+lang = "de"
+why = "A file named after a surname (N2)."
+text = "Die Liste steht in Huber.txt im Projektordner."
+spans = [ { text = "Huber", kind = "PERSON" } ]
+
+[[case]]
+id = "shape-handle-surname"
+lang = "en"
+why = "A surname as a chat handle (C1)."
+text = "Please ask @leitner in the channel before you merge the change."
+spans = [ { text = "leitner", kind = "PERSON" } ]
+
+[[case]]
+id = "shape-path-claude"
+lang = "en"
+why = "A first name that is also a product name, as a home directory (C1, C3)."
+text = "The backup is under /Users/claude/Documents/taxes, please keep it there."
+spans = [ { text = "claude", kind = "PERSON" } ]
+
+[[case]]
+id = "shape-username-claude"
+lang = "en"
+why = "A first name that is also a product name, in a user name (C1, C3)."
+text = "Log in as claude_dubois and reset the password for the shared drive."
+spans = [ { text = "claude_dubois", kind = "PERSON" } ]
+
+[[case]]
+id = "word-surname-model"
+lang = "de"
+why = "A surname that is a technical vocabulary word, after an honorific (C2)."
+text = "Herr Model hat wegen der offenen Rechnung angerufen."
+spans = [ { text = "Model", kind = "PERSON" } ]
+
+[[case]]
+id = "word-surname-branch"
+lang = "de"
+why = "A surname that is a technical vocabulary word, after an honorific (C2)."
+text = "Frau Branch bittet um einen Rückruf am Nachmittag."
+spans = [ { text = "Branch", kind = "PERSON" } ]
+
+[[case]]
+id = "word-surname-json"
+lang = "de"
+why = "A vocabulary-word surname alone in a JSON field (C2)."
+text = '{"vorname":"Anna","nachname":"Model","ort":"Graz"}'
+spans = [ { text = "Anna", kind = "PERSON" }, { text = "Model", kind = "PERSON" } ]
+
+[[case]]
+id = "claude-first-name-de"
+lang = "de"
+why = "Claude as a person's first name, no product cue (C3)."
+text = "Claude hat angerufen und bittet um Rückruf wegen des Vertrags."
+spans = [ { text = "Claude", kind = "PERSON" } ]
+
+[[case]]
+id = "claude-first-name-json"
+lang = "de"
+why = "Claude as a first name in a JSON field (C3)."
+text = '{"vorname":"Claude","nachname":"Dubois"}'
+spans = [ { text = "Claude", kind = "PERSON" }, { text = "Dubois", kind = "PERSON" } ]
+
+[[case]]
+id = "claude-first-name-en"
+lang = "en"
+why = "Claude as a first name in a thank-you line (C3)."
+text = "Thanks, Claude, for sending the signed form so quickly."
+spans = [ { text = "Claude", kind = "PERSON" } ]

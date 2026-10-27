@@ -1,0 +1,2 @@
+{"error": {"type": "privacy_block", "message": "the sanitized text did not pass verification; nothing was sent",
+           "kinds": ["PERSON", "IBAN"], "checks": ["Leak"]}}

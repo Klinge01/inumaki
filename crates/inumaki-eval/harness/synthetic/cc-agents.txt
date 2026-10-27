@@ -1,0 +1,9 @@
+Agent types for the Task tool:
+- general-purpose: Researches questions, searches code, and carries out multi-step tasks. Use it when a search may need several attempts. (Tools: all)
+- Explore: Fast read-only search across the codebase. Say how thorough it should be: quick, medium, or very thorough. (Tools: Read, Grep, Glob, Bash)
+- Plan: Software architect that designs an implementation plan and names the critical files and trade-offs. (Tools: Read, Grep, Glob)
+- statusline-setup: Configures the status line shown under the prompt. (Tools: Read, Edit)
+
+Output styles: Default keeps answers brief. Explanatory adds short insights about the codebase while working. Learning asks the user to write small pieces of code themselves.
+
+Slash commands: /review asks for a code review of the current branch, /compact summarizes the conversation to free context, /init writes a CLAUDE.md for the repository, /permissions shows which tools may run without asking, /model switches between Opus, Sonnet, and Haiku.

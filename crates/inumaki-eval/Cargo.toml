@@ -1,0 +1,24 @@
+[package]
+name = "inumaki-eval"
+description = "Evaluation corpus, synthetic generator, and metrics for inumaki"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[dependencies]
+inumaki-core = { path = "../inumaki-core" }
+serde.workspace = true
+serde_json.workspace = true
+toml.workspace = true
+thiserror.workspace = true
+unicode-normalization.workspace = true
+sha2.workspace = true
+mail-builder.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true
+mail-parser.workspace = true
+
+[lints]
+workspace = true

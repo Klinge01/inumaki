@@ -1,0 +1,8 @@
+{
+  "harness": "openclaw",
+  "files": {"openclaw_config": "openclaw.json"},
+  "plan": {
+    "gateway": {"token": "inumaki_gw_golden", "entries": [{"name": "tickets", "url": "http://127.0.0.1:8789/mcp/mcp-tickets"}]}
+  },
+  "error": "cannot_edit_safely"
+}

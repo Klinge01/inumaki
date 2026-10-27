@@ -1,0 +1,4 @@
+Task 7: scan --config configs/default.toml --profile offline long-paths.txt (245652 bytes), this build
+time -p real, 5 runs sorted: 0.04 0.04 0.04 0.04 0.05 (median 0.04 s; Task 1: 0.03 s; budget 2x)
+interleaved wall clock, median of 9: main build 0.0348 s, this build 0.0445 s (1.28x)
+load averages 5.20 6.73 8.96

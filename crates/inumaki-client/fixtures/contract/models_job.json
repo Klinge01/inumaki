@@ -1,0 +1,4 @@
+{"state": "running", "started_at": 1790000000,
+ "files": [{"model": "gliner-multi", "path": "/Users/qwxzvk/Library/Application Support/inumaki/models/gliner/model.onnx",
+            "bytes_done": 1048576, "bytes_total": 367001600, "verified": false}],
+ "error": null, "restart_required": false}

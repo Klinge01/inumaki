@@ -1,0 +1,8 @@
+# Harness-static corpus, refusal reading (rulings L60, L70): run with a
+# configuration whose profiles set on_uncertain = "tokenize". No refusal
+# under support-email and strict. PERSON spans that remain (Census-surname
+# words standing alone, listed in targets/harness-static.toml) become tokens.
+#   inumaki --config <tokenize config> eval --profile <p> --corpus crates/inumaki-eval/harness/harness-static.jsonl --origin harness-static --targets crates/inumaki-eval/targets/harness-static-tokenize.toml
+max_accepted_leak_rate = 0.0
+max_block_rate = 0.0
+max_verifier_fp_rate = 1.0

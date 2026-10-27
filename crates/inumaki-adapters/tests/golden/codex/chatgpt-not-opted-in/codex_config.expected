@@ -1,0 +1,11 @@
+# my codex settings
+model = "gpt-5-codex"
+
+[mcp_servers.docs]
+url = "http://127.0.0.1:8789/mcp/mcp-docs"
+http_headers = { Authorization = "Bearer inumaki_gw_golden" }
+required = true
+startup_timeout_sec = 30
+
+[profiles.fast]
+model = "gpt-5-mini"

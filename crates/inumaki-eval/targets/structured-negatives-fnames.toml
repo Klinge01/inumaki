@@ -1,0 +1,15 @@
+# Negative-only precision corpus, file names (harness/structured-negatives-fnames.jsonl,
+# plan 2026-10-20, ruling S22), measured with --origin file-name: file-name
+# stems in both mirror spellings. Every span is a false positive. The value is
+# Task 3's measurement after B6; later tasks may only keep or lower it, and it
+# is never raised to pass.
+# Task 3: PERSON detected 7 under support-email and 7 under strict (Task 1,
+# free text: 38; spec gate at most 24).
+#   inumaki eval --profile <p> --corpus crates/inumaki-eval/harness/structured-negatives-fnames.jsonl \
+#     --origin file-name --targets crates/inumaki-eval/targets/structured-negatives-fnames.toml
+max_accepted_leak_rate = 0.0
+max_block_rate = 1.0
+max_verifier_fp_rate = 1.0
+
+[max_detected]
+PERSON = 7

@@ -1,0 +1,21 @@
+{
+  "harness": "openclaw",
+  "files": {"openclaw_config": "openclaw.json"},
+  "login": "oauth",
+  "plan": {
+    "gateway": {"token": "inumaki_gw_golden", "entries": [{"name": "tickets", "url": "http://127.0.0.1:8789/mcp/mcp-tickets"}]},
+    "chat": {"anthropic": "http://127.0.0.1:8787/anthropic"},
+    "proxy_client_header": "inumaki_client_golden"
+  },
+  "expect": {
+    "openclaw_config": {
+      "auth": {"profiles": {"anthropic:default": {"mode": "oauth"}}},
+      "agents": {"defaults": {
+        "model": {"primary": "anthropic/claude-opus-4-6"},
+        "workspace": "/Users/qwxzvk",
+        "sandbox": {"mode": "all", "docker": {"binds": ["/data:/data:ro"]}}
+      }},
+      "mcp": {"servers": {"tickets": {"url": "http://127.0.0.1:8789/mcp/mcp-tickets", "transport": "streamable-http", "headers": {"Authorization": "Bearer inumaki_gw_golden"}}}}
+    }
+  }
+}

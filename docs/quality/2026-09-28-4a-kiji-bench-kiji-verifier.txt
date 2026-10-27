@@ -1,0 +1,4 @@
+profile kiji-verifier  docs 200  avg 235 bytes
+detect   p50 51.6 ms  p95 110.3 ms  p99 179.2 ms
+process  p50 95.2 ms  p95 208.7 ms  p99 259.6 ms
+throughput 5.9 docs/s

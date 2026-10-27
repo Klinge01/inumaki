@@ -1,0 +1,7 @@
+{"vault": {"key_source": "keyring", "integrity_ok": true},
+ "models": [{"name": "gliner-multi", "status": "ok"}],
+ "profiles": [{"name": "offline", "available": true, "qualification": "unqualified"}],
+ "datasets": [{"id": "qwxzvk-kunde", "profile": "offline", "rotation_days": 30, "grace_days": 7,
+               "upstreams": [{"name": "qwxzvk-crm", "kind": "stdio", "contract": "invalid", "has_secrets": true}]}],
+ "gateway": {"listen": "127.0.0.1:8789", "tokens": 1},
+ "next_steps": ["upstream qwxzvk-crm of dataset qwxzvk-kunde has an invalid content policy: fix the file and add the upstream again"]}

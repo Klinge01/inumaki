@@ -1,0 +1,21 @@
+From: Zyxwuria Quolnath <zyxwuria.quolnath@example.test>
+To: support@musterfirma.example
+Subject: =?UTF-8?B?VGVybWluIG7DpGNoc3RlIFdvY2hl?=
+Date: Sun, 28 Sep 2026 09:00:00 +0200
+Message-ID: <html-1@example.test>
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="alt"
+
+--alt
+Content-Type: text/plain; charset=utf-8
+
+Hallo, passt Dienstag 14:00?
+--alt
+Content-Type: text/html; charset=utf-8
+
+<html><head><style>p { color: red; } .hidden { display:none }</style>
+<script>alert("SCRIPT-CANARY");</script></head>
+<body><p>Hallo,</p><p>passt <b>Dienstag 14:00</b>?</p>
+<table><tr><td>Ort</td><td>Neubaugasse 22</td></tr></table>
+<p><a href="https://example.test/termin">Termin</a></p></body></html>
+--alt--

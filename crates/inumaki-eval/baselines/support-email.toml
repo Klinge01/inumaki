@@ -1,0 +1,45 @@
+# Re-recorded 2026-10-20 (structured positions, final fix wave, ruling L139)
+# after six cases joined cases/structured_positions.toml (2100 -> 2106 docs):
+# a lowercase or two-letter surname next to a document word
+# (shape-fname-doc-*, shape-text-doc-short-surname). No old document changed
+# outcome (per-id compare against Task 7). PERSON recall dips because the six
+# gold values are new: `Li` in the sentence is found; the four stems are
+# tokenized whole by one model span (no residue, not an exact gold match);
+# `ng` is detected by nothing, as on main e041659 (two-letter values are
+# below the residue minimum).
+# Leak docs 11 -> 11. verifier_fn_rate 0.1419 -> 0.1457: the six documents
+# shift the verifier-trial Rng stream (ruling L79), no verifier change.
+#
+# Re-recorded 2026-10-20 (structured positions, Task 7) after
+# cases/structured_positions.toml added 21 cases (2079 -> 2100 docs). The 21
+# documents come right after the 12 name-shape cases and before the generated
+# mails, so they shift the one verifier-trial Rng stream (ruling L79: the
+# per-document draw reshuffle moves verifier_fn_rate by about 0.01 to 0.02
+# without a verifier change); the home-folder login check (Task 4b) also
+# removes one false negative per profile on the old documents.
+# verifier_fn_rate moved 0.1500 -> 0.1419. Leak counts did not rise:
+# accepted_leak_docs 11 -> 11 (the 21 new cases leak nothing).
+profile = "support-email"
+docs = 2106
+leak_rate = 0.0052231718898385565
+verifier_fn_rate = 0.1457286432160804
+platform = "macos-aarch64"
+accepted_leak_rate = 0.0052935514918190565
+block_rate = 0.013295346628679962
+
+[recall]
+CITY = 0.7777777777777778
+CONTRACT_ID = 0.9758454106280193
+CREDIT_CARD = 1.0
+CUSTOMER_ID = 0.9706546275395034
+DATE = 0.9991749174917491
+DATE_OF_BIRTH = 1.0
+EMAIL = 0.99933818663137
+IBAN = 0.9969512195121951
+INVOICE_ID = 0.9880239520958084
+LICENSE_PLATE = 0.94
+ORGANIZATION = 0.6016483516483516
+PERSON = 0.9373958581290169
+PHONE = 1.0
+POSTAL_CODE = 0.9043624161073825
+STREET_ADDRESS = 0.9975609756097561

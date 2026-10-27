@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fbfcfd"/><stop offset="1" stop-color="#e2e6ec"/>
+    </linearGradient>
+    <clipPath id="tile"><rect x="10" y="10" width="80" height="80" rx="18"/></clipPath>
+  </defs>
+  <rect x="10" y="10" width="80" height="80" rx="18" fill="url(#bg)"/>
+  <g clip-path="url(#tile)">
+    <g transform="translate(10 10)">
+      <rect x="7.97285" y="78.9422" width="78.6249" height="18" transform="rotate(-13 7.97285 78.9422)" fill="#9aa1ab"/>
+      <rect x="8.80856" y="82.4644" width="78.6249" height="18" transform="rotate(-15 8.80856 82.4644)" fill="#1a1e24"/>
+      <g stroke="#1a1e24" fill="#1a1e24">
+        <path d="M22.5576 19.5C29.8498 19.5003 36.6514 27.1187 36.6514 37.7432C36.6512 48.3674 29.8497 55.985 22.5576 55.9853C18.9082 55.9853 15.7192 54.1618 13.3604 50.9346C10.9793 47.6769 9.50006 43.0311 9.5 37.7432C9.5 32.455 10.9792 27.8086 13.3604 24.5508C15.7192 21.3235 18.9082 19.5 22.5576 19.5Z" fill="none" stroke-width="5"/>
+        <path d="M22.2113 33.3286C23.7108 33.3286 25.5881 34.9084 25.5882 37.7426C25.5882 40.577 23.7109 42.1567 22.2113 42.1567C21.528 42.1566 21.0715 41.8934 20.6771 41.2797C20.2153 40.561 19.8714 39.3535 19.8714 37.7426C19.8715 36.1316 20.2152 34.9242 20.6771 34.2055C21.0715 33.5918 21.528 33.3286 22.2113 33.3286Z" stroke-width="5"/>
+        <path d="M38.68 38.12L53.2 41.1371L54.52 54.2114L73 59.24" fill="none" stroke-width="5"/>
+      </g>
+    </g>
+  </g>
+  <rect x="10.25" y="10.25" width="79.5" height="79.5" rx="17.75" fill="none" stroke="#000" stroke-opacity=".14" stroke-width=".5"/>
+</svg>

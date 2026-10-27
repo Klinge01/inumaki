@@ -1,0 +1,227 @@
+# Document vocabulary: German and English document, office and file-default
+# words and table field labels (crates/inumaki-core/src/detect/technical.rs;
+# rulings S1-S4 in the structured-positions design; see docs/quality/2026-10-20-structured-positions.md).
+# Written for inumaki (Apache-2.0); no external dictionary. One lowercase NFC
+# word per line, sorted. `word surname` marks a word that is a US Census 2010
+# surname with at least 1000 bearers; `word rare` one with 1-999 bearers, which
+# counts as a document word only in a file-name position (S3, L123;
+# scripts/harness-corpus/check-surnames.sh).
+# A document word makes a model PERSON span technical only when the span has no
+# surname-marked or ALSO_NAMES word (S2). No compounds are split (S4). Never add a
+# DACH first name, a stoplist name-like word, or a technical word (tests:
+# document_vocabulary_holds_no_names, unmarked_vocabulary_shares_no_word_with_generator_names).
+abrechnung
+abschluss
+adresse
+agenda
+anfrage
+anfragen
+angebot
+angebote
+anhang
+anhänge
+anmerkung
+anschrift
+antrag
+anträge
+antwort
+archiv
+archive
+artikel
+attachment
+attachments
+auftrag
+auftragsbestätigung
+aufträge
+ausgaben
+auswertung
+backup
+beleg
+belege
+bemerkung
+bericht
+berichte
+bescheid
+beschreibung
+bestellung
+bestellungen
+bestätigung
+betrag
+betreff
+bewerbung
+bilanz
+bild rare
+bilder rare
+bildschirmfoto
+briefe
+budget
+bueromaterial
+büromaterial
+calendar rare
+changelog
+contacts
+contract
+contracts
+copy
+datei
+dateien
+daten
+datenblatt
+datum
+dienstplan
+document
+documents
+doku rare
+dokument
+dokumentation
+dokumente
+draft rare
+drafts rare
+dsc
+dscf
+dscn
+einladung
+einnahmen
+email
+entwurf
+entwürfe
+export
+fahrtenbuch
+familienname
+final
+folder
+formular
+foto rare
+fotos rare
+geburtsdatum
+gopr
+gutschrift
+handbuch
+img
+import
+index
+info
+infos
+inventar
+inventur
+invoice
+invoices
+jahresabschluss
+kalender rare
+kalkulation
+katalog
+kategorie
+kontakte
+kontoauszug
+kopie
+korrespondenz
+kostenvoranschlag
+kundenliste
+kundennummer
+kündigung
+lager surname
+lagerliste
+lebenslauf
+letter rare
+letters rare
+lieferschein
+liste
+mahnung
+mail rare
+mappe
+memo
+menge surname
+minutes
+mitschrift
+mvimg
+nachname
+nachricht
+nachrichten
+neues
+notes
+notiz
+notizen
+offer rare
+offerte
+ordner rare
+ort surname
+pano rare
+photo
+photos
+picture
+pictures
+planung
+plz
+preis rare
+preisliste
+presentation
+projekt
+projekte
+projektplan
+proposal
+protokoll
+protokolle
+präsentation
+pxl
+quartalsbericht
+quittung
+quote
+readme
+receipt
+receipts
+rechnung
+rechnungen
+rechnungsnummer
+reisekosten
+reklamation
+rückmeldung
+sammlung
+scan
+scans
+schedule
+screenshot
+screenshots
+sitzung
+skizze
+slides
+spesen
+spreadsheet
+statement
+statements
+statistik
+steuer rare
+strasse
+straße
+stundenzettel
+summary
+summe rare
+tabelle
+telefon
+telefonnummer
+template
+templates
+termin rare
+termine rare
+textdatei
+todo
+typ
+unbenannt
+unterlagen
+unterschrift
+untitled
+urlaub rare
+urlaubsantrag
+verlauf
+vertrag
+verträge
+vollmacht
+vorlage
+vorlagen
+vorname
+zahlung
+zahlungen
+zeiterfassung
+zeugnis
+zusammenfassung
+übersicht
+überweisung

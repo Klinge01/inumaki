@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- inumaki service LaunchAgent, rendered by the app (M6 spec §7.1). The
+     program and log paths below are filled in, XML-escaped, at install. -->
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>inumaki.inumakid</string>
+  <key>ProgramArguments</key><array><string>@PROGRAM@</string></array>
+  <key>RunAtLoad</key><true/>
+  <key>KeepAlive</key><dict><key>SuccessfulExit</key><false/></dict>
+  <key>StandardOutPath</key><string>@LOG@</string>
+  <key>StandardErrorPath</key><string>@LOG@</string>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>INUMAKI_MANAGED_BY</key><string>app</string>
+    <key>RUST_LOG</key><string>info</string>
+  </dict>
+  <key>ProcessType</key><string>Background</string>
+</dict>
+</plist>

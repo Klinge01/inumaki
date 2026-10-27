@@ -1,0 +1,7 @@
+proxy bench  wire messages  profile support-email  history 0 mails ~0 tokens  system 20 KB  untransformed synthetic mails
+cold first turn      5518.5 ms
+added per turn (50)  p50 528.9 ms  p95 596.7 ms
+refused turns        0
+incremental cache    hits 2571  misses 81
+leak index stale     0  failed 0
+first restored byte  514.3 ms  (p50 of 20 streamed turns; p95 789.0 ms; scripted upstream time subtracted)

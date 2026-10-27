@@ -1,0 +1,31 @@
+[package]
+name = "inumaki-vault"
+description = "Encrypted persistent token store (datasets, namespaces, epochs) for the inumaki privacy engine"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[dependencies]
+inumaki-core = { path = "../inumaki-core" }
+rusqlite.workspace = true
+chacha20poly1305.workspace = true
+hmac.workspace = true
+sha2.workspace = true
+zeroize.workspace = true
+getrandom.workspace = true
+keyring.workspace = true
+thiserror.workspace = true
+tracing.workspace = true
+serde_json.workspace = true
+subtle.workspace = true
+base64.workspace = true
+serde.workspace = true
+
+[dev-dependencies]
+inumaki-core = { path = "../inumaki-core", features = ["test-support"] }
+tempfile.workspace = true
+proptest.workspace = true
+
+[lints]
+workspace = true

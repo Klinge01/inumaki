@@ -1,0 +1,12 @@
+shape-file-surname pass
+shape-file-surname-hyphen blocked
+shape-file-surname-bare pass
+shape-handle-surname pass
+shape-path-claude pass
+shape-username-claude pass
+word-surname-model pass
+word-surname-branch pass
+word-surname-json pass
+claude-first-name-de pass
+claude-first-name-json pass
+claude-first-name-en pass

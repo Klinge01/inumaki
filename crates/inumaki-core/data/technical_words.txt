@@ -1,0 +1,209 @@
+# Technical vocabulary: words of agent-harness and developer text that are
+# not names (crates/inumaki-core/src/detect/technical.rs). Written for
+# inumaki (Apache-2.0); no external dictionary. `word surname` marks a word
+# that is a US Census 2010 surname (public domain; scripts/harness-corpus/
+# check-surnames.sh sets and checks the marks): capitalized and alone it
+# keeps the span (review 1 C2). Never add a DACH first name, a stoplist
+# name-like word, or an unmarked generator name (tests:
+# vocabulary_holds_no_names, unmarked_vocabulary_shares_no_word_with_generator_names).
+actions
+agent surname
+agents
+anthropic
+app surname
+application
+ascii
+assessment
+assistant
+author
+authored
+authorization
+auto
+available
+backticks
+base surname
+bash surname
+binaries
+blame
+body surname
+bottom surname
+branch surname
+brief surname
+bullet
+call surname
+cargo surname
+case surname
+ccolumn
+changelogs
+checkout
+clarity surname
+cli
+code surname
+codex
+coding
+collaboration
+command
+commands
+commentary
+concise
+config
+credential
+default
+description
+descriptions
+destructive
+discovery
+dismissive
+egress
+engineer surname
+escalation
+external
+file surname
+filesystem
+fish surname
+flags
+flaky
+flavored
+follow
+frontend
+full surname
+git
+github
+glob
+goblins
+gpt
+gremlins
+grep
+guidance
+haiku
+head surname
+here
+hero surname
+home surname
+icons
+incompatible
+injection
+instructions
+interaction
+intermediary
+intermediate
+ipynb
+item
+jupyter
+keyword
+landlock
+language
+latest
+lline
+log
+low surname
+lucide
+main surname
+malicious
+markdown
+mcp
+memory surname
+mermaid
+message
+messages
+metadata
+migrations
+misc
+mktemp
+mode surname
+model surname
+monospace
+multi
+name
+names surname
+naming
+never surname
+new surname
+non surname
+not
+notebook
+numbered
+objective
+ogres
+opus
+original
+outcome
+owner surname
+parser
+party
+path surname
+pattern
+payload
+permission
+person surname
+personality
+pigeons
+points surname
+pr
+pragmatism
+preamble
+predictive
+printf
+proactivity
+probing
+promises
+prompt
+python
+raccoons
+reassurance
+references
+reminder surname
+repo
+report
+request
+requests
+reset
+review
+reviewer
+rigor surname
+risk surname
+roots surname
+rule surname
+rust surname
+samples surname
+sandbox
+sandboxing
+scoring
+seatbelt
+segmentation
+sender surname
+senior surname
+sensitive
+should
+show surname
+skill surname
+sonnet
+spec
+special surname
+state surname
+status
+style surname
+subagents
+svg
+svgs
+task
+taxonomy
+test surname
+title surname
+todos
+tool surname
+trolls
+turn surname
+type
+updates
+uris
+url
+user
+users
+vague surname
+window surname
+work surname
+workspace
+write surname
+writing
+yes surname

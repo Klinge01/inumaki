@@ -1,0 +1,95 @@
+# Phase 2 (spec §9): never registered by this plan; S29. Names in
+# delimited columns, lowercase plates, typo'd and glued labels (rulings
+# L78, L85; see docs/quality/2026-10-20-structured-positions.md
+# §7.1). Run as a corpus with scripts/harness-corpus/cases-to-jsonl.py.
+
+[[case]]
+id = "shape-csv-surname-first-col"
+lang = "de"
+why = "L78: a vocabulary-word surname in the first CSV column."
+text = "Nachname;Vorname;Ort\nBranch;Anna;Graz"
+spans = [ { text = "Branch", kind = "PERSON" }, { text = "Anna", kind = "PERSON" } ]
+
+[[case]]
+id = "shape-csv-name-after-id"
+lang = "de"
+why = "L78: a surname under a Name header after an id column."
+text = "Kundennummer;Name;Ort\nK-123456;Branch;Wien"
+spans = [ { text = "Branch", kind = "PERSON" } ]
+
+[[case]]
+id = "shape-csv-lower-comma"
+lang = "de"
+why = "L78: lowercase names under nachname,vorname."
+text = "nachname,vorname,ort\nhuber,anna,graz\nleitner,sarah,linz"
+spans = [ { text = "huber", kind = "PERSON" }, { text = "anna", kind = "PERSON" }, { text = "leitner", kind = "PERSON" }, { text = "sarah", kind = "PERSON" } ]
+
+[[case]]
+id = "shape-csv-tsv-snake"
+lang = "en"
+why = "L78: first_name and last_name columns, tab-separated."
+text = "first_name\tlast_name\tcity\nAnna\tModel\tGraz"
+spans = [ { text = "Anna", kind = "PERSON" }, { text = "Model", kind = "PERSON" } ]
+
+[[case]]
+id = "shape-csv-markdown"
+lang = "de"
+why = "L78: a Name column in a Markdown table."
+text = "| Name | Abteilung |\n|---|---|\n| Sarah Branch | Einkauf |\n| Max Model | Vertrieb |"
+spans = [ { text = "Sarah Branch", kind = "PERSON" }, { text = "Max Model", kind = "PERSON" } ]
+
+[[case]]
+id = "shape-csv-quoted"
+lang = "de"
+why = "L78: quoted CSV cells."
+text = "\"Nachname\",\"Vorname\"\n\"Branch\",\"Anna\""
+spans = [ { text = "Branch", kind = "PERSON" }, { text = "Anna", kind = "PERSON" } ]
+
+[[case]]
+id = "shape-kv-surname"
+lang = "de"
+why = "L78: key-value lines with person labels."
+text = "Nachname: Branch\nVorname: Anna"
+spans = [ { text = "Branch", kind = "PERSON" }, { text = "Anna", kind = "PERSON" } ]
+
+[[case]]
+id = "shape-csv-generic-koch"
+lang = "de"
+why = "Review C1: stoplist surnames under a generic Name header."
+text = "Name;Ort\nKoch;Graz\nWagner;Linz"
+spans = [ { text = "Koch", kind = "PERSON" }, { text = "Wagner", kind = "PERSON" } ]
+
+[[case]]
+id = "shape-plate-lower-label"
+lang = "de"
+why = "L85: a lowercase plate after its label."
+text = "Mein Kennzeichen ist w-9666c, bitte notieren."
+spans = [ { text = "w-9666c", kind = "LICENSE_PLATE" } ]
+
+[[case]]
+id = "shape-plate-lower-en"
+lang = "en"
+why = "L85: a lowercase plate after 'plate'."
+text = "The car with plate g-16131a was towed this morning."
+spans = [ { text = "g-16131a", kind = "LICENSE_PLATE" } ]
+
+[[case]]
+id = "shape-label-typo-customer"
+lang = "de"
+why = "L85: a typo'd customer-number label."
+text = "Meine Kudnennummer ist 4867526, bitte prüfen."
+spans = [ { text = "4867526", kind = "CUSTOMER_ID" } ]
+
+[[case]]
+id = "shape-label-typo-invoice"
+lang = "en"
+why = "L85: a typo'd invoice label and a lowercase value."
+text = "About invoiec re-2026-63895: it was paid twice."
+spans = [ { text = "re-2026-63895", kind = "INVOICE_ID" } ]
+
+[[case]]
+id = "shape-label-glued"
+lang = "de"
+why = "L85: a label glued to its value with an underscore."
+text = "Die Datei heißt Kundennummer_123456 und liegt im Archiv."
+spans = [ { text = "123456", kind = "CUSTOMER_ID" } ]

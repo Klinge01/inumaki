@@ -1,0 +1,12 @@
+// OpenClaw configuration
+{
+  auth: { profiles: { 'anthropic:default': { mode: 'oauth' } } },
+  agents: {
+    defaults: {
+      model: { primary: 'anthropic/claude-opus-4-6' },
+      workspace: '/Users/qwxzvk',
+      sandbox: { mode: 'all', docker: { binds: ['/data:/data:ro',], }, },
+    },
+  },
+  mcp: { servers: { tickets: { command: 'tickets-mcp', env: { TICKETS_TOKEN: 's3cret-qwxzvk' } } } },
+}

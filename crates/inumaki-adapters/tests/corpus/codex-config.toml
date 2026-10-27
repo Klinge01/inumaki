@@ -1,0 +1,26 @@
+# Codex user configuration (synthetic corpus sample).
+model = "gpt-6-sol"
+model_reasoning_effort = "medium"
+approval_policy = "on-request"
+sandbox_mode = "workspace-write"
+tui.theme = "dark" # a dotted key at the top level
+
+[sandbox_workspace_write]
+writable_roots = ["/Users/example/scratch"]
+
+# A local stdio server.
+[mcp_servers.docs]
+command = "npx"
+args = ["-y", "@example/docs-mcp", "--root", "/Users/example/Dokumente"]
+env = { DOCS_LOCALE = "de-AT" }
+
+# A remote server with a static header.
+[mcp_servers.wiki]
+url = "https://wiki.example.invalid/mcp"
+http_headers = { "X-Wiki-Tenant" = "abteilung-süd", Authorization = "Bearer synthetic-token-001" }
+startup_timeout_sec = 20
+
+# Legacy profile table (ignored by Codex >= 0.134; kept to prove it round-trips).
+[profiles.fast]
+model = "gpt-6-mini"
+model_reasoning_effort = "low"

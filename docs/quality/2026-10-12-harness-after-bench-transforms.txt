@@ -1,0 +1,38 @@
+turn  0  refused  blocked by inumaki (kinds: PERSON; checks: Ner). Nothing was sent. Edit or rewind the message.
+turn  1  refused  blocked by inumaki (kinds: PERSON; checks: Ner). Nothing was sent. Edit or rewind the message.
+turn  2  refused  blocked by inumaki (kinds: PERSON; checks: Ner). Nothing was sent. Edit or rewind the message.
+turn  3  refused  blocked by inumaki (kinds: PERSON; checks: Ner). Nothing was sent. Edit or rewind the message.
+turn  4  refused  blocked by inumaki (kinds: PERSON; checks: Ner). Nothing was sent. Edit or rewind the message.
+turn  5  refused  blocked by inumaki (kinds: PERSON; checks: Ner). Nothing was sent. Edit or rewind the message.
+turn  6  refused  blocked by inumaki (kinds: PERSON; checks: Leak, Policy). Nothing was sent. Edit or rewind the message.
+turn  7  refused  blocked by inumaki (kinds: PERSON; checks: Ner). Nothing was sent. Edit or rewind the message.
+turn  8  refused  blocked by inumaki (kinds: PERSON; checks: Ner). Nothing was sent. Edit or rewind the message.
+turn  9  refused  blocked by inumaki (kinds: PERSON; checks: Ner). Nothing was sent. Edit or rewind the message.
+turn 10  refused  blocked by inumaki (kinds: PERSON; checks: Ner). Nothing was sent. Edit or rewind the message.
+turn 11  refused  blocked by inumaki (kinds: PERSON; checks: Ner). Nothing was sent. Edit or rewind the message.
+turn 12  refused  blocked by inumaki (kinds: PERSON; checks: Ner). Nothing was sent. Edit or rewind the message.
+turn 13  refused  blocked by inumaki (kinds: PERSON; checks: Ner). Nothing was sent. Edit or rewind the message.
+turn 14  refused  blocked by inumaki (kinds: PERSON; checks: Ner). Nothing was sent. Edit or rewind the message.
+turn 15  refused  blocked by inumaki (kinds: PERSON; checks: Ner). Nothing was sent. Edit or rewind the message.
+turn 16  refused  blocked by inumaki (kinds: PERSON; checks: Ner). Nothing was sent. Edit or rewind the message.
+turn 17  refused  blocked by inumaki (kinds: PERSON; checks: Ner). Nothing was sent. Edit or rewind the message.
+turn 18  refused  blocked by inumaki (kinds: PERSON; checks: Ner). Nothing was sent. Edit or rewind the message.
+turn 19  refused  blocked by inumaki (kinds: PERSON; checks: Ner). Nothing was sent. Edit or rewind the message.
+turn 20  refused  blocked by inumaki (kinds: PERSON; checks: Ner). Nothing was sent. Edit or rewind the message.
+turn 21  refused  blocked by inumaki (kinds: PERSON; checks: Ner). Nothing was sent. Edit or rewind the message.
+turn 22  refused  blocked by inumaki (kinds: PERSON; checks: Ner). Nothing was sent. Edit or rewind the message.
+turn 23  refused  blocked by inumaki (kinds: PERSON; checks: Ner). Nothing was sent. Edit or rewind the message.
+turn 24  refused  blocked by inumaki (kinds: PERSON; checks: Ner). Nothing was sent. Edit or rewind the message.
+turn 25  refused  blocked by inumaki (kinds: PERSON; checks: Ner). Nothing was sent. Edit or rewind the message.
+turn 37  refused  blocked by inumaki (kinds: PERSON; checks: Leak, Policy). Nothing was sent. Edit or rewind the message.
+turn 43  refused  blocked by inumaki (kinds: PERSON; checks: Leak, Policy). Nothing was sent. Edit or rewind the message.
+turn 48  refused  blocked by inumaki (kinds: PERSON; checks: Leak, Policy). Nothing was sent. Edit or rewind the message.
+proxy bench  wire messages  profile support-email  history 5 mails ~2648 tokens  system 20 KB  transformed synthetic mails
+cold first turn      refused (451)
+added per turn (22)  p50 764.8 ms  p95 1211.7 ms
+refused turns        29
+first refused turn   0
+incremental cache    hits 679  misses 47
+leak index stale     0  failed 0
+first refusal        blocked by inumaki (kinds: PERSON; checks: Ner). Nothing was sent. Edit or rewind the message.
+first restored byte  677.8 ms  (p50 of 19 streamed turns; p95 993.4 ms; scripted upstream time subtracted; 1 refused or errored)

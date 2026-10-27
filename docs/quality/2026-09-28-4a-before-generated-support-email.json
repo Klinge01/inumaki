@@ -1,0 +1,186 @@
+{
+  "profile": "support-email",
+  "docs": 2000,
+  "per_kind": {
+    "CITY": {
+      "gold": 589,
+      "gold_found": 18,
+      "detected": 74,
+      "detected_correct": 18,
+      "leaked": 0,
+      "partial_leaked": 0
+    },
+    "CONTRACT_ID": {
+      "gold": 202,
+      "gold_found": 197,
+      "detected": 197,
+      "detected_correct": 197,
+      "leaked": 0,
+      "partial_leaked": 0
+    },
+    "CREDIT_CARD": {
+      "gold": 211,
+      "gold_found": 211,
+      "detected": 211,
+      "detected_correct": 211,
+      "leaked": 0,
+      "partial_leaked": 0
+    },
+    "CUSTOMER_ID": {
+      "gold": 440,
+      "gold_found": 427,
+      "detected": 427,
+      "detected_correct": 427,
+      "leaked": 0,
+      "partial_leaked": 0
+    },
+    "DATE": {
+      "gold": 1207,
+      "gold_found": 1207,
+      "detected": 1211,
+      "detected_correct": 1211,
+      "leaked": 0,
+      "partial_leaked": 0
+    },
+    "DATE_OF_BIRTH": {
+      "gold": 117,
+      "gold_found": 117,
+      "detected": 113,
+      "detected_correct": 113,
+      "leaked": 1,
+      "partial_leaked": 0
+    },
+    "EMAIL": {
+      "gold": 1504,
+      "gold_found": 1504,
+      "detected": 1504,
+      "detected_correct": 1504,
+      "leaked": 0,
+      "partial_leaked": 0
+    },
+    "IBAN": {
+      "gold": 326,
+      "gold_found": 300,
+      "detected": 300,
+      "detected_correct": 300,
+      "leaked": 0,
+      "partial_leaked": 0
+    },
+    "INVOICE_ID": {
+      "gold": 332,
+      "gold_found": 328,
+      "detected": 328,
+      "detected_correct": 328,
+      "leaked": 0,
+      "partial_leaked": 0
+    },
+    "LICENSE_PLATE": {
+      "gold": 99,
+      "gold_found": 93,
+      "detected": 93,
+      "detected_correct": 93,
+      "leaked": 0,
+      "partial_leaked": 0
+    },
+    "ORGANIZATION": {
+      "gold": 725,
+      "gold_found": 368,
+      "detected": 912,
+      "detected_correct": 368,
+      "leaked": 0,
+      "partial_leaked": 0
+    },
+    "PERSON": {
+      "gold": 4107,
+      "gold_found": 3423,
+      "detected": 4165,
+      "detected_correct": 3423,
+      "leaked": 71,
+      "partial_leaked": 1
+    },
+    "PHONE": {
+      "gold": 1059,
+      "gold_found": 1059,
+      "detected": 1079,
+      "detected_correct": 1059,
+      "leaked": 0,
+      "partial_leaked": 0
+    },
+    "POSTAL_CODE": {
+      "gold": 589,
+      "gold_found": 533,
+      "detected": 533,
+      "detected_correct": 533,
+      "leaked": 0,
+      "partial_leaked": 0
+    },
+    "STREET_ADDRESS": {
+      "gold": 806,
+      "gold_found": 802,
+      "detected": 810,
+      "detected_correct": 802,
+      "leaked": 1,
+      "partial_leaked": 0
+    }
+  },
+  "pass_docs": 1528,
+  "uncertain_docs": 0,
+  "blocked_docs": 472,
+  "docs_with_leak": 56,
+  "accepted_leak_docs": 56,
+  "accepted_partial_only_docs": 1,
+  "uncertain_leak_docs": 0,
+  "per_lang": {
+    "de": {
+      "docs": 1076,
+      "accepted": 854,
+      "uncertain": 0,
+      "blocked": 222,
+      "accepted_leak": 42
+    },
+    "en": {
+      "docs": 733,
+      "accepted": 548,
+      "uncertain": 0,
+      "blocked": 185,
+      "accepted_leak": 9
+    },
+    "mixed": {
+      "docs": 191,
+      "accepted": 126,
+      "uncertain": 0,
+      "blocked": 65,
+      "accepted_leak": 5
+    }
+  },
+  "store_errors": 0,
+  "provenance": {
+    "corpus_sha256": "ae3d4bf5fb92153223bea05bd0176411e80bbe53c2215d55f0c5a4ac547e343e",
+    "cases": 0,
+    "generated": 2000,
+    "seed": 42,
+    "family": "tuning",
+    "platform": "macos-aarch64",
+    "crate_version": "0.1.0",
+    "git_commit": "4002a875502776e489592a0c595af5a7db24a188",
+    "config_sha256": "777c530d1089c23369711f1ceb56f175c16b1a8d5ac28f84c79cf9a065c88133",
+    "lock_sha256": "16d85bcc6a73912411520e2c8f9a5676c567882c0f50c537a09e6ddbcdd3d69c",
+    "models": {
+      "gliner-x-small": "d76b3349fd4bfe44573221c0912ed459f432d14317552fdc65935dabcb833c4a",
+      "mbert-ner-hrl": "1213fdd405d295768b0d41d8214062f2f278f0e3acff6af67d8fd47360d2be0f"
+    },
+    "evaluated_at": 1790636933
+  },
+  "verifier_clean_trials": 2000,
+  "verifier_false_positives": 45,
+  "verifier_broken_trials": 1677,
+  "verifier_false_negatives": 303,
+  "latency_ms": {
+    "p50": 51.939541999999996,
+    "p95": 108.27241699999999,
+    "p99": 138.247291,
+    "mean": 57.24308354700009,
+    "max": 494.11975
+  },
+  "detector_errors": 0
+}

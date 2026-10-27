@@ -1,0 +1,55 @@
+# The inumaki app (M6 spec §6). Its own workspace: excluded from the root,
+# so `cargo test --workspace` there needs no WebKit or GTK packages.
+[workspace]
+
+[package]
+name = "inumaki-app"
+description = "The inumaki app: tray, settings window, Easy-mode setup"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.85"
+license = "Apache-2.0"
+publish = false
+
+[lib]
+name = "inumaki_app_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[features]
+# Real harness runs of the end-to-end check (tests/harness_real.rs, M6-3 Task 9b).
+harness-tests = []
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+serde_json = "1"
+
+[dependencies]
+tauri = { version = "2", features = ["tray-icon", "image-png"] }
+tauri-plugin-notification = "2"
+tauri-plugin-dialog = "2"
+tauri-plugin-opener = "2"
+inumaki-client = { path = "../../../crates/inumaki-client" }
+inumaki-adapters = { path = "../../../crates/inumaki-adapters" }
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "time", "sync", "process", "io-util"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sha2 = "0.10"
+hmac = "0.12"
+getrandom = "0.3"
+zeroize = "1"
+dirs = "6"
+unicode-normalization = "0.1"
+chrono = { version = "0.4", default-features = false, features = ["clock"] }
+
+[dev-dependencies]
+inumaki-client = { path = "../../../crates/inumaki-client", features = ["mock"] }
+tempfile = "3"
+toml = "0.9"
+
+[lints.rust]
+unsafe_code = "forbid"
+
+[lints.clippy]
+dbg_macro = "deny"
+print_stdout = "deny"
+print_stderr = "deny"

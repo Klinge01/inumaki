@@ -1,0 +1,206 @@
+{
+  "profile": "support-email",
+  "docs": 300,
+  "per_kind": {
+    "PERSON": {
+      "gold": 0,
+      "gold_found": 0,
+      "detected": 0,
+      "detected_correct": 0,
+      "leaked": 1,
+      "partial_leaked": 0
+    }
+  },
+  "pass_docs": 299,
+  "uncertain_docs": 0,
+  "blocked_docs": 1,
+  "docs_with_leak": 1,
+  "accepted_leak_docs": 1,
+  "accepted_partial_only_docs": 0,
+  "uncertain_leak_docs": 0,
+  "per_lang": {
+    "de": {
+      "docs": 300,
+      "accepted": 299,
+      "uncertain": 0,
+      "blocked": 1,
+      "accepted_leak": 1
+    }
+  },
+  "store_errors": 0,
+  "provenance": {
+    "corpus_sha256": "fbee8de9bc7413d2a5697a83ed7a0e8fb98ac842c9db88f82ce7e963067ba614",
+    "cases": 0,
+    "generated": 300,
+    "seed": 777,
+    "family": "sequence+service",
+    "platform": "macos-aarch64",
+    "crate_version": "0.1.0",
+    "git_commit": "d6aa53f22d3b2866a03af321c3ca89c67d51477d",
+    "config_sha256": "31d513fdd700c02c244c04ba4bdff66821301c57a2187806f2763c7ee9a2eeac",
+    "config_source": "embedded",
+    "canonical": false,
+    "lock_sha256": "5e139127257958d64bfdd6c239d1e10b06952855433151d3a58e3d00b53e2307",
+    "models": {
+      "gliner-x-small": "d76b3349fd4bfe44573221c0912ed459f432d14317552fdc65935dabcb833c4a",
+      "kiji-pii": "b5f3311391a74470ff26c5b700a422832e5dcdb74fedc205ad5a68e70dbf487c",
+      "mbert-ner-hrl": "1213fdd405d295768b0d41d8214062f2f278f0e3acff6af67d8fd47360d2be0f"
+    },
+    "evaluated_at": 1792507143
+  },
+  "verifier_clean_trials": 0,
+  "verifier_false_positives": 0,
+  "verifier_broken_trials": 0,
+  "verifier_false_negatives": 0,
+  "latency_ms": {
+    "p50": 23.382625,
+    "p95": 41.093875000000004,
+    "p99": 51.170458,
+    "mean": 24.486386159999995,
+    "max": 55.35570800000001
+  },
+  "detector_errors": 0,
+  "links": {
+    "coref_docs": 74,
+    "coref_recoverable_docs": 69,
+    "person_mentions_tokenized": 605,
+    "surface_mentions": 69,
+    "wrong_restorations": 0,
+    "wrong_links": 0,
+    "tokens_total": 1095,
+    "distinct_tokens_total": 1095
+  },
+  "verifier_fp_by_check": {},
+  "verifier_fp_by_kind": {},
+  "sequence": {
+    "steps": 300,
+    "restarts": 2,
+    "rotations": 1,
+    "cache_hits": 5,
+    "repeats": 14,
+    "repeats_expected_cached": 6,
+    "repeats_cached": 5,
+    "per_label": {
+      "AfterRotation": {
+        "docs": 1,
+        "accepted": 1,
+        "uncertain": 0,
+        "blocked": 0,
+        "accepted_leak": 0,
+        "links": 1,
+        "wrong_links": 0,
+        "same_text_reuse": 0
+      },
+      "Ambiguous": {
+        "docs": 42,
+        "accepted": 42,
+        "uncertain": 0,
+        "blocked": 0,
+        "accepted_leak": 0,
+        "links": 0,
+        "wrong_links": 0,
+        "same_text_reuse": 29
+      },
+      "BareBeyondWindow": {
+        "docs": 6,
+        "accepted": 6,
+        "uncertain": 0,
+        "blocked": 0,
+        "accepted_leak": 0,
+        "links": 0,
+        "wrong_links": 0,
+        "same_text_reuse": 5
+      },
+      "BareRecentOther": {
+        "docs": 25,
+        "accepted": 25,
+        "uncertain": 0,
+        "blocked": 0,
+        "accepted_leak": 0,
+        "links": 0,
+        "wrong_links": 0,
+        "same_text_reuse": 15
+      },
+      "BareRecentSame": {
+        "docs": 23,
+        "accepted": 23,
+        "uncertain": 0,
+        "blocked": 0,
+        "accepted_leak": 0,
+        "links": 0,
+        "wrong_links": 0,
+        "same_text_reuse": 11
+      },
+      "FullThenBare": {
+        "docs": 68,
+        "accepted": 68,
+        "uncertain": 0,
+        "blocked": 0,
+        "accepted_leak": 0,
+        "links": 63,
+        "wrong_links": 0,
+        "same_text_reuse": 3
+      },
+      "Plain": {
+        "docs": 32,
+        "accepted": 31,
+        "uncertain": 0,
+        "blocked": 1,
+        "accepted_leak": 0,
+        "links": 0,
+        "wrong_links": 0,
+        "same_text_reuse": 0
+      },
+      "Repeat": {
+        "docs": 14,
+        "accepted": 14,
+        "uncertain": 0,
+        "blocked": 0,
+        "accepted_leak": 0,
+        "links": 5,
+        "wrong_links": 0,
+        "same_text_reuse": 5
+      },
+      "SurnameRecentOther": {
+        "docs": 34,
+        "accepted": 34,
+        "uncertain": 0,
+        "blocked": 0,
+        "accepted_leak": 0,
+        "links": 0,
+        "wrong_links": 0,
+        "same_text_reuse": 7
+      },
+      "SurnameRecentSame": {
+        "docs": 23,
+        "accepted": 23,
+        "uncertain": 0,
+        "blocked": 0,
+        "accepted_leak": 1,
+        "links": 0,
+        "wrong_links": 0,
+        "same_text_reuse": 5
+      },
+      "SurnameTitled": {
+        "docs": 32,
+        "accepted": 32,
+        "uncertain": 0,
+        "blocked": 0,
+        "accepted_leak": 0,
+        "links": 0,
+        "wrong_links": 0,
+        "same_text_reuse": 1
+      }
+    },
+    "wrong_links_ambiguous": 0,
+    "wrong_links_surname_other": 0,
+    "wrong_links_cross_step": 0,
+    "pre_rotation_tokens": 317,
+    "resolved_within_grace": 317,
+    "unresolved_after_grace": 317,
+    "reused_after_rotation": 0,
+    "event_failures": 0,
+    "restore_errors": 0
+  },
+  "consistency_redactions": 0
+}

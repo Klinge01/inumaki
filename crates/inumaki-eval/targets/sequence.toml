@@ -1,0 +1,18 @@
+# Persistent-dataset gates (M4 spec §13.1, plan 4a Task 6): the same leak and
+# block limits as the corpus gates, zero wrong-person restoration, zero wrong
+# links in labeled ambiguity cases and in steps naming a first name of a person
+# never seen in full (zero under the default configuration; the opt-in
+# first_names_across_requests run is measured against it, not expected to pass), every token of a closed epoch still
+# resolving during its grace period and none after expiry plus a sweep, and no
+# pre-rotation token reappearing after the rotation. Verifier trials are off
+# for sequences (the verifier is measured on the corpora).
+max_accepted_leak_rate = 0.01
+max_block_rate = 0.20
+max_verifier_fp_rate = 1.0
+zero_wrong_restorations = true
+max_wrong_links_ambiguous = 0
+max_wrong_links_surname_other = 0
+max_wrong_links_bare_other = 0
+max_resolved_after_grace = 0
+all_resolve_within_grace = true
+max_reused_after_rotation = 0

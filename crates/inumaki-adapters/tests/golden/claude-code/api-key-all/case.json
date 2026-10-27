@@ -1,0 +1,36 @@
+{
+  "harness": "claude-code",
+  "files": {"claude_json": "claude.json", "claude_settings": "settings.json"},
+  "env": {"ANTHROPIC_API_KEY": ""},
+  "login": "api_key",
+  "plan": {
+    "gateway": {"token": "inumaki_gw_golden", "entries": [
+      {"name": "crm", "url": "http://127.0.0.1:8789/mcp/mcp-crm"},
+      {"name": "db", "project": "/Users/qwxzvk/proj", "url": "http://127.0.0.1:8789/mcp/mcp-db"}
+    ]},
+    "files": {"mirror_root": "/Users/qwxzvk/Inumaki"},
+    "chat": {"anthropic": "http://127.0.0.1:8787/anthropic"},
+    "hook": {"command": "/Users/qwxzvk/Library/Application Support/inumaki/bin/inumaki-hook", "socket": "/Users/qwxzvk/Library/Application Support/inumaki/inumakid.sock"},
+    "proxy_client_header": "inumaki_client_golden"
+  },
+  "expect": {
+    "claude_json": {
+      "numStartups": 12,
+      "mcpServers": {
+        "crm": {"type": "http", "url": "http://127.0.0.1:8789/mcp/mcp-crm", "headers": {"Authorization": "Bearer inumaki_gw_golden"}},
+        "notes": {"type": "http", "url": "https://notes.example/mcp"}
+      },
+      "projects": {
+        "/Users/qwxzvk/proj": {"allowedTools": [], "mcpServers": {"db": {"type": "http", "url": "http://127.0.0.1:8789/mcp/mcp-db", "headers": {"Authorization": "Bearer inumaki_gw_golden"}}}}
+      }
+    },
+    "claude_settings": {
+      "permissions": {"allow": ["Bash(ls:*)"], "additionalDirectories": ["/Users/qwxzvk/Inumaki"]},
+      "env": {"DISABLE_TELEMETRY": "1", "ANTHROPIC_BASE_URL": "http://127.0.0.1:8787/anthropic", "ANTHROPIC_CUSTOM_HEADERS": "X-Inumaki-Client: inumaki_client_golden"},
+      "hooks": {
+        "PreToolUse": [{"matcher": "Bash", "hooks": [{"type": "command", "command": "~/bin/guard.sh"}]}],
+        "PostToolUse": [{"matcher": "^(Bash|PowerShell|Read|Grep|Glob|Edit|WebFetch|ReadMcpResourceTool)$|^mcp__(?!(crm|db)__).*", "hooks": [{"type": "command", "command": "'/Users/qwxzvk/Library/Application Support/inumaki/bin/inumaki-hook' claude-code --socket '/Users/qwxzvk/Library/Application Support/inumaki/inumakid.sock'", "timeout": 30}]}]
+      }
+    }
+  }
+}

@@ -1,0 +1,40 @@
+[package]
+name = "inumaki-gateway"
+description = "MCP gateway for the inumaki privacy engine: wrapped servers, contract-driven rehydration and sanitization"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[dependencies]
+inumaki-core = { path = "../inumaki-core" }
+inumaki-vault = { path = "../inumaki-vault" }
+rmcp.workspace = true
+rustls.workspace = true
+tokio.workspace = true
+tokio-util = { workspace = true, features = ["codec"] }
+futures.workspace = true
+bytes.workspace = true
+http.workspace = true
+axum.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+tracing.workspace = true
+getrandom.workspace = true
+sha2.workspace = true
+
+[features]
+# The scripted MCP server the gateway, daemon, and shim tests and the
+# Claude Code smoke test use (`scripted`). Never in a default build: its
+# tools echo arguments and return environment variables.
+test-fixtures = []
+
+[dev-dependencies]
+tempfile.workspace = true
+rusqlite.workspace = true
+tokio = { workspace = true, features = ["test-util"] }
+inumaki-gateway = { path = ".", features = ["test-fixtures"] }
+
+[lints]
+workspace = true

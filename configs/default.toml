@@ -1,0 +1,385 @@
+# inumaki default configuration.
+#
+# Profiles:
+#   offline         no models: regex, secrets, domain rules, dictionaries.
+#                   Names and addresses that are not in a dictionary are NOT detected.
+#   fast            token classifier for names; the verifier has no NER re-scan.
+#   support-email   GLiNER for detection, token classifier as the independent
+#                   verifier (default). The token classifier's LOC label maps to
+#                   a custom LOCATION kind, so as a verifier it only catches
+#                   missed names, not missed street addresses. The plan 1 Task 4
+#                   calibration matrix (docs/quality/2026-09-25-matrix.md) found
+#                   that a GLiNER sanitizer threshold of 0.5 measured better than
+#                   0.3 (a lower threshold let more low-scoring non-name spans
+#                   through to the policy layer, raising leak rate on the
+#                   held-out corpus without a matching recall gain); the PERSON
+#                   label set was widened instead (labels = variant B below).
+#   thorough        GLiNER for detection and, with a lower threshold and broader
+#                   labels, for the verifier too; catches missed addresses at
+#                   the cost of a second GLiNER pass.
+#   *-strict/strict/thorough-strict
+#                   retry profiles: lower thresholds; cities, organizations,
+#                   URLs, and dates are tokenized. A retry profile must name
+#                   the same ner_sanitizer/ner_verifier as the profile that
+#                   retries into it (Engine::from_config rejects a mismatch),
+#                   so `thorough` retries into `thorough-strict`, not `strict`.
+#
+# Models are downloaded with `inumaki models pull`.
+
+[tokens]
+suffix_len = 4
+open = "<"
+close = ">"
+# "independent" mints unrelated tokens for other spellings and bare parts of an entity
+surface_form = "derived"
+
+# Name linking (M4 spec §16.2, plan 4a): after detection, bare first names
+# and surnames are linked to the one person of the document or the batch who
+# has that part; a part shared by two people gets its own token. Links to
+# people of earlier requests (within `window_minutes`) are off by default
+# for both roles: a stale correspondent would capture a new one's sign-off
+# or `Herr Gruber`. The anchor detector catches names after greetings,
+# sign-offs, and honorifics.
+[linking]
+enabled = true
+window_minutes = 30
+# Opt-in; links bare names to the wrong person at the measured rates: with
+# this on, 4 of 4 cross-request surname links to a different person with the
+# same surname were wrong (eval --sequences, 2026-10-09,
+# docs/quality/2026-10-09-4a-summary.md).
+surnames_across_requests = false
+# Opt-in; links bare names to the wrong person at the measured rates: with
+# this on, 21 of 21 cross-request first-name links to a person never seen in
+# full were wrong (same measurement).
+first_names_across_requests = false
+anchors = true
+
+[dictionary]
+persons = []
+addresses = []
+organizations = []
+
+# A persons.txt line may list variants of one person separated by "|",
+# full name first (the first name listed is the canonical one, the others
+# become surface forms of its token):
+#   Hans-Peter Gruber | HP Gruber | Hansi
+# Only persons files are split on "|"; address and organization lines are
+# taken whole. Declare groups for other kinds here (exact after
+# normalization, never fuzzy; a name may appear in one group only):
+# aliases = [{ kind = "PERSON", names = ["Hans-Peter Gruber", "HP Gruber", "Hansi"] }]
+
+# Label matching is case-insensitive with full Unicode simple case folding
+# (DomainDetector::from_config compiles each label alternation with the regex
+# crate's `(?i)` flag; unicode-case is on by default), so a label list below
+# never needs both a capitalized and a lower-case form of the same phrase —
+# only genuinely different wordings (or punctuation) earn a separate entry.
+# require_digit: a label value must hold a digit (a word like HTTP after "contract" is not a number).
+[[domain.labels]]
+labels = [
+  "Kundennummer", "Kundennr", "Kunden-Nr", "Kundennr.", "Kunde Nr.",
+  "Customer ID", "Customer number", "Customer no.", "Cust. no.",
+]
+kind = "CUSTOMER_ID"
+value = "[A-Z0-9][A-Z0-9-]{3,19}"
+require_digit = true
+
+[[domain.labels]]
+labels = [
+  "Vertragsnummer", "Vertragsnr", "Vertrag", "Vertrags-Nr", "Vertragsnr.",
+  "Contract ID", "Contract number", "Contract",
+]
+kind = "CONTRACT_ID"
+value = "[A-Z0-9][A-Z0-9-]{3,19}"
+require_digit = true
+
+[[domain.labels]]
+labels = [
+  "Rechnungsnummer", "Rechnungsnr", "Rechnung", "Rechnungs-Nr", "Rechnungsnr.",
+  "Rechnungs-Nummer", "Invoice ID", "Invoice number", "Invoice no", "Invoice no.",
+  "Invoice", "Inv.",
+]
+kind = "INVOICE_ID"
+value = "[A-Z0-9][A-Z0-9/-]{3,19}"
+require_digit = true
+
+[ner]
+threads = 0
+sessions = 1      # independently loaded sessions per model; raise when `inumaki status` shows pool waits
+
+[ner.gliner]
+model = "gliner-x-small"
+threshold = 0.5
+labels = [
+  { label = "person", kind = "PERSON" },
+  { label = "name", kind = "PERSON" },
+  { label = "full name", kind = "PERSON" },
+  { label = "street address", kind = "STREET_ADDRESS" },
+  { label = "city", kind = "CITY" },
+  { label = "organization", kind = "ORGANIZATION", threshold = 0.6 },
+  { label = "phone number", kind = "PHONE", threshold = 0.6 },
+]
+
+[ner.gliner_verifier]
+model = "gliner-x-small"
+threshold = 0.3
+labels = [
+  { label = "person", kind = "PERSON" },
+  { label = "name", kind = "PERSON" },
+  { label = "surname", kind = "PERSON" },
+  { label = "street", kind = "STREET_ADDRESS" },
+  { label = "address", kind = "STREET_ADDRESS" },
+]
+
+# LOC covers streets and cities alike; it maps to a custom LOCATION kind that
+# the default action tokenizes. As a verifier, only PERSON hits count (engine
+# spec §6.5 checks PERSON and STREET_ADDRESS).
+[ner.token_classifier]
+model = "mbert-ner-hrl"
+threshold = 0.5
+labels = [
+  { label = "PER", kind = "PERSON" },
+  { label = "ORG", kind = "ORGANIZATION", threshold = 0.6 },
+  { label = "LOC", kind = "LOCATION" },
+  { label = "DATE", kind = "DATE" },
+]
+
+[profiles.offline]
+language = "auto"
+default_action = "tokenize"
+default_min_confidence = 0.5
+escalate_below = 0.5
+
+[profiles.offline.entities]
+PERSON          = { action = "tokenize", min_confidence = 0.60 }
+EMAIL           = { action = "tokenize", min_confidence = 0.50 }
+PHONE           = { action = "tokenize", min_confidence = 0.50 }
+STREET_ADDRESS  = { action = "tokenize", min_confidence = 0.60 }
+CITY            = { action = "preserve", min_confidence = 0.00 }
+POSTAL_CODE     = { action = "preserve", min_confidence = 0.00 }
+COUNTRY         = { action = "preserve", min_confidence = 0.00 }
+ORGANIZATION    = { action = "preserve", min_confidence = 0.70 }
+IBAN            = { action = "tokenize", min_confidence = 0.50 }
+CREDIT_CARD     = { action = "tokenize", min_confidence = 0.50 }
+IP_ADDRESS      = { action = "tokenize", min_confidence = 0.50 }
+URL             = { action = "preserve", min_confidence = 0.00 }
+DATE            = { action = "preserve", min_confidence = 0.00 }
+DATE_OF_BIRTH   = { action = "tokenize", min_confidence = 0.50 }
+NATIONAL_ID     = { action = "tokenize", min_confidence = 0.50 }
+TAX_ID          = { action = "tokenize", min_confidence = 0.50 }
+LICENSE_PLATE   = { action = "tokenize", min_confidence = 0.50 }
+CUSTOMER_ID     = { action = "tokenize", min_confidence = 0.50 }
+CONTRACT_ID     = { action = "tokenize", min_confidence = 0.50 }
+INVOICE_ID      = { action = "tokenize", min_confidence = 0.50 }
+SECRET          = { action = "remove",   min_confidence = 0.00 }
+
+[profiles.offline.verifier]
+on_uncertain = "block"
+retry_profile = "offline-strict"
+allow_no_ner = true
+combination_threshold = 3
+
+[profiles.offline-strict]
+extends = "offline"
+default_min_confidence = 0.4
+escalate_below = 0.4
+
+[profiles.offline-strict.entities]
+# The retry tokenizes its uncertain band: an uncertain name or street is
+# tokenized, never forwarded in clear (L3 step 2, W-b). One exception
+# refuses: run as the retry, an uncertain PERSON span that crossed a line
+# break and has a name candidate next to it escalates, and the escalation
+# blocks the text (`policy::escalate_uncertain_multiline_persons`, ruling
+# b, L41). The verifier can still refuse.
+PERSON          = { action = "tokenize", min_confidence = 0.40 }
+STREET_ADDRESS  = { action = "tokenize", min_confidence = 0.40 }
+CITY            = { action = "tokenize", min_confidence = 0.40 }
+POSTAL_CODE     = { action = "tokenize", min_confidence = 0.40 }
+ORGANIZATION    = { action = "tokenize", min_confidence = 0.40 }
+URL             = { action = "tokenize", min_confidence = 0.40 }
+DATE            = { action = "tokenize", min_confidence = 0.40 }
+
+# LOCATION has no entry below or in [profiles.offline.entities], so the token classifier's
+# LOC label (which this profile's ner_sanitizer maps to LOCATION) falls to default_action
+# ("tokenize", inherited from offline): cities are tokenized here, unlike CITY's "preserve"
+# default elsewhere.
+[profiles.fast]
+extends = "offline"
+ner_sanitizer = "token_classifier"
+ner_verifier = "none"
+
+[profiles.fast.verifier]
+retry_profile = "fast-strict"
+
+[profiles.fast-strict]
+extends = "fast"
+default_min_confidence = 0.4
+escalate_below = 0.4
+
+[profiles.fast-strict.entities]
+# The retry tokenizes its uncertain band: an uncertain name or street is
+# tokenized, never forwarded in clear (L3 step 2, W-b). One exception
+# refuses: run as the retry, an uncertain PERSON span that crossed a line
+# break and has a name candidate next to it escalates, and the escalation
+# blocks the text (`policy::escalate_uncertain_multiline_persons`, ruling
+# b, L41). The verifier can still refuse.
+PERSON          = { action = "tokenize", min_confidence = 0.40 }
+STREET_ADDRESS  = { action = "tokenize", min_confidence = 0.40 }
+CITY            = { action = "tokenize", min_confidence = 0.40 }
+POSTAL_CODE     = { action = "tokenize", min_confidence = 0.40 }
+ORGANIZATION    = { action = "tokenize", min_confidence = 0.40 }
+URL             = { action = "tokenize", min_confidence = 0.40 }
+DATE            = { action = "tokenize", min_confidence = 0.40 }
+
+[profiles.support-email]
+extends = "offline"
+ner_sanitizer = "gliner"
+ner_verifier = "token_classifier"
+
+[profiles.support-email.verifier]
+retry_profile = "strict"
+allow_no_ner = false
+
+[profiles.strict]
+extends = "support-email"
+default_min_confidence = 0.4
+escalate_below = 0.4
+
+[profiles.strict.entities]
+# The retry tokenizes its uncertain band: an uncertain name or street is
+# tokenized, never forwarded in clear (L3 step 2, W-b). One exception
+# refuses: run as the retry, an uncertain PERSON span that crossed a line
+# break and has a name candidate next to it escalates, and the escalation
+# blocks the text (`policy::escalate_uncertain_multiline_persons`, ruling
+# b, L41). The verifier can still refuse.
+PERSON          = { action = "tokenize", min_confidence = 0.40 }
+STREET_ADDRESS  = { action = "tokenize", min_confidence = 0.40 }
+CITY            = { action = "tokenize", min_confidence = 0.40 }
+POSTAL_CODE     = { action = "tokenize", min_confidence = 0.40 }
+ORGANIZATION    = { action = "tokenize", min_confidence = 0.40 }
+URL             = { action = "tokenize", min_confidence = 0.40 }
+DATE            = { action = "tokenize", min_confidence = 0.40 }
+
+[profiles.thorough]
+extends = "support-email"
+ner_verifier = "gliner_verifier"
+
+[profiles.thorough.verifier]
+retry_profile = "thorough-strict"
+
+[profiles.thorough-strict]
+extends = "thorough"
+default_min_confidence = 0.4
+escalate_below = 0.4
+
+[profiles.thorough-strict.entities]
+# The retry tokenizes its uncertain band: an uncertain name or street is
+# tokenized, never forwarded in clear (L3 step 2, W-b). One exception
+# refuses: run as the retry, an uncertain PERSON span that crossed a line
+# break and has a name candidate next to it escalates, and the escalation
+# blocks the text (`policy::escalate_uncertain_multiline_persons`, ruling
+# b, L41). The verifier can still refuse.
+PERSON          = { action = "tokenize", min_confidence = 0.40 }
+STREET_ADDRESS  = { action = "tokenize", min_confidence = 0.40 }
+CITY            = { action = "tokenize", min_confidence = 0.40 }
+POSTAL_CODE     = { action = "tokenize", min_confidence = 0.40 }
+ORGANIZATION    = { action = "tokenize", min_confidence = 0.40 }
+URL             = { action = "tokenize", min_confidence = 0.40 }
+DATE            = { action = "tokenize", min_confidence = 0.40 }
+
+# Metadata profiles (plan 2c): a dataset with the profile named in
+# `metadata_of` sanitizes its discovery metadata (tool, prompt, and template
+# prose, schema prose, enum values) under this profile instead of its base.
+# `check_metadata_profile` (inumaki-core) refuses anything weaker than the
+# base: the same action for the default and every kind, no raised threshold
+# or dropped escalation band on a kind that is blocked or removed, the same
+# verifier NER, `on_uncertain`, and language, `allow_no_ner` not turned on,
+# no raised combination threshold, the sanitizer NER kept or dropped, and
+# its own verifier retrying only into itself or into whatever the base
+# already retries into. Both ship at PERSON tokenize 0.65 with no
+# escalation band. `strict-metadata` inherits `strict`'s STREET_ADDRESS at
+# 0.40 (the retry profiles tokenize an uncertain street, so the 0.40-0.60
+# escalation band it reopens applies to names only), and additionally raises
+# `strict`'s five promoted kinds (CITY, POSTAL_CODE, ORGANIZATION, URL, DATE,
+# tokenized from 0.40 there) to 0.60 on metadata: 0.60 is the smallest multiple of 0.05
+# above the only measured benign hit, CITY at 0.55 ("the current weather for
+# a city"). Values measured in docs/quality/2026-09-29-discovery-metadata.md.
+# Both retry into themselves, not into `strict` the way `support-email`
+# itself does, so a metadata-profile retry fails closed the same way it
+# fails. `offline`, `offline-strict`, `fast`, and `fast-strict` have no
+# verifier NER to back this, so they keep no metadata profile and keep
+# refusing such listings. `thorough` and `thorough-strict` have none
+# either: their `gliner_verifier` re-scan blocks benign descriptions
+# outright (revisit when the quality lane recalibrates `gliner_verifier`);
+# a low-confidence span in listing prose still fails the whole listing
+# under any of these six profiles.
+
+[profiles.support-email-metadata]
+extends = "support-email"
+metadata_of = "support-email"
+escalate_below = 1.0
+
+[profiles.support-email-metadata.entities]
+PERSON = { action = "tokenize", min_confidence = 0.65 }
+
+[profiles.support-email-metadata.verifier]
+retry_profile = "support-email-metadata"
+
+[profiles.strict-metadata]
+extends = "strict"
+metadata_of = "strict"
+escalate_below = 1.0
+
+[profiles.strict-metadata.entities]
+PERSON          = { action = "tokenize", min_confidence = 0.65 }
+CITY            = { action = "tokenize", min_confidence = 0.60 }
+POSTAL_CODE     = { action = "tokenize", min_confidence = 0.60 }
+ORGANIZATION    = { action = "tokenize", min_confidence = 0.60 }
+URL             = { action = "tokenize", min_confidence = 0.60 }
+DATE            = { action = "tokenize", min_confidence = 0.60 }
+
+[profiles.strict-metadata.verifier]
+retry_profile = "strict-metadata"
+
+# The model-API proxy (M8). Every key below shows its default and is commented
+# out: the proxy runs with these values when the table is absent. Copy the table
+# to your own configuration file and uncomment only what you change; restart the
+# daemon afterwards. Sizes take B, KiB, MiB, GiB (binary) or KB, MB, GB (decimal);
+# durations take s, m, h, d. See docs/cli.md for what each key does.
+#
+# [proxy]
+# enabled = true
+# listen = "127.0.0.1:8787"          # loopback IP and port only
+# profile = ""                       # empty: [daemon] default_profile
+# session_ttl = "4h"                 # idle time before a session's mappings are destroyed
+# session_cap = 1000                 # most live sessions, least recently used goes first
+# cache_bytes = "256MiB"             # incremental sanitization cache, all sessions
+# max_request_bytes = "8MiB"         # after decompression; MiB, not MB (MB is decimal)
+# max_inflight = 32
+# upstream_timeout = "600s"          # wait for the provider to start answering
+# binary = "placeholder"             # or "refuse"; "forward" sends image/PDF/audio payloads to the provider uninspected
+#                                    # allow_binary = true is an alias of binary = "forward"
+# uncertain = "block"                # or "pass"
+# tripwire = "notify"                # or "block"
+# allowed_origins = []               # browser origins allowed to reach the proxy
+# definitions_account_values = "allow"  # or "refuse": the OS login/home-directory name in a tool definition refuses the request (recommended with the strict profile)
+# static_cache = true               # reuse NER results for long system prompts across sessions (trusted clients only); false turns it off
+#
+# [proxy.upstreams.anthropic]        # optional base URL overrides; also openai, openai-codex
+# base_url = "https://api.anthropic.com"   # https, or http on a loopback IP literal
+# extra_headers = []                 # request header names forwarded to this upstream unchecked (lowercase, at most 32)
+
+# The folder mirror (milestone 5; `inumaki folder add`). Every key is
+# optional; these are the defaults. `root` must not exist, or be empty, or be
+# a directory inumaki created. The default, "~/Inumaki Mirror", differs from a
+# checkout at "~/inumaki" even on macOS's case-insensitive file system. An
+# install that used the older default keeps its mirror with root = "~/Inumaki".
+# A change here re-mirrors every folder once; after changing `root`, Reconnect
+# each harness so the paths Connect wrote are updated.
+#
+# [mirror]
+# root = "~/Inumaki Mirror"
+# outbox_root = "~/Inumaki Outbox"
+# debounce = "500ms"
+# max_file_bytes = "1MiB"        # up to 16MiB
+# workers = 1
+# rescan_interval = "1h"

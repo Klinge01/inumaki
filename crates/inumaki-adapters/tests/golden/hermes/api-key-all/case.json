@@ -1,0 +1,23 @@
+{
+  "harness": "hermes",
+  "files": {"hermes_config": "config.yaml"},
+  "home_files": {".hermes/.env": "env"},
+  "login": "api_key",
+  "plan": {
+    "gateway": {"token": "inumaki_gw_golden", "entries": [{"name": "filesystem", "url": "http://127.0.0.1:8789/mcp/mcp-filesystem"}]},
+    "files": {"mirror_root": "/Users/qwxzvk/Inumaki", "outboxes": ["/Users/qwxzvk/Inumaki/d1b2c3d4e5f60718/outbox"]},
+    "chat": {"openai": "http://127.0.0.1:8787/openai"},
+    "hook": {"command": "/Users/qwxzvk/Library/Application Support/inumaki/bin/inumaki-hook", "socket": "/Users/qwxzvk/Library/Application Support/inumaki/inumakid.sock"},
+    "proxy_client_header": "inumaki_client_golden"
+  },
+  "expect": {
+    "hermes_config": {
+      "model": {"provider": "inumaki", "default": "gpt-5"},
+      "providers": {
+        "openrouter": {"base_url": "https://openrouter.ai/api/v1"},
+        "inumaki": {"base_url": "http://127.0.0.1:8787/openai/v1", "key_env": "OPENAI_API_KEY", "extra_headers": {"X-Inumaki-Client": "inumaki_client_golden"}}
+      },
+      "mcp_servers": {"filesystem": {"url": "http://127.0.0.1:8789/mcp/mcp-filesystem", "headers": {"Authorization": "Bearer inumaki_gw_golden"}}}
+    }
+  }
+}

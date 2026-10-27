@@ -1,0 +1,17 @@
+# Hermes configuration
+model:
+  provider: inumaki
+  default: gpt-5
+providers:
+  openrouter:
+    base_url: https://openrouter.ai/api/v1
+  inumaki:
+    base_url: http://127.0.0.1:8787/openai/v1
+    key_env: OPENAI_API_KEY
+    extra_headers:
+      X-Inumaki-Client: inumaki_client_golden
+mcp_servers:
+  filesystem:
+    url: http://127.0.0.1:8789/mcp/mcp-filesystem
+    headers:
+      Authorization: Bearer inumaki_gw_golden

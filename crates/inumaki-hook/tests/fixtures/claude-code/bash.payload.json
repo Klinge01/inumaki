@@ -1,0 +1,22 @@
+{
+  "session_id": "00000000-0000-4000-8000-000000000001",
+  "prompt_id": "00000000-0000-4000-8000-000000000002",
+  "transcript_path": "/Users/example/.claude/projects/-Users-example-work/00000000-0000-4000-8000-000000000001.jsonl",
+  "cwd": "/Users/example/work",
+  "permission_mode": "default",
+  "hook_event_name": "PostToolUse",
+  "tool_name": "Bash",
+  "tool_input": {
+    "command": "cat kunden/notiz.txt",
+    "description": "Show the note"
+  },
+  "tool_response": {
+    "stdout": "Termin mit Zyxwuria Quolnath am Dienstag.\n",
+    "stderr": "",
+    "interrupted": false,
+    "isImage": false,
+    "noOutputExpected": false
+  },
+  "tool_use_id": "toolu_01SYNTHETIC0000000000000001",
+  "duration_ms": 12
+}

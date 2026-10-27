@@ -1,0 +1,117 @@
+{
+  "profile": "strict",
+  "docs": 93,
+  "per_kind": {
+    "CITY": {
+      "gold": 0,
+      "gold_found": 0,
+      "detected": 1,
+      "detected_correct": 0,
+      "leaked": 0,
+      "partial_leaked": 0
+    },
+    "DATE": {
+      "gold": 0,
+      "gold_found": 0,
+      "detected": 31,
+      "detected_correct": 0,
+      "leaked": 0,
+      "partial_leaked": 0
+    },
+    "ORGANIZATION": {
+      "gold": 0,
+      "gold_found": 0,
+      "detected": 102,
+      "detected_correct": 0,
+      "leaked": 0,
+      "partial_leaked": 0
+    },
+    "PERSON": {
+      "gold": 0,
+      "gold_found": 0,
+      "detected": 25,
+      "detected_correct": 0,
+      "leaked": 0,
+      "partial_leaked": 0
+    },
+    "PHONE": {
+      "gold": 0,
+      "gold_found": 0,
+      "detected": 2,
+      "detected_correct": 0,
+      "leaked": 0,
+      "partial_leaked": 0
+    },
+    "URL": {
+      "gold": 0,
+      "gold_found": 0,
+      "detected": 2,
+      "detected_correct": 0,
+      "leaked": 0,
+      "partial_leaked": 0
+    }
+  },
+  "pass_docs": 93,
+  "uncertain_docs": 0,
+  "blocked_docs": 0,
+  "docs_with_leak": 0,
+  "accepted_leak_docs": 0,
+  "accepted_partial_only_docs": 0,
+  "uncertain_leak_docs": 0,
+  "per_lang": {
+    "en": {
+      "docs": 93,
+      "accepted": 93,
+      "uncertain": 0,
+      "blocked": 0,
+      "accepted_leak": 0
+    }
+  },
+  "store_errors": 0,
+  "provenance": {
+    "corpus_sha256": "1f48dc407ecf598d47477ab2429ed9a3907ffbf331ade88c28143b55dab9f558",
+    "cases": 0,
+    "generated": 0,
+    "seed": 42,
+    "family": "file+harness-static",
+    "platform": "macos-aarch64",
+    "crate_version": "0.1.0",
+    "git_commit": "2f8d8ecb4aa2a7002ab31983f0dd30a0176b6059",
+    "config_sha256": "b64d71b84ae31c94976a15d846a276764d41df4477096ea9412e011f93ed1e5f",
+    "config_source": "file",
+    "canonical": false,
+    "lock_sha256": "5e139127257958d64bfdd6c239d1e10b06952855433151d3a58e3d00b53e2307",
+    "models": {
+      "gliner-x-small": "d76b3349fd4bfe44573221c0912ed459f432d14317552fdc65935dabcb833c4a",
+      "kiji-pii": "b5f3311391a74470ff26c5b700a422832e5dcdb74fedc205ad5a68e70dbf487c",
+      "mbert-ner-hrl": "1213fdd405d295768b0d41d8214062f2f278f0e3acff6af67d8fd47360d2be0f"
+    },
+    "evaluated_at": 1792454758
+  },
+  "verifier_clean_trials": 0,
+  "verifier_false_positives": 0,
+  "verifier_broken_trials": 0,
+  "verifier_false_negatives": 0,
+  "latency_ms": {
+    "p50": 174.13225,
+    "p95": 3366.518458,
+    "p99": 4085.491166,
+    "mean": 617.868360172043,
+    "max": 4348.683959
+  },
+  "detector_errors": 0,
+  "links": {
+    "coref_docs": 0,
+    "coref_recoverable_docs": 0,
+    "person_mentions_tokenized": 40,
+    "surface_mentions": 13,
+    "wrong_restorations": 0,
+    "wrong_links": 0,
+    "tokens_total": 390,
+    "distinct_tokens_total": 186
+  },
+  "verifier_fp_by_check": {},
+  "verifier_fp_by_kind": {},
+  "sequence": null,
+  "consistency_redactions": 243
+}

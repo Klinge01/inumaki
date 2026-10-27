@@ -1,0 +1,34 @@
+// OpenClaw configuration
+{
+  agents: {
+    defaults: {
+      model: { primary: "inumaki/gpt-5" },
+      workspace: '/Users/qwxzvk',
+      sandbox: { mode: 'all', docker: { binds: ['/data:/data:ro', "/Users/qwxzvk/Inumaki:/Users/qwxzvk/Inumaki:ro"], }, },
+    },
+  },
+  mcp: { servers: { tickets: {
+        "url": "http://127.0.0.1:8789/mcp/mcp-tickets",
+        "transport": "streamable-http",
+        "headers": {
+          "Authorization": "Bearer inumaki_gw_golden"
+        }
+      } } },
+  models: { providers: {
+      openai: { apiKey: '${OPENAI_API_KEY}' },
+      "inumaki": {
+        "baseUrl": "http://127.0.0.1:8787/openai/v1",
+        "api": "openai-completions",
+        "apiKey": "${OPENAI_API_KEY}",
+        "models": [
+          {
+            "id": "gpt-5",
+            "name": "gpt-5"
+          }
+        ],
+        "headers": {
+          "X-Inumaki-Client": "inumaki_client_golden"
+        }
+      }
+    } },
+}

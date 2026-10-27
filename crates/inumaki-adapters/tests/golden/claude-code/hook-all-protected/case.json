@@ -1,0 +1,24 @@
+{
+  "harness": "claude-code",
+  "files": {"claude_json": "claude.json"},
+  "plan": {
+    "gateway": {"token": "inumaki_gw_allprotected", "entries": [
+      {"name": "crm", "url": "http://127.0.0.1:8789/mcp/mcp-crm2"}
+    ]},
+    "hook": {"command": "/Users/qwxzvk/Library/Application Support/inumaki/bin/inumaki-hook", "socket": "/Users/qwxzvk/Library/Application Support/inumaki/inumakid.sock"}
+  },
+  "expect": {
+    "claude_json": {
+      "mcpServers": {
+        "crm": {"type": "http", "url": "http://127.0.0.1:8789/mcp/mcp-crm2", "headers": {"Authorization": "Bearer inumaki_gw_allprotected"}}
+      }
+    },
+    "claude_settings": {
+      "hooks": {
+        "PostToolUse": [
+          {"matcher": "^(Bash|PowerShell|Read|Grep|Glob|Edit|WebFetch|ReadMcpResourceTool)$|^mcp__(?!(crm)__).*", "hooks": [{"type": "command", "command": "'/Users/qwxzvk/Library/Application Support/inumaki/bin/inumaki-hook' claude-code --socket '/Users/qwxzvk/Library/Application Support/inumaki/inumakid.sock'", "timeout": 30}]}
+        ]
+      }
+    }
+  }
+}

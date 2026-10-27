@@ -1,0 +1,40 @@
+// OpenClaw configuration (synthetic corpus sample).
+{
+  agents: {
+    defaults: {
+      model: { primary: 'anthropic/claude-opus-4-6' },
+      sandbox: {
+        mode: "non-main", // off | non-main | all
+        workspaceAccess: "ro",
+        docker: {
+          binds: ["/Users/example/Dokumente/Referenz:/reference:ro",],
+        },
+      },
+    },
+  },
+  /* MCP servers managed by `openclaw mcp`. */
+  mcp: {
+    servers: {
+      docs: {
+        command: "uvx",
+        args: ["mcp-server-fetch"],
+      },
+      remote: {
+        url: "https://mcp.example.invalid/mcp",
+        transport: "streamable-http",
+        headers: { Authorization: "Bearer ${MCP_REMOTE_TOKEN}" },
+      },
+    },
+  },
+  models: {
+    mode: "merge",
+    providers: {
+      office: {
+        baseUrl: "http://127.0.0.1:4000/v1",
+        apiKey: "${OFFICE_API_KEY}",
+        api: "openai-completions",
+        models: [{ id: "office-large", name: "Office Large" }],
+      },
+    },
+  },
+}

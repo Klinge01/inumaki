@@ -1,0 +1,83 @@
+# Pinned model files for inumaki. Files are downloaded by `inumaki models pull`
+# into the models directory and verified by SHA-256. Never commit model files.
+
+[[models]]
+name = "gliner-x-small"
+kind = "gliner"
+repo = "knowledgator/gliner-x-small"
+revision = "d51a0984d11084a55f9df3899d9dbf7704f580f5"
+license = "Apache-2.0"
+license_url = "https://huggingface.co/knowledgator/gliner-x-small"
+default = true
+
+[[models.files]]
+path = "onnx/model_quantized.onnx"
+role = "model"
+sha256 = "d76b3349fd4bfe44573221c0912ed459f432d14317552fdc65935dabcb833c4a"
+size = 172716978
+
+[[models.files]]
+path = "tokenizer.json"
+role = "tokenizer"
+sha256 = "619d3790cf59a0e50afdf04239db19093568fbd8d806963e35d54a8fb71d099c"
+size = 16335050
+
+[[models.files]]
+path = "gliner_config.json"
+role = "config"
+sha256 = "f8e7758e503d37be53b70910c7d3cebf327fe7f23c8f65f355c9941878940206"
+size = 3541
+
+[[models]]
+name = "mbert-ner-hrl"
+kind = "token_classifier"
+repo = "onnx-community/bert-base-multilingual-cased-ner-hrl-ONNX"
+revision = "cfe67b1c1c4c91c1b26ac192955fc0971e62d8c8"
+license = "AFL-3.0"
+license_url = "https://opensource.org/license/afl-3-0-php"
+default = true
+
+[[models.files]]
+path = "onnx/model_int8.onnx"
+role = "model"
+sha256 = "1213fdd405d295768b0d41d8214062f2f278f0e3acff6af67d8fd47360d2be0f"
+size = 178451275
+
+[[models.files]]
+path = "tokenizer.json"
+role = "tokenizer"
+sha256 = "bf1b59b7b11c95f194f51708d918eea378e09d05f84c0e1656dc5180e8117088"
+size = 2919362
+
+[[models.files]]
+path = "config.json"
+role = "config"
+sha256 = "8e5caefadaf9923a9e7d3de42ca97780c68fc4d83519d333f141b299e40af638"
+size = 1275
+
+[[models]]
+name = "kiji-pii"
+kind = "kiji"
+repo = "DataikuNLP/kiji-pii-model-onnx"
+revision = "a0c9dd2ff9023b63378f67bafa50e33925663219"
+license = "Apache-2.0"
+license_url = "https://huggingface.co/DataikuNLP/kiji-pii-model-onnx"
+default = false
+
+[[models.files]]
+path = "model_quantized.onnx"
+role = "model"
+sha256 = "b5f3311391a74470ff26c5b700a422832e5dcdb74fedc205ad5a68e70dbf487c"
+size = 66338684
+
+[[models.files]]
+path = "tokenizer.json"
+role = "tokenizer"
+sha256 = "451ae77346479f041021900ac01f963d8a165b87e153ad2f1abfbe3f0c522ded"
+size = 668844
+
+[[models.files]]
+path = "label_mappings.json"
+role = "config"
+sha256 = "25751d603bba29f7a3269f38f7d3e402770ea31cc0ceff68a9eeda79efce3aa6"
+size = 2933

@@ -1,0 +1,18 @@
+{
+  "harness": "codex",
+  "files": {"codex_config": "config.toml"},
+  "home_files": {".codex/auth.json": "auth.json"},
+  "login": "oauth",
+  "plan": {
+    "gateway": {"token": "inumaki_gw_golden", "entries": [{"name": "docs", "url": "http://127.0.0.1:8789/mcp/mcp-docs"}]},
+    "chat": {"codex": "http://127.0.0.1:8787/codex", "codex_chatgpt": false},
+    "proxy_client_header": "inumaki_client_golden"
+  },
+  "expect": {
+    "codex_config": {
+      "model": "gpt-5-codex",
+      "mcp_servers": {"docs": {"url": "http://127.0.0.1:8789/mcp/mcp-docs", "http_headers": {"Authorization": "Bearer inumaki_gw_golden"}, "required": true, "startup_timeout_sec": 30}},
+      "profiles": {"fast": {"model": "gpt-5-mini"}}
+    }
+  }
+}

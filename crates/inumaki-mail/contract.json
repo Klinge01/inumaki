@@ -1,0 +1,48 @@
+{
+  "version": 1,
+  "tools": {
+    "mail_list_folders": {
+      "result": {
+        "/folders/*/id": "handle",
+        "/folders/*/name": "free_text"
+      }
+    },
+    "mail_search": {
+      "arguments": {
+        "/query": "free_text",
+        "/folder": "handle",
+        "/since": "preserve",
+        "/before": "preserve",
+        "/limit": "quantity"
+      },
+      "result": {
+        "/messages/*/id": "handle",
+        "/messages/*/folder": "handle",
+        "/messages/*/from": "free_text",
+        "/messages/*/subject": "free_text",
+        "/messages/*/date": "preserve",
+        "/messages/*/snippet": "free_text",
+        "/truncated": "preserve"
+      }
+    },
+    "mail_read": {
+      "arguments": {
+        "/id": "handle",
+        "/folder": "handle"
+      }
+    },
+    "mail_draft_reply": {
+      "arguments": {
+        "/id": "handle",
+        "/folder": "handle",
+        "/body": "free_text",
+        "/cc": "free_text"
+      },
+      "result": {
+        "/draft/id": "handle",
+        "/draft/folder": "handle",
+        "/status": "preserve"
+      }
+    }
+  }
+}

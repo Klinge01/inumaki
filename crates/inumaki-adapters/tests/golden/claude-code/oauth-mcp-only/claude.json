@@ -1,0 +1,10 @@
+{
+  "numStartups": 12,
+  "mcpServers": {
+    "crm": {"command": "/opt/homebrew/bin/crm-mcp", "args": ["--stdio"], "env": {"CRM_TOKEN": "s3cret-qwxzvk"}},
+    "notes": {"type": "http", "url": "https://notes.example/mcp"}
+  },
+  "projects": {
+    "/Users/qwxzvk/proj": {"allowedTools": [], "mcpServers": {"db": {"command": "/usr/local/bin/db-mcp"}}}
+  }
+}

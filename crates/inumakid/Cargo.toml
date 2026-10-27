@@ -1,0 +1,87 @@
+[package]
+name = "inumakid"
+description = "The inumaki service: models loaded once, vault-backed namespaces, a sanitization cache, and a control API over a Unix socket"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[lib]
+path = "src/lib.rs"
+
+[[bin]]
+name = "inumakid"
+path = "src/main.rs"
+
+# The gateway tests' scripted MCP server as a child process; not user-facing.
+# Built only with `--features test-fixtures` (tests enable it).
+[[bin]]
+name = "inumaki-test-upstream"
+path = "src/bin/test_upstream.rs"
+required-features = ["test-fixtures"]
+
+[features]
+# Tests that need downloaded models; they read INUMAKI_MODELS_DIR.
+models-tests = []
+# The scripted upstream binary for the gateway tests and the smoke test,
+# and the scripted IMAP server for the mail tests.
+test-fixtures = ["inumaki-gateway/test-fixtures", "inumaki-mail/fake-imap"]
+# Tests against GreenMail in Docker (scripts/greenmail.sh); they read the
+# GREENMAIL_* environment of the test process.
+mail-tests = ["inumaki-mail/harness"]
+
+[dependencies]
+inumaki-core = { path = "../inumaki-core" }
+inumaki-models = { path = "../inumaki-models" }
+inumaki-vault = { path = "../inumaki-vault" }
+inumaki-gateway = { path = "../inumaki-gateway" }
+inumaki-mail = { path = "../inumaki-mail" }
+inumaki-proxy = { path = "../inumaki-proxy" }
+inumaki-mirror = { path = "../inumaki-mirror" }
+# The pending-revocation record format (offline Revert spec D4).
+inumaki-client = { path = "../inumaki-client" }
+rmcp.workspace = true
+rustls.workspace = true
+tokio.workspace = true
+tokio-util.workspace = true
+axum.workspace = true
+hyper.workspace = true
+hyper-util.workspace = true
+http-body-util.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+toml.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+sha2.workspace = true
+hmac.workspace = true
+dirs.workspace = true
+thiserror.workspace = true
+clap.workspace = true
+anyhow.workspace = true
+zeroize.workspace = true
+getrandom.workspace = true
+# The OS user's real name for the chat dictionary (getpwuid_r, M8 spec §5.4).
+libc.workspace = true
+# The shared transport guard answers a panicking handler with a fixed 500.
+futures.workspace = true
+unicode-normalization.workspace = true
+# The mirror check's temporary source and outbox root.
+tempfile.workspace = true
+tower = { version = "0.5", default-features = false, features = ["util"] }
+
+[dev-dependencies]
+rusqlite.workspace = true
+# The proxy tests talk to the listener over TCP like a harness does.
+reqwest = { workspace = true, features = ["json"] }
+# Contract types (M6 spec §9.8). `mock` so that `cargo test --workspace`
+# also builds and runs the client's mock tests.
+inumaki-client = { path = "../inumaki-client", features = ["mock"] }
+inumakid = { path = ".", features = ["test-fixtures"] }
+# `consistency::live_layers_on_this_thread` for the namespace-cache tests.
+inumaki-core = { path = "../inumaki-core", features = ["test-support"] }
+# The deterministic fixture mailbox for the GreenMail tests.
+inumaki-eval = { path = "../inumaki-eval" }
+
+[lints]
+workspace = true

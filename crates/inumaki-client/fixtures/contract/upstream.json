@@ -1,0 +1,4 @@
+{"name": "qwxzvk-crm", "kind": "stdio", "command": "/opt/homebrew/bin/qwxzvk-crm-mcp", "args": ["--tenant", "qwxzvk"],
+ "cwd": null, "url": null, "env": {"PATH": "/Users/qwxzvk/.local/bin:/usr/bin"}, "headers": {},
+ "env_secret": "qwxzvk-kunde/upstream/qwxzvk-crm/env", "headers_secret": null, "content_policy": {},
+ "schema_fingerprint": null, "enabled": true, "created_at": 1790000000}

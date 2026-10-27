@@ -1,0 +1,26 @@
+{
+  "harness": "codex",
+  "files": {"codex_config": "config.toml"},
+  "home_files": {".codex/auth.json": "auth.json"},
+  "login": "api_key",
+  "plan": {
+    "gateway": {"token": "inumaki_gw_golden", "entries": [{"name": "docs", "url": "http://127.0.0.1:8789/mcp/mcp-docs"}]},
+    "files": {"mirror_root": "/Users/qwxzvk/Inumaki", "outboxes": ["/Users/qwxzvk/Inumaki/d1b2c3d4e5f60718/outbox"]},
+    "chat": {"openai": "http://127.0.0.1:8787/openai"},
+    "hook": {"command": "/Users/qwxzvk/Library/Application Support/inumaki/bin/inumaki-hook", "socket": "/Users/qwxzvk/Library/Application Support/inumaki/inumakid.sock"},
+    "proxy_client_header": "inumaki_client_golden"
+  },
+  "expect": {
+    "codex_config": {
+      "model": "gpt-5-codex",
+      "model_provider": "inumaki",
+      "mcp_servers": {"docs": {"url": "http://127.0.0.1:8789/mcp/mcp-docs", "http_headers": {"Authorization": "Bearer inumaki_gw_golden"}, "required": true, "startup_timeout_sec": 30}},
+      "profiles": {"fast": {"model": "gpt-5-mini"}},
+      "sandbox_workspace_write": {"writable_roots": ["/Users/qwxzvk/Inumaki/d1b2c3d4e5f60718/outbox"]},
+      "model_providers": {"inumaki": {"name": "inumaki", "base_url": "http://127.0.0.1:8787/openai/v1", "wire_api": "responses", "env_key": "OPENAI_API_KEY", "http_headers": {"X-Inumaki-Client": "inumaki_client_golden"}}}
+    },
+    "codex_hooks": {
+      "hooks": {"PostToolUse": [{"matcher": "^Bash$", "hooks": [{"type": "command", "command": "'/Users/qwxzvk/Library/Application Support/inumaki/bin/inumaki-hook' codex --socket '/Users/qwxzvk/Library/Application Support/inumaki/inumakid.sock'", "timeout": 30}]}]}
+    }
+  }
+}

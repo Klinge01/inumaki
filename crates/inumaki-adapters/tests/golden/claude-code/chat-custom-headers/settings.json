@@ -1,0 +1,5 @@
+{
+  "env": {
+    "ANTHROPIC_CUSTOM_HEADERS": "X-Team: blue\nx-inumaki-client: inumaki_client_stale\n"
+  }
+}

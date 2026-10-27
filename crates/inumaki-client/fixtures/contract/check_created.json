@@ -1,0 +1,10 @@
+{"id": "0123456789abcdef0123456789abcdef", "expires_at": 1790000600,
+ "gateway": {"url": "http://127.0.0.1:8789/mcp/check-qwxzvk", "token": "inumaki_gw_qwxzvk11111111111111111111",
+             "server": "inumaki-check-qwxzvk"},
+ "mirror": {"path": "/Users/qwxzvk/Inumaki/check-0123456789ab-f/canary.txt",
+            "source_dir": "/var/folders/qwxzvk/T/inumaki-check-0123456789ab-Qwxzvk/source"},
+ "proxy": {"routes": [{"upstream": "anthropic",
+                       "base_url": "http://127.0.0.1:8787/check/0123456789abcdef0123456789abcdef/anthropic"}]},
+ "paths": {"gateway": {"available": true, "reason": null},
+           "mirror": {"available": true, "reason": null},
+           "proxy": {"available": true, "reason": null}}}

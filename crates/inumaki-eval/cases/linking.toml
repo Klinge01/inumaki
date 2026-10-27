@@ -1,0 +1,105 @@
+# Plan 4a: name linking (M4 spec §16.2) and the Unicode fixtures of §16.9.
+# Gold spans list every mention; a linked mention must be tokenized and must
+# restore to its own text. Identities are tuning-family or invented; never
+# held-out (cases.rs checks).
+
+[[case]]
+id = "link-signoff-first-name"
+lang = "de"
+why = "The most common miss: a bare first name in the sign-off, full name in the body."
+text = "Sehr geehrte Damen und Herren,\n\nmein Name ist Sarah Leitner, Kundennummer K-928174. Bitte rufen Sie mich zurück.\n\nLG Sarah"
+spans = [
+  { text = "Sarah Leitner", kind = "PERSON", entity = "sarah-leitner" },
+  { text = "K-928174", kind = "CUSTOMER_ID" },
+  { text = "Sarah", kind = "PERSON", entity = "sarah-leitner", occurrence = 2 },
+]
+
+[[case]]
+id = "link-honorific-surname"
+lang = "de"
+why = "Surname after an honorific, full name later in the text."
+text = "Frau Leitner hat mich gebeten, das weiterzuleiten. Sarah Leitner ist unter sarah.leitner@example.at erreichbar."
+spans = [
+  { text = "Leitner", kind = "PERSON", entity = "sarah-leitner", occurrence = 1 },
+  { text = "Sarah Leitner", kind = "PERSON", entity = "sarah-leitner" },
+  { text = "sarah.leitner@example.at", kind = "EMAIL" },
+]
+
+[[case]]
+id = "link-ambiguous-first-name"
+lang = "de"
+why = "Two people share the first name; the sign-off must be tokenized as its own entity, never left in clear."
+text = "Sarah Leitner und Sarah Gruber haben beide unterschrieben.\n\nLG Sarah"
+spans = [
+  { text = "Sarah Leitner", kind = "PERSON", entity = "sarah-leitner" },
+  { text = "Sarah Gruber", kind = "PERSON", entity = "sarah-gruber" },
+  { text = "Sarah", kind = "PERSON", entity = "sarah-x", occurrence = 3 },
+]
+
+[[case]]
+id = "link-email-derived"
+lang = "de"
+why = "Only the address names the sender; the bare sign-off is derived from its local part."
+text = "Von: sarah.leitner@example.at\n\nHallo, bitte um Rückruf wegen Rechnung RE-2026-00042.\n\nLG Sarah"
+spans = [
+  { text = "sarah.leitner@example.at", kind = "EMAIL" },
+  { text = "RE-2026-00042", kind = "INVOICE_ID" },
+  { text = "Sarah", kind = "PERSON", entity = "sarah-email" },
+]
+
+[[case]]
+id = "link-unicode-sharp-s"
+lang = "de"
+why = "Capital sharp s changes byte length under case mapping; offsets must stay on the original text."
+text = "Anna Großmann schreibt Ihnen.\nFrau GROẞMANN bittet um Rückruf unter +43 660 1234567.\n\nLG İlker"
+spans = [
+  { text = "Anna Großmann", kind = "PERSON", entity = "anna-grossmann" },
+  { text = "GROẞMANN", kind = "PERSON", entity = "anna-grossmann" },
+  { text = "+43 660 1234567", kind = "PHONE" },
+  { text = "İlker", kind = "PERSON", entity = "ilker" },
+]
+
+[[case]]
+id = "link-lowercase-mail"
+lang = "de"
+why = "Whole-lower-case mail: linking and anchors relax the capitalization rule."
+text = "hallo,\n\nhier sarah leitner, kundennummer K-928174. bitte um rückruf.\n\nlg sarah"
+spans = [
+  { text = "sarah leitner", kind = "PERSON", entity = "sarah-leitner" },
+  { text = "K-928174", kind = "CUSTOMER_ID" },
+  { text = "sarah", kind = "PERSON", entity = "sarah-leitner", occurrence = 2 },
+]
+
+[[case]]
+id = "link-english-thread"
+lang = "en"
+why = "English sign-off and honorific with the full name in the quoted part."
+text = "Hi,\n\nMr Berger asked me to forward this. Please call him back.\n\nThanks,\nThomas\n\n> On 24.09.2026, Thomas Berger <thomas.berger@example.org> wrote:\n> Please forward this to support."
+spans = [
+  { text = "Berger", kind = "PERSON", entity = "thomas-berger", occurrence = 1 },
+  { text = "Thomas", kind = "PERSON", entity = "thomas-berger", occurrence = 1 },
+  { text = "24.09.2026", kind = "DATE" },
+  { text = "Thomas Berger", kind = "PERSON", entity = "thomas-berger" },
+  { text = "thomas.berger@example.org", kind = "EMAIL" },
+]
+
+[[case]]
+id = "link-negative-group-greeting"
+lang = "de"
+why = "Group greetings and words that are also first names stay in clear."
+text = "Hallo Team,\n\nes ist ernst: der Termin im Mai fällt aus. Bitte alle informieren.\n\nViele Grüße\nSarah Leitner"
+spans = [
+  { text = "Sarah Leitner", kind = "PERSON", entity = "sarah-leitner" },
+]
+
+[[case]]
+id = "link-never-fuzzy"
+lang = "de"
+why = "Similar names are different people; no prefix or phonetic linking."
+text = "Christian Huber und Christina Huber kommen zum Termin. Stefan Berg auch.\n\nLG Christina"
+spans = [
+  { text = "Christian Huber", kind = "PERSON", entity = "christian-huber" },
+  { text = "Christina Huber", kind = "PERSON", entity = "christina-huber" },
+  { text = "Stefan Berg", kind = "PERSON", entity = "stefan-berg" },
+  { text = "Christina", kind = "PERSON", entity = "christina-huber", occurrence = 2 },
+]

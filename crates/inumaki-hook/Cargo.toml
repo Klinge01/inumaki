@@ -1,0 +1,28 @@
+[package]
+name = "inumaki-hook"
+description = "Tool-result hook for Claude Code and Codex: sanitizes connected data in tool output through inumakid, fail closed"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[lib]
+path = "src/lib.rs"
+
+[[bin]]
+name = "inumaki-hook"
+path = "src/main.rs"
+
+[dependencies]
+inumaki-client = { path = "../inumaki-client" }
+tokio.workspace = true
+serde_json.workspace = true
+
+[dev-dependencies]
+inumaki-client = { path = "../inumaki-client", features = ["mock"] }
+inumakid = { path = "../inumakid" }
+inumaki-core = { path = "../inumaki-core" }
+tempfile.workspace = true
+
+[lints]
+workspace = true
