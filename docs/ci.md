@@ -1,6 +1,6 @@
 # Continuous integration
 
-Three jobs run on every push and pull request. The separate `app` workflow builds the macOS `.dmg` on demand and for release tags (`docs/packaging.md`).
+`check` and `models` run on every push and pull request. `reference` runs only for pushes to `main`, and only once the reference runner is set up (below). The separate `app` workflow builds the macOS `.dmg` on demand and for release tags (`docs/packaging.md`).
 
 | Job | Runner | Gated on |
 |---|---|---|
@@ -34,9 +34,10 @@ One machine, Apple Silicon, macOS 14 or later, Rust stable, about 5 GB free (too
    mkdir -p ~/inumaki-ci/models
    INUMAKI_MODELS_DIR=~/inumaki-ci/models cargo run --release -q -p inumaki-cli -- models pull
    ```
-5. Branch protection (Settings → Branches → `main`): require status checks `check (ubuntu-latest)`, `check (macos-latest)`, `models`, `reference`. With one runner, jobs queue; a `reference` run takes 10–15 minutes.
+5. Turn the job on: set the repository variable `REFERENCE_RUNNER` to `true` (Settings → Secrets and variables → Actions → Variables). Until then the job is skipped. It never runs for pull requests: on a public repository a self-hosted runner would run a fork's code on your machine.
+6. Branch protection (Settings → Branches → `main`): require status checks `check (ubuntu-latest)`, `check (macos-latest)`, `models`. `reference` cannot be a required pull-request check because it does not run for pull requests; it checks `main` after the merge. With one runner, jobs queue; a `reference` run takes 10–15 minutes.
 
-Runner logs: `~/actions-runner/_diag/`. If the runner is offline, GitHub queues the job and the check stays pending, which blocks merging by design: a missing reference runner blocks qualification (spec §13.1), it does not skip it.
+Runner logs: `~/actions-runner/_diag/`. If the runner is offline while `REFERENCE_RUNNER` is `true`, GitHub queues the job and the run stays pending: a missing reference runner blocks qualification (spec §13.1), it does not skip it.
 
 The `bench via daemon` step's socket lives under `$RUNNER_TEMP`. If the daemon logs `path too long` (a short path under `/private/var/folders` can still exceed macOS's 104-byte `AF_UNIX` socket path limit once combined with the runner's work directory), use `/tmp/inumakid-ci-$$.sock` instead.
 

@@ -39,6 +39,7 @@ jobs:
           path: .models
           key: models-${{ hashFiles('models/manifest.toml') }}
       - run: cargo run --release -q -p inumaki-cli -- models pull
+      - run: cargo run --release -q -p inumaki-cli -- models pull kiji-pii  # optional, for tests/kiji.rs
       - run: cargo run --release -q -p inumaki-cli -- models verify
       - run: cargo test --release -p inumaki-models --features models-tests
       - run: cargo test --release -p inumakid --features models-tests
@@ -56,9 +57,13 @@ jobs:
       - run: cargo run --release -q -p inumaki-cli -- bench --profile support-email
 
   reference:
-    # Required check (spec §13.1): the self-hosted Apple Silicon reference
-    # runner, the machine the committed baselines were measured on. Setup and
-    # branch protection: docs/ci.md. One runner, so runs queue.
+    # The self-hosted Apple Silicon reference runner, the machine the committed
+    # baselines were measured on (spec §13.1); setup: docs/ci.md. It runs only
+    # for pushes to main and only when the repository variable
+    # REFERENCE_RUNNER is "true": never for pull requests, because on a public
+    # repository that would run a fork's code on the maintainer's machine, and
+    # not at all while no runner is registered, so runs do not queue forever.
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.REFERENCE_RUNNER == 'true'
     runs-on: [self-hosted, macOS, ARM64, inumaki-reference]
     concurrency:
       group: inumaki-reference-runner
@@ -74,6 +79,7 @@ jobs:
           mkdir -p "$HOME/inumaki-ci/models"
           echo "INUMAKI_MODELS_DIR=$HOME/inumaki-ci/models" >> "$GITHUB_ENV"
       - run: cargo run --release -q -p inumaki-cli -- models pull
+      - run: cargo run --release -q -p inumaki-cli -- models pull kiji-pii  # optional, for tests/kiji.rs
       - run: cargo run --release -q -p inumaki-cli -- models verify
       - run: cargo test --workspace
       - run: cargo test --release -p inumaki-models --features models-tests
