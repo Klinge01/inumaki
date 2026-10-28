@@ -22,7 +22,7 @@ fn child_panics_with_content() {
     }
     let text = format!("Kunde {CANARY}");
     let r = std::thread::spawn(move || {
-        let parsed: Result<usize, String> = Err(std::hint::black_box(text));
+        let parsed: Result<usize, String> = std::hint::black_box(Err(text));
         parsed.unwrap()
     })
     .join();
