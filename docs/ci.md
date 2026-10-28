@@ -5,7 +5,7 @@
 | Job | Runner | Gated on |
 |---|---|---|
 | `check` | GitHub-hosted `ubuntu-latest`, `macos-latest` | fmt, clippy, all tests, `offline` baseline (no models) |
-| `models` | GitHub-hosted `ubuntu-latest` | model tests, the curated safety suite (see below); the corpus eval is informational because int8 ONNX Runtime kernels differ between x86 (VNNI/AVX2) and Apple Silicon (NEON) and the committed baselines were measured on the latter |
+| `models` | GitHub-hosted `ubuntu-latest` | model tests, the curated safety suite (see below); the corpus eval and the quantized `kiji-pii` model test are informational because int8 ONNX Runtime kernels differ between x86 (VNNI/AVX2) and Apple Silicon (NEON) and the committed baselines were measured on the latter |
 | `reference` | self-hosted, labels `self-hosted, macOS, ARM64, inumaki-reference` | all tests, model tests, every committed baseline on the tuning corpus (`support-email`, `strict`, `thorough`, `offline`) and the held-out corpus (`support-email`, `strict`), the safety suite, the M4 targets (spec §13.1), bench |
 
 The `reference` job is the quality gate the M4 spec requires (§13.1). Its baselines live in `crates/inumaki-eval/baselines/`; the reports behind them are under `docs/quality/`.

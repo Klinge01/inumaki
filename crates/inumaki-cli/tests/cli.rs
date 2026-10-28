@@ -92,6 +92,7 @@ fn tokenize_blocked_exits_3_without_values() {
         r#"
         [profiles.fast]
         default_action = "tokenize"
+        ner_sanitizer = "none"
         [profiles.fast.entities.IBAN]
         action = "block"
         min_confidence = 0.0
@@ -132,6 +133,7 @@ fn tokenize_pass_uncertain_reports_on_stderr_and_exits_0() {
 
         [profiles.fast]
         default_action = "tokenize"
+        ner_sanitizer = "none"
         [profiles.fast.entities]
         PROFESSION  = { action = "preserve", min_confidence = 0.0 }
         DATE        = { action = "preserve", min_confidence = 0.0 }
