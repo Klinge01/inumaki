@@ -31,6 +31,6 @@ pub use engine::{
     Activity, ActivityDirection, ActivityVerdict, Block, DatasetState, EngineError, ManifestStore,
     MirrorEngine, Outcome, Side,
 };
-pub use folder::Folder;
+pub use folder::{Folder, RootIdentity, root_generation};
 pub use service::{Mirror, prepare_root};
 pub use status::{Counts, FolderError, FolderState, OutboxCounts, Snapshot};

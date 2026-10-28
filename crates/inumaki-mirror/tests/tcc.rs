@@ -10,7 +10,9 @@ use std::sync::mpsc;
 use std::time::{Duration, Instant};
 
 use common::{FakeEngine, MemManifest};
-use inumaki_mirror::{Folder, FolderError, FolderState, Mirror, MirrorConfig};
+use inumaki_mirror::{
+    Folder, FolderError, FolderState, Mirror, MirrorConfig, RootIdentity, root_generation,
+};
 
 const LABEL: &str = "aaaaaaaaaaaaaaaa";
 
@@ -33,12 +35,17 @@ fn folder(e: &Env, dataset: &str, label: &str) -> Folder {
     std::fs::write(src.join("x.txt"), "x\n").unwrap();
     use std::os::unix::fs::MetadataExt;
     let md = std::fs::metadata(&src).unwrap();
+    let root_id = Some(RootIdentity {
+        dev: md.dev(),
+        ino: md.ino(),
+        generation: root_generation(&src, md.dev(), md.ino()),
+    });
     Folder {
         dataset: dataset.into(),
         label: label.into(),
         source: src,
         outbox_destination: e.base.join(format!("out-{dataset}")),
-        root_id: Some((md.dev(), md.ino())),
+        root_id,
     }
 }
 

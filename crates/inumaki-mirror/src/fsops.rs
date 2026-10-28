@@ -191,6 +191,25 @@ impl Dir {
         Ok(Meta::of(&rustix::fs::fstat(&self.fd)?))
     }
 
+    /// The inode generation (`FS_IOC_GETVERSION`), where the filesystem has
+    /// one: Linux ext4 and XFS give a reused inode number a new generation.
+    /// `None` on other filesystems and on macOS, whose `st_gen` only root
+    /// may read.
+    pub fn generation(&self) -> Option<u64> {
+        #[cfg(target_os = "linux")]
+        {
+            let mut v: libc::c_long = 0;
+            // SAFETY: the descriptor is open for the call, and the kernel
+            // writes at most one `long` through the pointer, which outlives
+            // it.
+            let r = unsafe { libc::ioctl(self.raw(), libc::FS_IOC_GETVERSION, &mut v) };
+            // ext4 and XFS write the 32-bit generation as an `int`.
+            (r == 0).then_some(u64::from(v as u32))
+        }
+        #[cfg(not(target_os = "linux"))]
+        None
+    }
+
     /// Open a child directory (never a symlink).
     pub fn child(&self, name: &OsStr) -> io::Result<Dir> {
         let c = cname(name)?;

@@ -9,7 +9,8 @@ use std::sync::Mutex;
 
 use inumaki_core::span::EntityKind;
 use inumaki_mirror::{
-    Activity, Block, DatasetState, EngineError, ManifestStore, MirrorEngine, Outcome, Side,
+    Activity, Block, DatasetState, EngineError, ManifestStore, MirrorEngine, Outcome, RootIdentity,
+    Side,
 };
 
 pub struct FakeEngine {
@@ -253,7 +254,7 @@ type Rows = HashMap<(String, Side, Vec<u8>), Vec<u8>>;
 pub struct MemManifest {
     pub rows: Mutex<Rows>,
     /// Persisted root ids, per dataset.
-    pub root_ids: Mutex<HashMap<String, (u64, u64)>>,
+    pub root_ids: Mutex<HashMap<String, RootIdentity>>,
     /// `put_root_id` fails (a vault error).
     pub fail_root_id: Mutex<bool>,
     /// `put` fails (a vault error).
@@ -296,7 +297,7 @@ impl ManifestStore for MemManifest {
         Ok(())
     }
 
-    fn put_root_id(&self, d: &str, root_id: (u64, u64)) -> Result<(), EngineError> {
+    fn put_root_id(&self, d: &str, root_id: RootIdentity) -> Result<(), EngineError> {
         if *self.fail_root_id.lock().unwrap() {
             return Err(EngineError::VaultUnavailable);
         }

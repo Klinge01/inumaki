@@ -18,7 +18,7 @@ use common::{FakeEngine, MemManifest};
 use inumaki_core::span::EntityKind;
 use inumaki_mirror::{
     Activity, Block, DatasetState, EngineError, Folder, FolderError, FolderState, ManifestStore,
-    Mirror, MirrorConfig, MirrorEngine,
+    Mirror, MirrorConfig, MirrorEngine, RootIdentity, root_generation,
 };
 
 const LABEL: &str = "aaaaaaaaaaaaaaaa";
@@ -41,12 +41,17 @@ fn folder(e: &Env, dataset: &str, label: &str) -> Folder {
     std::fs::create_dir_all(&src).unwrap();
     use std::os::unix::fs::MetadataExt;
     let md = std::fs::metadata(&src).unwrap();
+    let root_id = Some(RootIdentity {
+        dev: md.dev(),
+        ino: md.ino(),
+        generation: root_generation(&src, md.dev(), md.ino()),
+    });
     Folder {
         dataset: dataset.into(),
         label: label.into(),
         source: src,
         outbox_destination: e.base.join(format!("out-{dataset}")),
-        root_id: Some((md.dev(), md.ino())),
+        root_id,
     }
 }
 

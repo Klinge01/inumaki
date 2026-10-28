@@ -15,7 +15,8 @@ use inumaki_core::token::TokenStore;
 use inumaki_mirror::fsops::{Dir, IoClass, delete_mirror_tree, map_errno};
 use inumaki_mirror::{
     Activity, ActivityDirection, ActivityVerdict, Block, DatasetState, EngineError, Folder,
-    FolderError, ManifestStore, Mirror, MirrorConfig, MirrorEngine, Outcome, Side, Snapshot,
+    FolderError, ManifestStore, Mirror, MirrorConfig, MirrorEngine, Outcome, RootIdentity, Side,
+    Snapshot,
 };
 use inumaki_vault::{
     DatasetKind, Direction, FrontDoor, KindCount, KindLabel, NewActivity, Vault, VaultError,
@@ -47,6 +48,22 @@ pub struct FolderConfig {
     /// open.
     #[serde(default)]
     pub root_id: Option<(u64, u64)>,
+    /// The root's inode generation where its filesystem has one (Linux ext4,
+    /// XFS; [`RootIdentity`]). A separate field so a config written before it
+    /// still reads; such a root learns it at the next open.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub root_generation: Option<u64>,
+}
+
+impl FolderConfig {
+    /// The stored root identity, if any.
+    pub fn root_identity(&self) -> Option<RootIdentity> {
+        self.root_id.map(|(dev, ino)| RootIdentity {
+            dev,
+            ino,
+            generation: self.root_generation,
+        })
+    }
 }
 
 impl std::fmt::Debug for FolderConfig {
@@ -378,12 +395,13 @@ impl Folders {
         let mut entries = BTreeMap::new();
         for (id, c, created_at) in stored {
             // The root id stored at add, or adopted later (`put_root_id`).
+            let root_id = c.root_identity();
             let folder = Folder {
                 label: vault.opaque_id(&id),
                 dataset: id.clone(),
                 source: c.source,
                 outbox_destination: c.outbox_destination,
-                root_id: c.root_id,
+                root_id,
             };
             entries.insert(id, (folder, created_at));
         }
@@ -501,10 +519,13 @@ impl Folders {
         let (source, destination, root_id) =
             validate(src, std::fs::metadata(src), Some(requested), &ctx)
                 .map_err(AddError::Refused)?;
+        let root_generation =
+            root_id.and_then(|(dev, ino)| inumaki_mirror::root_generation(&source, dev, ino));
         let config = FolderConfig {
             source: source.clone(),
             outbox_destination: destination.clone(),
             root_id,
+            root_generation,
         };
         let bytes =
             serde_json::to_vec(&config).map_err(|_| AddError::Mirror(FolderError::Internal))?;
@@ -536,7 +557,7 @@ impl Folders {
             label,
             source,
             outbox_destination: destination,
-            root_id,
+            root_id: config.root_identity(),
         };
         // The hook registry learns the folder before the service starts its
         // scan, so the registry always holds every folder the service runs.
@@ -988,14 +1009,15 @@ impl ManifestStore for VaultManifest {
         self.vault.keyed_mac(domain, data)
     }
     /// Store an adopted root id in the folder's sealed config (spec §6.2,
-    /// §9.1; 5c review I2). A folder without config (removed meanwhile; the
-    /// poller can run after a removal) is a no-op; a stored id is never
-    /// replaced. The id is stored only
+    /// §9.1; 5c review I2), or the generation of a stored id that has none.
+    /// A folder without config (removed meanwhile; the poller can run after
+    /// a removal) is a no-op; a stored id is never replaced. The id is stored
+    /// only
     /// while the stored source still names that directory, so a late call
     /// from a removed folder never lands in a folder added again at the same
     /// dataset. Never waits for an add or remove in progress (a removal
     /// waits for the job that calls this): it fails and is retried.
-    fn put_root_id(&self, dataset: &str, root_id: (u64, u64)) -> Result<(), EngineError> {
+    fn put_root_id(&self, dataset: &str, root_id: RootIdentity) -> Result<(), EngineError> {
         use std::os::unix::fs::MetadataExt;
         let _changing = match self.changing.try_lock() {
             Ok(g) => g,
@@ -1007,10 +1029,14 @@ impl ManifestStore for VaultManifest {
         };
         let mut c: FolderConfig =
             serde_json::from_slice(&bytes).map_err(|_| EngineError::Internal("folder_config"))?;
-        // Only an unknown id is filled; a stored one is never replaced
-        // (8b review M3).
+        // Only an unknown id is filled, or the generation of a stored id
+        // that has none; a stored one is never replaced (8b review M3).
+        let pair = (root_id.dev, root_id.ino);
         match c.root_id {
-            Some(stored) if stored == root_id => return Ok(()),
+            Some(stored) if stored == pair && c.root_generation == root_id.generation => {
+                return Ok(());
+            }
+            Some(stored) if stored == pair && c.root_generation.is_none() => {}
             Some(_) => return Err(EngineError::Internal("root_id")),
             None => {}
         }
@@ -1018,10 +1044,13 @@ impl ManifestStore for VaultManifest {
             .ok()
             .filter(std::fs::Metadata::is_dir)
             .map(|m| (m.dev(), m.ino()));
-        if at_source != Some(root_id) {
+        if at_source != Some(pair)
+            || inumaki_mirror::root_generation(&c.source, pair.0, pair.1) != root_id.generation
+        {
             return Err(EngineError::Internal("root_id"));
         }
-        c.root_id = Some(root_id);
+        c.root_id = Some(pair);
+        c.root_generation = root_id.generation;
         let out = Zeroizing::new(
             serde_json::to_vec(&c).map_err(|_| EngineError::Internal("folder_config"))?,
         );

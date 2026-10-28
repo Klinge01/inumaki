@@ -3,6 +3,8 @@
 
 use inumaki_core::span::EntityKind;
 
+use crate::folder::RootIdentity;
+
 /// Why the engine could not answer. Carries classes and counts only.
 #[derive(Debug, Clone, PartialEq, Eq, thiserror::Error)]
 pub enum EngineError {
@@ -194,12 +196,14 @@ pub trait ManifestStore: Send + Sync + 'static {
     fn clear(&self, dataset: &str) -> Result<(), EngineError>;
     /// Keyed MAC (`Vault::keyed_mac`).
     fn mac(&self, domain: &str, data: &[u8]) -> [u8; 32];
-    /// Persist the source root's (device, inode) for a folder whose root
-    /// could not be read when it was added (`Folder::root_id` was `None`,
-    /// spec §9.1): the mirror adopted it before anything was mirrored. The
+    /// Persist the source root's identity for a folder whose root could
+    /// not be read when it was added (`Folder::root_id` was `None`, spec
+    /// §9.1): the mirror adopted it before anything was mirrored. Also called
+    /// once for a stored id without a generation, when the root's filesystem
+    /// reports one: the daemon then adds the generation to the stored id. The
     /// daemon stores it in the folder's sealed config and passes it as
     /// `Folder::root_id` from the next start on. Until this succeeds, a
     /// restart cannot tell the mirrored root from whatever is at the path,
     /// so the mirror deletes nothing then (5c review I2).
-    fn put_root_id(&self, dataset: &str, root_id: (u64, u64)) -> Result<(), EngineError>;
+    fn put_root_id(&self, dataset: &str, root_id: RootIdentity) -> Result<(), EngineError>;
 }

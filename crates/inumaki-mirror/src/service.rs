@@ -401,7 +401,9 @@ impl Mirror {
     fn arm_watches(self: &Arc<Self>, rt: &FolderRt) {
         let ds = &rt.folder.dataset;
         let me = Arc::downgrade(self);
-        let expect = lock(&rt.root_id).id;
+        // (device, inode): a different generation is the reconcile's
+        // `source_missing`.
+        let expect = lock(&rt.root_id).id.map(|x| (x.dev, x.ino));
         let source = self.watch_dir(&rt.folder.source, expect, ds, false, me.clone());
         let outbox_dir = self.mirror_dir(&rt.folder.label).join(OUTBOX);
         // Validated through the root handle; the path must name the same

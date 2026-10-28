@@ -12,10 +12,10 @@ use std::sync::Arc;
 
 use common::{FakeEngine, MemManifest};
 use inumaki_core::span::EntityKind;
-use inumaki_mirror::EngineError;
 use inumaki_mirror::fsops::{TMP_PREFIX, inject_crash_before_rename};
 use inumaki_mirror::status::{FolderError, FolderState};
 use inumaki_mirror::testing::TestMirror;
+use inumaki_mirror::{EngineError, root_generation};
 
 fn t() -> TestMirror {
     TestMirror::new(
@@ -133,6 +133,30 @@ fn a_replaced_root_is_source_missing() {
     assert!(t.reconcile_all_result().is_err());
     assert_eq!(t.snapshot().error, Some(FolderError::SourceMissing));
     assert!(t.mirror_dir().join("a.txt").exists());
+}
+
+#[test]
+fn a_stored_id_without_a_generation_learns_and_stores_it() {
+    // A folder added before generations were recorded: the first open
+    // stores the root's generation where the filesystem has one (Linux ext4,
+    // XFS), so a later replacement is seen; elsewhere nothing changes.
+    use std::os::unix::fs::MetadataExt;
+    let m = Arc::new(MemManifest::default());
+    let t = TestMirror::new_without_generation(Arc::new(FakeEngine::new(&[])), m.clone());
+    std::fs::write(t.source().join("a.txt"), "a").unwrap();
+    t.reconcile_all();
+    let md = std::fs::metadata(t.source()).unwrap();
+    let stored = m.root_ids.lock().unwrap().values().next().copied();
+    match root_generation(&t.source(), md.dev(), md.ino()) {
+        Some(g) => assert_eq!(stored.and_then(|r| r.generation), Some(g)),
+        None => assert_eq!(stored, None, "nothing to learn"),
+    }
+    std::fs::remove_dir_all(t.source()).unwrap();
+    std::fs::create_dir(t.source()).unwrap();
+    assert!(
+        t.reconcile_all_result().is_err(),
+        "the learned id is compared"
+    );
 }
 
 #[test]

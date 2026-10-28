@@ -24,8 +24,51 @@ pub struct Folder {
     pub source: PathBuf,
     /// Resolved outbox destination.
     pub outbox_destination: PathBuf,
-    /// Root (device, inode) at add time; `None` when it could not be read then.
-    pub root_id: Option<(u64, u64)>,
+    /// Root identity at add time; `None` when it could not be read then.
+    pub root_id: Option<RootIdentity>,
+}
+
+/// The source root's identity (spec §6.2): device and inode, and the inode
+/// generation where the filesystem reports one. Linux gives a freed inode
+/// number to the next new directory at once, so a root deleted and made
+/// again at the same path keeps its (device, inode); only the generation
+/// tells them apart. `None` on macOS and on filesystems without one.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct RootIdentity {
+    /// Device.
+    pub dev: u64,
+    /// Inode.
+    pub ino: u64,
+    /// Inode generation ([`Dir::generation`](crate::fsops::Dir::generation)).
+    pub generation: Option<u64>,
+}
+
+impl RootIdentity {
+    /// `seen` is this directory. The generation is compared only when both
+    /// sides have one: an id stored before generations were recorded, or
+    /// read where the filesystem has none, falls back to (device, inode).
+    pub fn matches(&self, seen: &RootIdentity) -> bool {
+        self.dev == seen.dev
+            && self.ino == seen.ino
+            && match (self.generation, seen.generation) {
+                (Some(a), Some(b)) => a == b,
+                _ => true,
+            }
+    }
+}
+
+/// The generation of the directory at `path` if it is still (`dev`, `ino`).
+/// Off Linux this is `None` without touching the path: on macOS an open can
+/// show the privacy prompt, and no generation can be read there anyway.
+pub fn root_generation(path: &std::path::Path, dev: u64, ino: u64) -> Option<u64> {
+    if !cfg!(target_os = "linux") {
+        return None;
+    }
+    let d = crate::fsops::Dir::open_root(path).ok()?;
+    let m = d.meta().ok()?;
+    (m.dev == dev && m.ino == ino)
+        .then(|| d.generation())
+        .flatten()
 }
 
 impl std::fmt::Debug for Folder {
@@ -274,11 +317,11 @@ impl Index {
     }
 }
 
-/// The source root's (device, inode) as the mirror knows it (spec §6.2).
+/// The source root's identity as the mirror knows it (spec §6.2).
 #[derive(Clone, Copy)]
 pub(crate) struct RootId {
     /// Stored when the folder was added, or adopted at the first open.
-    pub id: Option<(u64, u64)>,
+    pub id: Option<RootIdentity>,
     /// `id` is the root the mirror was built from: stored at add time, or
     /// adopted in this run before anything was mirrored. Only then may a
     /// source that is not seen delete anything (5c review I2): an id adopted
@@ -465,6 +508,26 @@ impl FolderRt {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn a_generation_is_compared_only_when_both_sides_have_one() {
+        let id = |ino, generation| RootIdentity {
+            dev: 1,
+            ino,
+            generation,
+        };
+        assert!(id(2, Some(7)).matches(&id(2, Some(7))));
+        assert!(!id(2, Some(7)).matches(&id(2, Some(8))), "a reused inode");
+        assert!(
+            id(2, None).matches(&id(2, Some(8))),
+            "stored before generations"
+        );
+        assert!(
+            id(2, Some(7)).matches(&id(2, None)),
+            "no generation readable now"
+        );
+        assert!(!id(2, None).matches(&id(3, None)));
+    }
 
     fn file(rel: &str, mirror: &str) -> SourceRecord {
         SourceRecord {

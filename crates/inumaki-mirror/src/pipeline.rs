@@ -16,7 +16,7 @@ use crate::engine::{
     Activity, ActivityDirection, ActivityVerdict, Block, DatasetState, EngineError, ManifestStore,
     MirrorEngine, Outcome,
 };
-use crate::folder::{DirRecord, FileState, FolderRt, OpenSide, Reason, SourceRecord};
+use crate::folder::{DirRecord, FileState, FolderRt, OpenSide, Reason, RootIdentity, SourceRecord};
 use crate::formats::{self, Redo};
 use crate::fsops::{self, Dir, IoClass, Kind, Meta, map_errno};
 use crate::guard::{self, Last, ReleaseCheck};
@@ -82,7 +82,9 @@ pub(crate) struct SourceRoot {
 }
 
 /// Open the source root and check it is the directory that was added
-/// (device and inode; see spec §6.2 for the removable-disk limitation). A
+/// (device, inode, and the generation where the filesystem has one; see
+/// spec §6.2 for the removable-disk limitation). A stored id without a
+/// generation learns it here and stores it like an adopted id. A
 /// folder added while its root could not be read adopts the first root it
 /// opens; adopted before anything was mirrored, that id is trusted and
 /// persisted (retried until it is stored); adopted over a non-empty
@@ -107,7 +109,11 @@ pub(crate) fn open_source_root(ctx: &Ctx, rt: &FolderRt) -> Result<SourceRoot, F
     }
     let d = Dir::open_root(&rt.folder.source).map_err(|e| FolderError::from_source_io(&e))?;
     let m = d.meta().map_err(|e| FolderError::from_source_io(&e))?;
-    let pair = (m.dev, m.ino);
+    let seen = RootIdentity {
+        dev: m.dev,
+        ino: m.ino,
+        generation: d.generation(),
+    };
     let empty = {
         let ix = rt.index.lock().unwrap_or_else(PoisonError::into_inner);
         ix.files.is_empty() && ix.dirs.is_empty()
@@ -115,18 +121,24 @@ pub(crate) fn open_source_root(ctx: &Ctx, rt: &FolderRt) -> Result<SourceRoot, F
     let id = {
         let mut id = rt.root_id.lock().unwrap_or_else(PoisonError::into_inner);
         match id.id {
-            Some(x) if x != pair => return Err(FolderError::SourceMissing),
+            Some(x) if !x.matches(&seen) => return Err(FolderError::SourceMissing),
+            // Stored before generations were recorded: the same (device,
+            // inode) is this root, so its generation is learned and stored.
+            Some(x) if x.generation.is_none() && seen.generation.is_some() => {
+                id.id = Some(seen);
+                id.persisted = false;
+            }
             Some(_) => {}
             None => {
-                id.id = Some(pair);
+                id.id = Some(seen);
                 id.trusted = empty;
             }
         }
         *id
     };
-    if id.trusted && !id.persisted && ctx.manifest.put_root_id(&rt.folder.dataset, pair).is_ok() {
+    if id.trusted && !id.persisted && ctx.manifest.put_root_id(&rt.folder.dataset, seen).is_ok() {
         let mut id = rt.root_id.lock().unwrap_or_else(PoisonError::into_inner);
-        if id.id == Some(pair) {
+        if id.id == Some(seen) {
             id.persisted = true;
         }
     }

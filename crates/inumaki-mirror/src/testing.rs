@@ -7,7 +7,7 @@ use std::time::{Duration, Instant};
 
 use crate::config::MirrorConfig;
 use crate::engine::{ManifestStore, MirrorEngine};
-use crate::folder::{Folder, FolderRt, Index};
+use crate::folder::{Folder, FolderRt, Index, RootIdentity, root_generation};
 use crate::guard;
 use crate::outbox;
 use crate::pipeline::{self, Ctx, SourceFault, Step};
@@ -55,20 +55,42 @@ pub struct TestMirror {
 impl TestMirror {
     /// A folder with an empty source, an empty mirror and an empty outbox.
     pub fn new(engine: Arc<dyn MirrorEngine>, manifest: Arc<dyn ManifestStore>) -> TestMirror {
+        TestMirror::with_root_id(engine, manifest, true)
+    }
+
+    /// Like [`new`](Self::new), with the root id stored as before
+    /// generations were recorded: (device, inode) only.
+    pub fn new_without_generation(
+        engine: Arc<dyn MirrorEngine>,
+        manifest: Arc<dyn ManifestStore>,
+    ) -> TestMirror {
+        TestMirror::with_root_id(engine, manifest, false)
+    }
+
+    fn with_root_id(
+        engine: Arc<dyn MirrorEngine>,
+        manifest: Arc<dyn ManifestStore>,
+        generation: bool,
+    ) -> TestMirror {
         let tmp = tempfile::tempdir().expect("tempdir");
         for d in ["src", "root", "dest"] {
             std::fs::create_dir_all(tmp.path().join(d)).expect("create_dir_all");
         }
-        let meta = std::fs::metadata(tmp.path().join("src")).expect("source metadata");
+        let src = tmp.path().join("src");
+        let meta = std::fs::metadata(&src).expect("source metadata");
         let root_id = {
             use std::os::unix::fs::MetadataExt;
-            Some((meta.dev(), meta.ino()))
+            Some(RootIdentity {
+                dev: meta.dev(),
+                ino: meta.ino(),
+                generation: root_generation(&src, meta.dev(), meta.ino()).filter(|_| generation),
+            })
         };
         TestMirror::build(Arc::new(tmp), engine, manifest, Index::default(), root_id)
     }
 
     /// Like [`new`](Self::new), for a folder added while its root could not
-    /// be read (spec §9.1): no stored (device, inode); the first open
+    /// be read (spec §9.1): no stored identity; the first open
     /// adopts it.
     pub fn new_unidentified(
         engine: Arc<dyn MirrorEngine>,
@@ -106,7 +128,7 @@ impl TestMirror {
         engine: Arc<dyn MirrorEngine>,
         manifest: Arc<dyn ManifestStore>,
         index: Index,
-        root_id: Option<(u64, u64)>,
+        root_id: Option<RootIdentity>,
     ) -> TestMirror {
         let source = tmp.path().join("src");
         let dest = tmp.path().join("dest");
