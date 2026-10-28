@@ -1271,23 +1271,26 @@ mod tests {
         assert!(c.original("<PERSON_0000>").is_none());
     }
 
-    /// I8: access counts as use, so an active context does not expire.
+    /// I8: access counts as use, so an active context does not expire. The
+    /// second access comes after more than one TTL, so it finds the context
+    /// only if the first refreshed it; a sleep may run 600 ms late (a loaded
+    /// CI runner) before the test fails falsely.
     #[test]
     fn access_refreshes_ttl() {
-        let store = ContextStore::new(Duration::from_millis(300), 10, TokenSettings::default());
+        let store = ContextStore::new(Duration::from_millis(1500), 10, TokenSettings::default());
         let id = ContextId("a".into());
         store
             .get_or_create(&id)
             .unwrap()
             .token_for(&K::Person, "Sarah Leitner")
             .unwrap();
-        std::thread::sleep(Duration::from_millis(180));
+        std::thread::sleep(Duration::from_millis(900));
         assert_eq!(store.get_or_create(&id).unwrap().len(), 1);
-        std::thread::sleep(Duration::from_millis(180));
+        std::thread::sleep(Duration::from_millis(900));
         assert_eq!(
             store.get_or_create(&id).unwrap().len(),
             1,
-            "the access at 180 ms must have refreshed the TTL"
+            "the access at 900 ms must have refreshed the TTL"
         );
     }
 

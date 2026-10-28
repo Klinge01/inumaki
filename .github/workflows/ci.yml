@@ -6,6 +6,8 @@ on:
 jobs:
   check:
     strategy:
+      # One platform's failure must not hide the other's result.
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest]
     runs-on: ${{ matrix.os }}
