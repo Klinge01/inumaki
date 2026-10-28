@@ -57,6 +57,8 @@ pub(crate) struct Shared {
     pub host: Arc<dyn ProxyHost>,
     pub keys: KeyMaker,
     pub identity: Option<Arc<DictionaryDetector>>,
+    /// `host.preserved_logins()`, read once.
+    pub preserved_logins: Vec<String>,
     pub tokens: regex::Regex,
     pub clean_definitions: Mutex<CleanDefinitions>,
     /// The static-prompt NER memo (M8 spec §20, amendment 2026-10-12):
@@ -93,6 +95,7 @@ impl Shared {
     /// cannot be built, rather than running without it.
     pub(crate) fn new(cfg: ProxyConfig, host: Arc<dyn ProxyHost>) -> Result<Shared, Fail> {
         let ids = host.identity();
+        let preserved_logins = host.preserved_logins();
         let identity = if ids.iter().all(|(_, v)| v.trim().is_empty()) {
             None
         } else {
@@ -116,6 +119,7 @@ impl Shared {
             host,
             memo,
             identity,
+            preserved_logins,
             tokens,
             clean_definitions: Mutex::new(CleanDefinitions::default()),
             closure: CLOSURE_ROUNDS,
@@ -1163,6 +1167,19 @@ fn part_keys(sh: &Shared, body: &[u8], w: &Walk) -> Result<Vec<[u8; 32]>, Fail> 
 struct LeafEngines {
     wrapped: Option<Arc<Engine>>,
     plain: Option<Arc<Engine>>,
+    ner_free: Option<Arc<Engine>>,
+}
+
+/// Which engine runs a leaf ([`leaf_engine`]).
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum EngineKind {
+    /// The memo-wrapped engine (an eligible harness-static leaf).
+    Memoized,
+    /// The unwrapped engine.
+    Plain,
+    /// The engine without either NER model (a harness-static leaf of a
+    /// setting that skips them, [`crate::config::StaticNer`]).
+    NerFree,
 }
 
 /// The engine for one leaf (M8 spec §20, 2026-10-12; rulings L2-40, L2-42):
@@ -1171,19 +1188,19 @@ struct LeafEngines {
 /// unwrapped one. A leaf without a scope thus never runs a wrapped
 /// detector, so it cannot read or write the memo through another request's
 /// open scope on the same bytes.
-fn leaf_engine(sh: &Shared, e: &mut LeafEngines, memoized: bool) -> Result<Arc<Engine>, Fail> {
-    let slot = if memoized {
-        &mut e.wrapped
-    } else {
-        &mut e.plain
+fn leaf_engine(sh: &Shared, e: &mut LeafEngines, kind: EngineKind) -> Result<Arc<Engine>, Fail> {
+    let slot = match kind {
+        EngineKind::Memoized => &mut e.wrapped,
+        EngineKind::Plain => &mut e.plain,
+        EngineKind::NerFree => &mut e.ner_free,
     };
     if let Some(eng) = slot {
         return Ok(Arc::clone(eng));
     }
-    let eng = if memoized {
-        sh.host.engine(&sh.cfg.profile)
-    } else {
-        sh.host.engine_unmemoized(&sh.cfg.profile)
+    let eng = match kind {
+        EngineKind::Memoized => sh.host.engine(&sh.cfg.profile),
+        EngineKind::Plain => sh.host.engine_unmemoized(&sh.cfg.profile),
+        EngineKind::NerFree => sh.host.engine_static(&sh.cfg.profile),
     }
     .map_err(host_fail)?;
     *slot = Some(Arc::clone(&eng));
@@ -1201,6 +1218,10 @@ fn leaf_engine(sh: &Shared, e: &mut LeafEngines, memoized: bool) -> Result<Arc<E
 /// the session dictionary, scanned leaves, misses through the engine, the
 /// leak closure, then the edits.
 ///
+/// `skip_static_ner` is `[proxy] harness_static_ner = "skip"`
+/// ([`crate::config::StaticNer`]): a harness-static leaf then runs on
+/// [`ProxyHost::engine_static`], without the NER models.
+///
 /// `mode` is the request's client mode (decision 23). It also decides the
 /// text origin of each leaf ([`leaf_origin`]): only a trusted request has
 /// harness-static leaves. Only a trusted request uses the static-prompt NER
@@ -1209,6 +1230,7 @@ fn leaf_engine(sh: &Shared, e: &mut LeafEngines, memoized: bool) -> Result<Arc<E
 /// leaf, every leaf of a restricted request, and every leaf while the memo
 /// is off run on `ProxyHost::engine_unmemoized`, so they never touch the
 /// memo, not even through another request's open scope ([`leaf_engine`]).
+#[allow(clippy::too_many_arguments)]
 pub(crate) fn sanitize_request(
     sh: &Shared,
     session: &Session,
@@ -1216,15 +1238,32 @@ pub(crate) fn sanitize_request(
     body: &[u8],
     w: &Walk,
     mode: ClientMode,
+    skip_static_ner: bool,
     times: &mut StageTimes,
 ) -> Result<Prepared, Fail> {
     // Shared from here: the stage guards add their time on every exit.
     let times: &StageTimes = times;
     let host = &*sh.host;
     let origins: Vec<TextOrigin> = w.leaves.iter().map(|l| leaf_origin(l, mode)).collect();
+    // A harness-static leaf of a route that skips the NER models runs on
+    // the model-free engine, and so never uses the memo (which memoizes
+    // model output).
+    let ner_free = |origin: TextOrigin| skip_static_ner && origin == TextOrigin::HarnessStatic;
+    let engine_kind = |origin: TextOrigin, memo: bool| {
+        if ner_free(origin) {
+            EngineKind::NerFree
+        } else if memo {
+            EngineKind::Memoized
+        } else {
+            EngineKind::Plain
+        }
+    };
     // The memo for a leaf of `origin` (NFC `nfc`): a harness-static leaf.
-    let memo_for =
-        |origin: TextOrigin, nfc: &str| sh.memo.as_deref().filter(|_| static_eligible(origin, nfc));
+    let memo_for = |origin: TextOrigin, nfc: &str| {
+        sh.memo
+            .as_deref()
+            .filter(|_| !ner_free(origin) && static_eligible(origin, nfc))
+    };
     // 1. Definitions (decision 24).
     check_definitions(sh, w)?;
     // 3. Binary outside tool results.
@@ -1556,7 +1595,7 @@ pub(crate) fn sanitize_request(
         let nfc = normalize_input(&l.text);
         let memo = memo_for(origins[i], &nfc);
         let eng = timed(&times.engine, || {
-            leaf_engine(sh, &mut engines, memo.is_some())
+            leaf_engine(sh, &mut engines, engine_kind(origins[i], memo.is_some()))
         })?;
         let chat = chat_dict(&mut dict, sh, &sd)?;
         let pol = policy_of(&mut policy, sh)?;
@@ -1875,7 +1914,7 @@ pub(crate) fn sanitize_request(
                 // models.
                 let nfc = normalize_input(&l.text);
                 let memo = memo_for(origins[i], &nfc);
-                let eng = leaf_engine(sh, &mut engines, memo.is_some())?;
+                let eng = leaf_engine(sh, &mut engines, engine_kind(origins[i], memo.is_some()))?;
                 // A cached leaf re-run from its original text is a miss.
                 if hit[i] {
                     hit[i] = false;
@@ -2209,6 +2248,7 @@ pub(crate) fn test_shared(host: Arc<dyn ProxyHost>) -> Shared {
         extra_headers: Default::default(),
         session_tokens: inumaki_core::config::TokenSettings::default(),
         static_cache: true,
+        static_ner: crate::config::StaticNer::Scan,
         fingerprint: [0; 32],
     };
     Shared::new(cfg, host).expect("the test identity builds")

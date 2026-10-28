@@ -35,8 +35,8 @@ use inumaki_proxy::host::{HostBlock, HostError, ProxyEvent, ProxyHost, Scope};
 use inumaki_proxy::memo::{NerMemo, NerRole, STATIC_MEMO_BYTES, STATIC_MEMO_ENTRIES};
 use inumaki_proxy::upstream::{Upstream, UpstreamError, UpstreamRequest, UpstreamResponse};
 use inumaki_proxy::{
-    BaseUrls, BinaryMode, Proxy, ProxyConfig, Script, ScriptedUpstream, Step, TripwireMode,
-    UncertainMode,
+    BaseUrls, BinaryMode, Proxy, ProxyConfig, Script, ScriptedUpstream, StaticNer, Step,
+    TripwireMode, UncertainMode,
 };
 use serde_json::{Value, json};
 use tower::ServiceExt;
@@ -164,6 +164,7 @@ pub(crate) fn config(profile: &str, tokens: inumaki_core::config::TokenSettings)
         extra_headers: Default::default(),
         session_tokens: tokens,
         static_cache: true,
+        static_ner: StaticNer::Scan,
         fingerprint: [0; 32],
     }
 }

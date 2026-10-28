@@ -522,6 +522,7 @@ mod tests {
             extra_headers: Default::default(),
             session_tokens: Default::default(),
             static_cache: true,
+            static_ner: crate::config::StaticNer::Scan,
             fingerprint: [0; 32],
         }
     }

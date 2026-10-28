@@ -196,6 +196,18 @@ pub trait ProxyHost: Send + Sync + 'static {
     fn engine_unmemoized(&self, profile: &str) -> Result<Arc<Engine>, HostError> {
         self.engine(profile)
     }
+    /// The profile's engine without either NER model: every deterministic
+    /// detector, the dictionary and the verifier's other checks, and no
+    /// model. The pipeline uses it for a harness-static leaf of a route
+    /// when `[proxy] harness_static_ner` is `"skip"`
+    /// ([`StaticNer`](crate::config::StaticNer)).
+    ///
+    /// The default returns [`ProxyHost::engine_unmemoized`], which keeps the
+    /// models: a host that does not build a model-free engine scans more,
+    /// never less.
+    fn engine_static(&self, profile: &str) -> Result<Arc<Engine>, HostError> {
+        self.engine_unmemoized(profile)
+    }
     /// The profile's policy (preserve checks for dictionary hits).
     fn policy(&self, profile: &str) -> Result<Arc<Profile>, HostError>;
     /// A detector over every live, non-check dataset's known entities (§5.4).
@@ -220,6 +232,13 @@ pub trait ProxyHost: Send + Sync + 'static {
     fn scan_known(&self, texts: &[String]) -> Result<Vec<(String, EntityKind, u32)>, HostError>;
     /// The OS user's full name and email, read once at start.
     fn identity(&self) -> Vec<(EntityKind, Zeroizing<String>)>;
+    /// The logins the host's engines leave in clear where they stand in a
+    /// path (`EngineOptions::preserved_logins`). The tripwire on model output
+    /// ignores them there: the model saw them in clear and may write them.
+    /// None (the default) preserves nothing.
+    fn preserved_logins(&self) -> Vec<String> {
+        Vec::new()
+    }
     /// The token a live dataset already uses for `value` of `kind` (§5.4),
     /// with the vault's canonical original for it. The vault may match
     /// `value` case-insensitively, so the canonical original can differ

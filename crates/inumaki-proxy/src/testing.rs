@@ -299,6 +299,9 @@ pub struct FakeHost {
     pub memo: Option<Arc<NerMemo>>,
     /// NER models and the unwrapped engine (hosts built by `with_ner`).
     pub ner: Option<NerFake>,
+    /// What `engine_static()` returns: the engine without NER models
+    /// (`with_origin_ner`); `None` falls back to `engine_unmemoized()`.
+    pub static_engine: Option<Arc<Engine>>,
     /// When set, the next `dictionary()` read still returns the stored
     /// dictionary, then a fresh `Arc` of the same content replaces it: the
     /// request that read it holds a dictionary that is no longer current
@@ -307,6 +310,8 @@ pub struct FakeHost {
     /// The check dataset [`CHECK_DS`]: token → (kind, original).
     pub check: Mutex<HashMap<String, (EntityKind, String)>>,
     pub identity: Vec<(EntityKind, String)>,
+    /// What `preserved_logins()` returns.
+    pub preserved: Vec<String>,
     pub events: Mutex<Vec<ProxyEvent>>,
     pub fail_engine: Mutex<bool>,
     pub fail_vault: Mutex<bool>,
@@ -339,6 +344,8 @@ impl FakeHost {
             dict_arc: Mutex::new(None),
             memo: None,
             ner: None,
+            static_engine: None,
+            preserved: Vec::new(),
             swap_after_next_read: AtomicBool::new(false),
             check: Mutex::new(check),
             identity: Vec::new(),
@@ -375,6 +382,19 @@ impl FakeHost {
             verifier,
             plain,
         });
+        h.static_engine = Some(Arc::new(
+            Engine::from_config_with(
+                &cfg,
+                "fast",
+                None,
+                None,
+                inumaki_core::engine::EngineOptions {
+                    no_ner: true,
+                    ..Default::default()
+                },
+            )
+            .unwrap(),
+        ));
         Arc::new(h)
     }
     /// A host whose engine reads the text origin: [`CFG_NER`] with
@@ -389,6 +409,19 @@ impl FakeHost {
         h.policy = Arc::new(cfg.resolve_profile("fast").unwrap());
         h.memo = None;
         h.ner = None;
+        h.static_engine = Some(Arc::new(
+            Engine::from_config_with(
+                &cfg,
+                "fast",
+                None,
+                None,
+                inumaki_core::engine::EngineOptions {
+                    no_ner: true,
+                    ..Default::default()
+                },
+            )
+            .unwrap(),
+        ));
         Arc::new(h)
     }
     /// Replace the dictionary `dictionary()` returns by `d` (a dictionary
@@ -485,6 +518,15 @@ impl ProxyHost for FakeHost {
                 Ok(Arc::clone(&n.plain))
             }
             _ => self.engine(p),
+        }
+    }
+    fn preserved_logins(&self) -> Vec<String> {
+        self.preserved.clone()
+    }
+    fn engine_static(&self, p: &str) -> Result<Arc<Engine>, HostError> {
+        match &self.static_engine {
+            Some(e) => Ok(Arc::clone(e)),
+            None => self.engine_unmemoized(p),
         }
     }
     /// One row per kind found, for the one fake dataset `ds`.

@@ -24,7 +24,7 @@ use inumaki_core::config::CoreConfig;
 use inumaki_core::{Error, TokenSettings};
 use inumaki_proxy::config::{DEFAULT_MAX_INFLIGHT, ExtraHeaders};
 use inumaki_proxy::forward::extra_header_allowed;
-use inumaki_proxy::{BaseUrls, BinaryMode, ProxyConfig, TripwireMode, UncertainMode};
+use inumaki_proxy::{BaseUrls, BinaryMode, ProxyConfig, StaticNer, TripwireMode, UncertainMode};
 use serde::Deserialize;
 
 use crate::config::{DaemonSection, parse_bytes, parse_duration, valid_origin};
@@ -101,6 +101,9 @@ pub struct ProxySection {
     pub uncertain: String,
     /// `notify` or `block`.
     pub tripwire: String,
+    /// `skip` or `scan`: whether the NER models read the harness's own
+    /// leading prompt (M8 spec §20, amendment of 2026-10-28).
+    pub harness_static_ner: String,
     /// Browser origins allowed to reach the proxy; empty rejects every
     /// request that carries `Origin` (M4 spec §16.8).
     pub allowed_origins: Vec<String>,
@@ -145,6 +148,7 @@ impl Default for ProxySection {
             allow_binary: None,
             uncertain: "block".into(),
             tripwire: "notify".into(),
+            harness_static_ner: "skip".into(),
             allowed_origins: Vec::new(),
             upstreams: UpstreamsSection::default(),
             definitions_account_values: "allow".into(),
@@ -281,6 +285,11 @@ impl ProxySection {
             "block" => TripwireMode::Block,
             _ => return Err(invalid("tripwire")),
         };
+        let static_ner = match self.harness_static_ner.as_str() {
+            "skip" => StaticNer::Skip,
+            "scan" => StaticNer::Scan,
+            _ => return Err(invalid("harness_static_ner")),
+        };
         if !self.allowed_origins.iter().all(|o| valid_origin(o)) {
             return Err(invalid("allowed_origins"));
         }
@@ -323,6 +332,7 @@ impl ProxySection {
             binary,
             uncertain,
             tripwire,
+            static_ner,
             allowed_origins: self.allowed_origins.clone(),
             base_urls: BaseUrls {
                 anthropic: base(&self.upstreams.anthropic, ANTHROPIC_BASE, "anthropic")?,
@@ -396,6 +406,7 @@ mod tests {
         assert_eq!(p.session_ttl.as_secs(), 4 * 3600);
         assert_eq!(p.uncertain, UncertainMode::Block);
         assert_eq!(p.tripwire, TripwireMode::Notify);
+        assert_eq!(p.static_ner, StaticNer::Skip);
         assert_eq!(p.binary, BinaryMode::Placeholder);
         assert_eq!(p.base_urls.openai_codex, CODEX_BASE);
         assert_eq!(p.fingerprint, c.fingerprint);
@@ -567,6 +578,7 @@ mod tests {
         for (extra, key) in [
             ("uncertain = \"maybe\"", "proxy.uncertain"),
             ("tripwire = \"off\"", "proxy.tripwire"),
+            ("harness_static_ner = \"maybe\"", "proxy.harness_static_ner"),
             ("max_inflight = 0", "proxy.max_inflight"),
             ("session_cap = 0", "proxy.session_cap"),
             ("session_ttl = \"0s\"", "proxy.session_ttl"),

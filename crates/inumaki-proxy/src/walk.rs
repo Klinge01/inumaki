@@ -936,6 +936,22 @@ mod tests {
         );
     }
 
+    /// The id of Codex's `additional_tools` item (`at_<uuid>`) is structure:
+    /// scanned as text, a model read it as a phone number, and the provider
+    /// received a token in place of an id and refused the request.
+    #[test]
+    fn the_additional_tools_item_id_is_not_a_leaf() {
+        let id = "at_01a17f97-697e-7680-b202-dab7774aa1e3";
+        let w = leaves(
+            Wire::Responses,
+            serde_json::json!({"input": [
+                {"type": "additional_tools", "id": id, "role": "developer", "tools": []},
+                {"type": "message", "role": "user", "content": "U1"}
+            ]}),
+        );
+        assert!(w.leaves.iter().all(|l| l.text != id), "the id is scanned");
+    }
+
     #[test]
     fn stream_flag_is_read() {
         assert!(

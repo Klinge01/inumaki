@@ -53,8 +53,18 @@ fn system_text(bytes: usize) -> String {
 }
 
 fn proxy_with(host: &Arc<FakeHost>, static_cache: bool) -> (crate::Proxy, Arc<Recording>) {
+    proxy_with_ner(host, static_cache, crate::StaticNer::Scan)
+}
+
+/// [`proxy_with`] with `[proxy] harness_static_ner` set to `static_ner`.
+fn proxy_with_ner(
+    host: &Arc<FakeHost>,
+    static_cache: bool,
+    static_ner: crate::StaticNer,
+) -> (crate::Proxy, Arc<Recording>) {
     let mut cfg = crate::pipeline::test_shared(host.clone()).cfg.clone();
     cfg.static_cache = static_cache;
+    cfg.static_ner = static_ner;
     let up = Arc::new(Recording::default());
     let p = crate::Proxy::with_upstream(
         cfg,
@@ -198,14 +208,16 @@ async fn memo_cross_session_hit() {
     assert_eq!(canon(&a), canon(&b));
 }
 
-/// Test 1 on the Codex/Responses wire (review M7): a `>= 4 KiB`
-/// `instructions` string is a static leaf too. Session B's instructions run
-/// no sanitizer NER and no verifier NER on the candidate, and the forwarded
-/// `instructions` of the two sessions are equal after canonical renaming.
+/// Test 1 on the Codex/Responses wire (review M7), after the OpenAI routes
+/// began to skip the NER models for harness-static leaves
+/// (`[proxy] harness_static_ner = "skip"`, the default): a `>= 4 KiB`
+/// `instructions` string runs no sanitizer NER and no verifier NER in either
+/// session, the memo is never read or written, and the forwarded
+/// `instructions` are equal.
 #[tokio::test]
-async fn memo_cross_session_hit_on_responses_instructions() {
+async fn a_skipping_route_runs_no_model_and_no_memo_on_responses_instructions() {
     let host = FakeHost::with_ner(true);
-    let (p, up) = proxy_with(&host, true);
+    let (p, up) = proxy_with_ner(&host, true, crate::StaticNer::Skip);
     let instructions = system_text(4096);
     let uri = "/openai/v1/responses";
     let req = |text: &str| {
@@ -214,31 +226,32 @@ async fn memo_cross_session_hit_on_responses_instructions() {
             .into_bytes()
     };
 
-    let (st, _) = post_to(&p, uri, req("Please summarize the rules."), "A", true).await;
-    assert_eq!(st, 200);
-    let (sa, va) = long_calls(&host);
-    assert!(sa >= 1 && va >= 1, "session A ran both models");
-    assert_eq!(stats(&host).hits, 0);
-
-    let (st, _) = post_to(&p, uri, req("What about refunds?"), "B", true).await;
-    assert_eq!(st, 200);
-    assert_eq!(
-        long_calls(&host),
-        (sa, va),
-        "session B ran no long NER call on the instructions"
-    );
-    let s = stats(&host);
-    assert!(s.hits >= 1, "session B was served by the memo: {s:?}");
-    assert_eq!(s.clears, 0, "no dictionary change, no clear");
-
-    let sent_instructions = |n: usize| {
+    for (n, (text, session)) in [
+        ("Please summarize the rules.", "A"),
+        ("What about refunds?", "B"),
+    ]
+    .into_iter()
+    .enumerate()
+    {
+        let (st, _) = post_to(&p, uri, req(text), session, true).await;
+        assert_eq!(st, 200, "session {session}");
+        assert_eq!(
+            long_calls(&host),
+            (0, 0),
+            "session {session}: no long NER call"
+        );
+        let s = stats(&host);
+        assert_eq!(
+            (s.hits, s.misses, s.entries),
+            (0, 0, 0),
+            "{session}: memo untouched: {s:?}"
+        );
         let v: Value = serde_json::from_str(&sent(&up, n)).unwrap();
-        v["instructions"].as_str().unwrap().to_string()
-    };
-    let (a, b) = (sent_instructions(0), sent_instructions(1));
-    assert!(!a.contains(MEMO_NAME) && a.contains("<PERSON_"), "{a}");
-    assert!(!b.contains(MEMO_NAME) && b.contains("<PERSON_"), "{b}");
-    assert_eq!(canon(&a), canon(&b));
+        assert!(
+            v["instructions"].as_str().unwrap().contains(MEMO_NAME),
+            "no model, so the stand-in name is not found"
+        );
+    }
 }
 
 /// What one run of the on/off script produced.
@@ -485,26 +498,24 @@ async fn free_leaves_never_read_a_harness_static_entry() {
 }
 
 /// L122: a system/developer item after the leading run is `Free`, so a
-/// long one in a trusted request is not memo-eligible: it runs the model
-/// and never reads the entry the same bytes made as leading text. The same
-/// bytes as a leading developer item still hit.
+/// long one in a trusted request runs the models, also on a route that skips
+/// them for the leading run. The same bytes as leading text run none.
 #[tokio::test]
-async fn memo_mid_conversation_system_leaf_is_not_eligible() {
+async fn a_mid_conversation_system_leaf_runs_the_models_on_a_skipping_route() {
     let host = FakeHost::with_ner(true);
-    let (p, _up) = proxy_with(&host, true);
+    let (p, _up) = proxy_with_ner(&host, true, crate::StaticNer::Skip);
     let s = system_text(4096);
     let sanitizer_long = || models(&host).0.long();
     let responses = "/openai/v1/responses";
 
-    // A: the text as leading `instructions` makes an entry.
+    // A: the text as leading `instructions` runs no model.
     let a = json!({"model": "m", "instructions": s, "input": "Store it."});
     let (st, _) = post_to(&p, responses, a.to_string().into_bytes(), "A", true).await;
     assert_eq!(st, 200);
-    let stored = stats(&host);
-    assert!(stored.misses >= 1 && stored.entries >= 1, "{stored:?}");
+    assert_eq!(sanitizer_long(), 0, "A: leading text, no model");
 
     // B, C: the same bytes after a user item (Responses) and after the
-    // first user message (Chat) run the model, no hit.
+    // first user message (Chat) run the model.
     let mid = [
         (
             "B",
@@ -524,38 +535,39 @@ async fn memo_mid_conversation_system_leaf_is_not_eligible() {
         ),
     ];
     for (session, uri, b) in mid {
-        let (before, hits) = (sanitizer_long(), stats(&host).hits);
+        let before = sanitizer_long();
         let (st, _) = post_to(&p, uri, b.to_string().into_bytes(), session, true).await;
         assert_eq!(st, 200, "{session}");
         assert_eq!(sanitizer_long(), before + 1, "{session}: the model ran");
-        assert_eq!(stats(&host).hits, hits, "{session}: no hit");
+        assert_eq!(stats(&host).hits, 0, "{session}: no hit");
     }
 
-    // D: the same bytes as a leading developer item read the entry.
+    // D: the same bytes as a leading developer item run none.
     let d = json!({"model": "m", "input": [
         {"type": "message", "role": "developer", "content": s},
         {"type": "message", "role": "user", "content": "Hello."}
     ]});
-    let (before, hits) = (sanitizer_long(), stats(&host).hits);
+    let before = sanitizer_long();
     let (st, _) = post_to(&p, responses, d.to_string().into_bytes(), "D", true).await;
     assert_eq!(st, 200);
-    assert_eq!(sanitizer_long(), before, "D: answered from the memo");
-    assert!(stats(&host).hits > hits, "D: a hit");
+    assert_eq!(sanitizer_long(), before, "D: leading text, no model");
 }
 
 /// Codex responses-lite (0.162): the leading `additional_tools` item holds
 /// the tool definitions and keeps the run going, so the long developer
-/// prompt after it is leading and a second session answers it from the
-/// memo.
+/// prompt after it is leading: on a route that skips the models it runs none
+/// in either session. The item's own `id` (`at_<uuid>`) is forwarded as
+/// received: scanned as text it read as a phone number and the provider
+/// refused the request.
 #[tokio::test]
-async fn memo_codex_lite_developer_prompt_after_additional_tools_hits() {
+async fn codex_lite_developer_prompt_after_additional_tools_runs_no_model() {
     let host = FakeHost::with_ner(true);
-    let (p, _up) = proxy_with(&host, true);
+    let (p, up) = proxy_with_ner(&host, true, crate::StaticNer::Skip);
     let s = system_text(4096);
-    let sanitizer_long = || models(&host).0.long();
+    let at_id = "at_01a17f97-697e-7680-b202-dab7774aa1e3";
     let body = |u: &str| {
         json!({"model": "m", "input": [
-            {"type": "additional_tools", "role": "developer", "tools": [
+            {"type": "additional_tools", "id": at_id, "role": "developer", "tools": [
                 {"type": "namespace", "name": "ns", "description": "Shell tools.", "tools": [
                     {"type": "function", "name": "shell", "description": "Runs a command.",
                      "parameters": {"type": "object", "properties": {}}}
@@ -569,16 +581,16 @@ async fn memo_codex_lite_developer_prompt_after_additional_tools_hits() {
     };
     let responses = "/openai/v1/responses";
 
-    let (st, _) = post_to(&p, responses, body("First."), "A", true).await;
-    assert_eq!(st, 200);
-    let stored = stats(&host);
-    assert!(stored.misses >= 1 && stored.entries >= 1, "{stored:?}");
-
-    let (before, hits) = (sanitizer_long(), stats(&host).hits);
-    let (st, _) = post_to(&p, responses, body("Second."), "B", true).await;
-    assert_eq!(st, 200);
-    assert_eq!(sanitizer_long(), before, "B: answered from the memo");
-    assert!(stats(&host).hits > hits, "B: a hit");
+    for (n, (u, session)) in [("First.", "A"), ("Second.", "B")].into_iter().enumerate() {
+        let (st, _) = post_to(&p, responses, body(u), session, true).await;
+        assert_eq!(st, 200);
+        assert_eq!(long_calls(&host), (0, 0), "{session}: no model ran");
+        let v: Value = serde_json::from_str(&sent(&up, n)).unwrap();
+        assert_eq!(
+            v["input"][0]["id"], at_id,
+            "{session}: the item id is as received"
+        );
+    }
 }
 
 /// Test 4: user text, tool results, short system leaves, and check routes

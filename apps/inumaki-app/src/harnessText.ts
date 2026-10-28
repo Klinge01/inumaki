@@ -78,7 +78,7 @@ export const CODEX_CHAT_OFF =
 export const CODEX_CHAT_SWITCH_LABEL = "Send Codex chat through inumaki";
 /** The Codex switch's label with a ChatGPT login: the same switch, with what is known about that path. */
 export const CODEX_OPT_IN_LABEL =
-  "Protect chat with the ChatGPT login (unverified; refused today with privacy_block, so Codex chat stops working while this is on)";
+  "Protect chat with the ChatGPT login (unverified)";
 export const HERMES_CHAT_ON_LEAD = "Hermes Agent sends chat through inumaki at the latest from its next session.";
 export const HERMES_CHAT_UNMEASURED_NOTE =
   "Whether the support-email or strict profile refuses its chat requests is not measured; if it does, Hermes Agent stops answering until you turn Chat off again.";

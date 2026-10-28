@@ -360,6 +360,7 @@ retry_profile = "strict-metadata"
 #                                    # allow_binary = true is an alias of binary = "forward"
 # uncertain = "block"                # or "pass"
 # tripwire = "notify"                # or "block"
+# harness_static_ner = "skip"        # or "scan": "skip" runs the harness's own leading prompt without the NER models; "scan" lets them read it
 # allowed_origins = []               # browser origins allowed to reach the proxy
 # definitions_account_values = "allow"  # or "refuse": the OS login/home-directory name in a tool definition refuses the request (recommended with the strict profile)
 # static_cache = true               # reuse NER results for long system prompts across sessions (trusted clients only); false turns it off

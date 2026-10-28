@@ -59,23 +59,33 @@ async fn the_dictionary_is_one_arc_until_a_user_dataset_rotates() {
     d.stop().await;
 }
 
-/// Ruling L2-40 at the host: `engine_unmemoized()` is the unwrapped engine
-/// the gateway, the mirror and the hook share (`Engines::engine` with no
-/// dataset, the same `Arc`), and `engine()` is the separate proxy engine
-/// wrapped by the host's memo (`Engines::proxy_engine`).
+/// Ruling L2-40 at the host: `engine_unmemoized()` is the proxy's unwrapped
+/// engine (`Engines::chat_engine`, cached: the same `Arc` on every call),
+/// never the memo-wrapped one and never the engine the gateway, the mirror
+/// and the hook share (`Engines::engine` with no dataset), because it
+/// carries the proxy's protected ranges; `engine()` is the separate proxy
+/// engine wrapped by the host's memo (`Engines::proxy_engine`).
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn engine_unmemoized_is_the_shared_engine_and_engine_is_the_memo_engine() {
+async fn engine_unmemoized_is_the_proxys_plain_engine_and_engine_is_the_memo_engine() {
     let d = common::start_with("", "", Duration::from_secs(3600), None).await;
     let h = host(&d);
     let memo = h.ner_memo().expect("a host over a state has a memo");
     let shared = d.state.engines.engine("offline", None).unwrap();
     let plain = h.engine_unmemoized("offline").unwrap();
-    assert!(Arc::ptr_eq(&plain, &shared), "the shared, unwrapped engine");
+    assert!(!Arc::ptr_eq(&plain, &shared), "never the shared engine");
+    assert!(
+        Arc::ptr_eq(&plain, &h.engine_unmemoized("offline").unwrap()),
+        "cached"
+    );
     let wrapped = h.engine("offline").unwrap();
     assert!(!Arc::ptr_eq(&wrapped, &shared), "never the shared engine");
+    assert!(!Arc::ptr_eq(&wrapped, &plain), "the memo engine is apart");
     assert!(Arc::ptr_eq(
         &wrapped,
-        &d.state.engines.proxy_engine("offline", &memo).unwrap()
+        &d.state
+            .engines
+            .proxy_engine_with("offline", &memo, h.preserved_logins())
+            .unwrap()
     ));
     d.stop().await;
 }
@@ -87,7 +97,9 @@ async fn engine_unmemoized_is_the_shared_engine_and_engine_is_the_memo_engine() 
 /// forwarded bodies are equal after canonical token renaming. The status
 /// also carries a timing window of 2 samples and the enabled flag. (L2-40
 /// is covered by the test above and the unit tests in `engines.rs` and
-/// `proxy_host.rs`.) Needs `INUMAKI_MODELS_DIR`.
+/// `proxy_host.rs`.) Runs with `[proxy] harness_static_ner = "scan"`: the memo
+/// serves only text the models read, and the default `"skip"` runs the
+/// leading prompt without them. Needs `INUMAKI_MODELS_DIR`.
 #[cfg(feature = "models-tests")]
 #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
 async fn two_sessions_hit_the_static_prompt_memo_through_the_daemon_host() {
@@ -101,7 +113,7 @@ async fn two_sessions_hit_the_static_prompt_memo_through_the_daemon_host() {
     inumaki_proxy::forward::ensure_crypto_provider();
     let (addr, up) = inumaki_proxy::scripted::spawn_http(Script(vec![Step::EchoUserText])).await;
     let config = format!(
-        "{}\n[daemon]\ndefault_profile = \"support-email\"\n[vault]\nkey_source = \"file\"\n[gateway]\nlisten = \"127.0.0.1:0\"\n[proxy]\nlisten = \"127.0.0.1:0\"\n[proxy.upstreams.anthropic]\nbase_url = \"http://{addr}\"\n",
+        "{}\n[daemon]\ndefault_profile = \"support-email\"\n[vault]\nkey_source = \"file\"\n[gateway]\nlisten = \"127.0.0.1:0\"\n[proxy]\nlisten = \"127.0.0.1:0\"\nharness_static_ner = \"scan\"\n[proxy.upstreams.anthropic]\nbase_url = \"http://{addr}\"\n",
         common::BASE_CONFIG
     );
     let d = common::start_with_config(config, Some(models), Duration::from_secs(3600), None).await;

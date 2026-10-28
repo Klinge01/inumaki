@@ -46,6 +46,15 @@ const RULES: &[Rule] = &[
         kind: SecretKind::Stripe,
         group: 0,
     },
+    // OpenAI and Anthropic keys and the gateways that copy their shape:
+    // `sk-...`, `sk-proj-...`, `sk-svcacct-...`, `sk-ant-api03-...`,
+    // `sk-or-v1-...`. 20+ characters after `sk-` keep a short kebab-case
+    // word (`sk-fading-circle`) out.
+    Rule {
+        pattern: r"\bsk-[A-Za-z0-9][A-Za-z0-9_\-]{18,}[A-Za-z0-9_]",
+        kind: SecretKind::Generic,
+        group: 0,
+    },
     Rule {
         pattern: r"\beyJ[A-Za-z0-9_\-]{10,}\.[A-Za-z0-9_\-]{10,}\.[A-Za-z0-9_\-]{10,}\b",
         kind: SecretKind::Jwt,
@@ -84,6 +93,15 @@ const RULES: &[Rule] = &[
     // removed with it and hide a second copy from the leak check.
     Rule {
         pattern: r#"(?i)\b(?:api[_\-]?key|secret|token)\b\s*[:=]\s*["']?([^\s"'`]{7,}[^\s"'`.,;:)])"#,
+        kind: SecretKind::Generic,
+        group: 1,
+    },
+    // Environment-variable style labels (`OPENAI_API_KEY=...`,
+    // `AWS_SECRET_ACCESS_KEY=...`, `DB_PASSWORD=...`): the label word is
+    // the tail of an upper-case name, so `\b` finds no boundary before it in
+    // the rules above.
+    Rule {
+        pattern: r#"\b[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)*_(?:API_?KEY|SECRET_ACCESS_KEY|SECRET_KEY|ACCESS_KEY|PRIVATE_KEY|SECRET|TOKEN|PASSWORD|PASSWD)\b\s*[:=]\s*["']?([^\s"'`]{7,}[^\s"'`.,;:)])"#,
         kind: SecretKind::Generic,
         group: 1,
     },
@@ -234,6 +252,64 @@ mod tests {
         ] {
             let v = secrets(text);
             assert_eq!(v, vec![(SecretKind::Generic, want.into())], "{text}");
+        }
+    }
+
+    /// OpenAI and Anthropic keys (`sk-proj-...` was sent in clear before
+    /// this rule) are found whole, wherever they stand.
+    #[test]
+    fn openai_and_anthropic_keys_are_found_whole() {
+        for key in [
+            "sk-proj-cF4GqOdO3hXj4h6Qr0AAskg263tHfjIYscNPnQp97T1dFUE3",
+            "sk-svcacct-Kz8Qw3mR7vT2nX9pL4bY6hJ1cD5fG0aS",
+            "sk-ant-api03-Zk3mQ8vR1nT6xP2LbY9hJ4cD7fG0aS5w",
+            "sk-9f8e7d6c5b4a3f2e1d0c1234567890abcdef",
+            "sk-test-9f8e7d6c5b4a3f2e1d0c",
+            "sk-or-v1-0123456789abcdef0123456789abcdef0123456789abcdef",
+        ] {
+            for text in [
+                format!("the key {key} is bad"),
+                format!("key=\"{key}\"."),
+                format!("({key})"),
+            ] {
+                let v = secrets(&text);
+                assert!(
+                    v.iter().any(|(_, t)| t == key),
+                    "{key} not found whole in {text:?}: {v:?}"
+                );
+            }
+        }
+    }
+
+    /// Environment-variable names ending in a key word label a value even
+    /// though the word has no `\b` before it.
+    #[test]
+    fn env_var_style_labels_take_the_value() {
+        for (text, want) in [
+            ("export OPENAI_API_KEY=abcd1234efgh5678", "abcd1234efgh5678"),
+            (
+                "AWS_SECRET_ACCESS_KEY = wJalrXUtnFEMI/K7MDENG",
+                "wJalrXUtnFEMI/K7MDENG",
+            ),
+            ("DB_PASSWORD: hunter2hunter2", "hunter2hunter2"),
+            ("GITHUB_TOKEN=\"ghx_somevalue1234\"", "ghx_somevalue1234"),
+        ] {
+            let v = secrets(text);
+            assert!(v.iter().any(|(_, t)| t == want), "{text}: {v:?}");
+        }
+    }
+
+    /// Words that merely look like the shapes above stay clean.
+    #[test]
+    fn short_kebab_words_and_prose_are_not_keys() {
+        for text in [
+            "use the sk-fading-circle spinner",
+            "pip install scikit-learn, not sk-learn",
+            "the task-force-meeting-notes file",
+            "set MAX_TOKENS to a small number",
+            "the TOKEN: is empty",
+        ] {
+            assert!(secrets(text).is_empty(), "{text}: {:?}", secrets(text));
         }
     }
 

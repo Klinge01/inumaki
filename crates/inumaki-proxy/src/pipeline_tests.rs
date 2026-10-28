@@ -55,6 +55,7 @@ fn prep_timed(
         body,
         &w,
         crate::session::ClientMode::Trusted,
+        false,
         times,
     )
 }

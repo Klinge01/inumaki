@@ -57,7 +57,7 @@ pub mod walk;
 mod wire;
 
 pub use check::{CheckId, CheckRoutes, RecordedRequest};
-pub use config::{BaseUrls, BinaryMode, ProxyConfig, TripwireMode, UncertainMode};
+pub use config::{BaseUrls, BinaryMode, ProxyConfig, StaticNer, TripwireMode, UncertainMode};
 pub use error::{ErrorClass, Fail};
 pub use routes::{Endpoint, UpstreamId, Wire};
 pub use scripted::{Script, ScriptedUpstream, Step, ToolCall};

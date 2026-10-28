@@ -6,7 +6,7 @@ use std::sync::{Arc, Mutex, PoisonError};
 
 use inumaki_core::config::CoreConfig;
 use inumaki_core::detect::Detector;
-use inumaki_core::engine::Engine;
+use inumaki_core::engine::{Engine, EngineOptions};
 use inumaki_core::policy::Profile;
 use inumaki_models::assemble::{BackendCache, LoadedModelInfo, NerPair, ner_for_profile_with};
 use inumaki_proxy::memo::{NerMemo, NerRole};
@@ -42,11 +42,16 @@ pub enum EngineError {
 type EngineKey = (String, Option<String>);
 
 /// A proxy engine: its profile, the memo whose wrappers it holds (kept
-/// alive here and compared by `Arc` identity), and the engine. An entry
+/// alive here and compared by `Arc` identity), the logins it preserves, and
+/// the engine. An entry
 /// lives for the process; a daemon has one `DaemonHost`, so one memo and at
 /// most one engine per profile. A process that builds many hosts (tests)
 /// keeps every memo and engine it built.
-type ProxyEntry = (String, Arc<NerMemo>, Arc<Engine>);
+type ProxyEntry = (String, Arc<NerMemo>, Vec<String>, Arc<Engine>);
+
+/// A chat engine's cache key: profile, whether it runs without NER models,
+/// and the logins it preserves.
+type ChatKey = (String, bool, Vec<String>);
 
 /// Engine cache keyed by `(profile, dataset)`; models shared underneath.
 pub struct Engines {
@@ -59,6 +64,10 @@ pub struct Engines {
     /// from `engines` so the gateway, the mirror and the hook never get a
     /// memo-wrapped detector.
     proxy_engines: Mutex<Vec<ProxyEntry>>,
+    /// The proxy's engines that differ from the shared one by an
+    /// [`EngineOptions`] ([`Engines::chat_engine`]), keyed by profile,
+    /// `no_ner` and the preserved logins.
+    chat_engines: Mutex<HashMap<ChatKey, Arc<Engine>>>,
     policies: Mutex<HashMap<String, Arc<Profile>>>,
     metadata: Mutex<HashMap<String, String>>,
 }
@@ -84,6 +93,7 @@ impl Engines {
             pairs: Mutex::new(HashMap::new()),
             engines: Mutex::new(HashMap::new()),
             proxy_engines: Mutex::new(Vec::new()),
+            chat_engines: Mutex::new(HashMap::new()),
             policies: Mutex::new(HashMap::new()),
             metadata: Mutex::new(HashMap::new()),
         }
@@ -266,8 +276,22 @@ impl Engines {
         profile: &str,
         memo: &Arc<NerMemo>,
     ) -> Result<Arc<Engine>, EngineError> {
-        let mine = |(p, m, _): &ProxyEntry| p == profile && Arc::ptr_eq(m, memo);
-        if let Some((_, _, e)) = self
+        self.proxy_engine_with(profile, memo, &[])
+    }
+
+    /// [`Engines::proxy_engine`] with `preserved` logins
+    /// ([`EngineOptions::preserved_logins`]). A host passes the same list
+    /// for its whole lifetime, so the cache is keyed by profile and memo.
+    pub fn proxy_engine_with(
+        &self,
+        profile: &str,
+        memo: &Arc<NerMemo>,
+        preserved: &[String],
+    ) -> Result<Arc<Engine>, EngineError> {
+        let mine = |(p, m, l, _): &ProxyEntry| {
+            p == profile && Arc::ptr_eq(m, memo) && l.as_slice() == preserved
+        };
+        if let Some((_, _, _, e)) = self
             .proxy_engines
             .lock()
             .unwrap_or_else(PoisonError::into_inner)
@@ -285,22 +309,77 @@ impl Engines {
             )));
         }
         let wrap = |d: &Option<Arc<dyn Detector>>, role| d.clone().map(|d| memo.wrap(d, role));
-        let engine = Arc::new(Engine::from_config(
+        let engine = Arc::new(Engine::from_config_with(
             &self.core,
             profile,
             wrap(&pair.sanitizer, NerRole::Sanitizer),
             wrap(&pair.verifier, NerRole::Verifier),
+            EngineOptions {
+                preserved_logins: preserved.to_vec(),
+                harness_envelopes: true,
+                ..EngineOptions::default()
+            },
         )?);
         let mut cached = self
             .proxy_engines
             .lock()
             .unwrap_or_else(PoisonError::into_inner);
         // A concurrent first call may have built one meanwhile: keep that one.
-        if let Some((_, _, e)) = cached.iter().find(|e| mine(e)) {
+        if let Some((_, _, _, e)) = cached.iter().find(|e| mine(e)) {
             return Ok(Arc::clone(e));
         }
-        cached.push((profile.to_string(), Arc::clone(memo), Arc::clone(&engine)));
+        cached.push((
+            profile.to_string(),
+            Arc::clone(memo),
+            preserved.to_vec(),
+            Arc::clone(&engine),
+        ));
         Ok(engine)
+    }
+
+    /// The proxy's engine for `profile` that is not the memo engine: a
+    /// cached one built with those [`EngineOptions`] and the proxy's own
+    /// (`harness_envelopes`), never the shared engine of the gateway, the
+    /// mirror and the hook. With `no_ner` no model is loaded: the engine
+    /// exists whether or not the profile's models are installed.
+    pub fn chat_engine(
+        &self,
+        profile: &str,
+        preserved: &[String],
+        no_ner: bool,
+    ) -> Result<Arc<Engine>, EngineError> {
+        let key = (profile.to_string(), no_ner, preserved.to_vec());
+        if let Some(e) = self
+            .chat_engines
+            .lock()
+            .unwrap_or_else(PoisonError::into_inner)
+            .get(&key)
+        {
+            return Ok(Arc::clone(e));
+        }
+        let (sanitizer, verifier) = if no_ner {
+            (None, None)
+        } else {
+            let pair = self.pair(profile)?;
+            (pair.sanitizer.clone(), pair.verifier.clone())
+        };
+        let engine = Arc::new(Engine::from_config_with(
+            &self.core,
+            profile,
+            sanitizer,
+            verifier,
+            EngineOptions {
+                no_ner,
+                preserved_logins: preserved.to_vec(),
+                harness_envelopes: true,
+            },
+        )?);
+        // A concurrent first call may have built one meanwhile: keep that one.
+        let mut cached = self
+            .chat_engines
+            .lock()
+            .unwrap_or_else(PoisonError::into_inner);
+        Ok(Arc::clone(cached.entry(key).or_insert(engine)))
     }
 
     /// Use `pair` as `profile`'s NER pair, as if its models had loaded
@@ -616,5 +695,66 @@ mod tests {
         let err = e.proxy_engine("support-email", &memo()).unwrap_err();
         assert!(matches!(err, EngineError::Config(_)), "{err}");
         assert!(e.proxy_engines.lock().unwrap().is_empty(), "nothing cached");
+    }
+    /// The proxy's model-free engine exists with no model installed (the
+    /// `support-email` profile is otherwise unavailable), and the plain and
+    /// preserved-login variants are cached apart from the shared engine.
+    #[test]
+    fn chat_engine_without_models_preserved_logins_and_its_own_cache() {
+        let dir = tempfile::tempdir().unwrap();
+        let e = Engines::new(core(), dir.path().to_path_buf());
+        // No models: the full engine is unavailable, the model-free one is not.
+        assert!(e.chat_engine("support-email", &[], false).is_err());
+        let a = e.chat_engine("support-email", &[], true).unwrap();
+        let b = e.chat_engine("support-email", &[], true).unwrap();
+        assert!(Arc::ptr_eq(&a, &b), "cached");
+        assert!(a.profile().ner_sanitizer.is_none() && a.profile().ner_verifier.is_none());
+
+        // With a pair installed: the proxy's engines are never the shared
+        // one, and each variant is built once.
+        e.insert_pair(
+            "support-email",
+            NerPair {
+                sanitizer: Some(Arc::new(CountingNer::default())),
+                verifier: Some(Arc::new(CountingNer::default())),
+            },
+        );
+        let shared = e.engine("support-email", None).unwrap();
+        // The proxy's engine is its own even with no option set, so the
+        // gateway's shared engine never carries the proxy's protected ranges.
+        let own = e.chat_engine("support-email", &[], false).unwrap();
+        assert!(!Arc::ptr_eq(&shared, &own));
+        assert!(Arc::ptr_eq(
+            &own,
+            &e.chat_engine("support-email", &[], false).unwrap()
+        ));
+        let keep = ["gruber".to_string()];
+        let p1 = e.chat_engine("support-email", &keep, false).unwrap();
+        let p2 = e.chat_engine("support-email", &keep, false).unwrap();
+        assert!(Arc::ptr_eq(&p1, &p2));
+        assert!(
+            !Arc::ptr_eq(&p1, &shared),
+            "the shared engine keeps tokenizing"
+        );
+
+        // The shared engine tokenizes the login in a path; the preserved
+        // one leaves it, and leaves another login tokenized.
+        let run = |eng: &Engine, text: &str| {
+            let mut c = Context::new(
+                ContextId("t".into()),
+                std::time::Duration::from_secs(60),
+                eng.token_settings().clone(),
+            );
+            match eng.process(text, &mut c).unwrap() {
+                inumaki_core::engine::Outcome::Pass { sanitized } => sanitized.text.to_string(),
+                _ => panic!("not passed"),
+            }
+        };
+        let text = "ls /Users/gruber/app /home/huber/app";
+        let shared_out = run(&shared, text);
+        assert!(!shared_out.contains("gruber") && !shared_out.contains("huber"));
+        let kept_out = run(&p1, text);
+        assert!(kept_out.contains("/Users/gruber/app"), "{kept_out}");
+        assert!(!kept_out.contains("huber"), "{kept_out}");
     }
 }

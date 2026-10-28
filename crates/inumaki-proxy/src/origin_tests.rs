@@ -45,6 +45,19 @@ fn prep_mode(
     body: &str,
     mode: ClientMode,
 ) -> Result<Prepared, Fail> {
+    prep_route(sh, s, wire, body, mode, false)
+}
+
+/// [`prep_mode`] for a route that does (`skip_static_ner`) or does not skip
+/// the NER models on its harness-static leaves.
+fn prep_route(
+    sh: &Shared,
+    s: &Session,
+    wire: Wire,
+    body: &str,
+    mode: ClientMode,
+    skip_static_ner: bool,
+) -> Result<Prepared, Fail> {
     let w = walk_for(wire, body.as_bytes(), sh.cfg.binary).map_err(|_| Fail::BadRequest)?;
     sanitize_request(
         sh,
@@ -53,6 +66,7 @@ fn prep_mode(
         body.as_bytes(),
         &w,
         mode,
+        skip_static_ner,
         &mut crate::timing::StageTimes::default(),
     )
 }
@@ -535,4 +549,100 @@ fn the_closure_and_the_verifier_keep_the_leaf_origin() {
         );
         check(&out(p), "2");
     }
+}
+
+/// A static system text of more than `STATIC_MIN_BYTES`, with an email and
+/// nothing a stand-in model would be needed for.
+fn long_static(email: &str) -> String {
+    let mut t = format!("Write to {email} when a request is unclear. ");
+    while t.len() < crate::memo::STATIC_MIN_BYTES + 512 {
+        t.push_str("Answer in short paragraphs and keep a calm tone. ");
+    }
+    t
+}
+
+/// The NER calls (both roles) on inputs of at least `STATIC_MIN_BYTES`.
+fn ner_calls(host: &FakeHost) -> usize {
+    let n = host.ner.as_ref().unwrap();
+    n.sanitizer.long() + n.verifier.long()
+}
+
+/// A route that skips the NER models for its harness-static leaves runs
+/// them on the model-free engine: no model call, the deterministic
+/// detectors still tokenize an email, and the same request on a route that
+/// does not skip reaches the models.
+#[test]
+fn a_skipping_route_keeps_the_models_off_harness_static_leaves() {
+    let st = store();
+    let sys = long_static("ops@example.at");
+    let body = msgs(Some(&sys), &[("user", "hi")]);
+
+    let host = FakeHost::with_ner(false);
+    let sh = crate::pipeline::test_shared(host.clone());
+    let p = prep_route(
+        &sh,
+        &st.get(SessionKey([1; 32])),
+        Wire::Messages,
+        &body,
+        ClientMode::Trusted,
+        true,
+    )
+    .unwrap();
+    assert_eq!(ner_calls(&host), 0, "no model ran on the static leaf");
+    let sent = field(&out(p), &["system"]);
+    assert!(!sent.contains("ops@example.at"), "email still tokenized");
+    assert!(sent.contains("<EMAIL_"), "{sent}");
+
+    let host = FakeHost::with_ner(false);
+    let sh = crate::pipeline::test_shared(host.clone());
+    prep_route(
+        &sh,
+        &st.get(SessionKey([2; 32])),
+        Wire::Messages,
+        &body,
+        ClientMode::Trusted,
+        false,
+    )
+    .unwrap();
+    assert!(
+        ner_calls(&host) > 0,
+        "a route that scans reaches the models"
+    );
+}
+
+/// Only harness-static leaves skip: a restricted request (no client header)
+/// and a user message of any size still reach the models on a skipping route.
+#[test]
+fn a_skipping_route_still_scans_user_text_and_restricted_requests() {
+    let st = store();
+    let long = long_static("ops@example.at");
+
+    let host = FakeHost::with_ner(false);
+    let sh = crate::pipeline::test_shared(host.clone());
+    prep_route(
+        &sh,
+        &st.get(SessionKey([3; 32])),
+        Wire::Messages,
+        &msgs(Some(&long), &[("user", "hi")]),
+        ClientMode::Restricted,
+        true,
+    )
+    .unwrap();
+    assert!(ner_calls(&host) > 0, "restricted: the system text is Free");
+
+    let host = FakeHost::with_ner(false);
+    let sh = crate::pipeline::test_shared(host.clone());
+    prep_route(
+        &sh,
+        &st.get(SessionKey([4; 32])),
+        Wire::Messages,
+        &msgs(Some("Be brief."), &[("user", &long)]),
+        ClientMode::Trusted,
+        true,
+    )
+    .unwrap();
+    assert!(
+        ner_calls(&host) > 0,
+        "a user message is Free whatever its size"
+    );
 }

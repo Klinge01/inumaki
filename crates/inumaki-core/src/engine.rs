@@ -137,6 +137,37 @@ pub struct Engine {
     aliases: Arc<AliasTable>,
     /// Name linking (M4 spec §16.2).
     linking: LinkingConfig,
+    /// Logins the engine leaves in clear where they stand in a path
+    /// ([`EngineOptions::preserved_logins`]). Empty for every engine but the
+    /// model-API proxy's.
+    preserved_logins: Vec<String>,
+    /// [`EngineOptions::harness_envelopes`].
+    harness_envelopes: bool,
+}
+
+/// How an [`Engine`] differs from the profile's standard stack
+/// ([`Engine::from_config_with`]).
+#[derive(Debug, Clone, Default)]
+pub struct EngineOptions {
+    /// Build the engine without either NER model: the sanitizer's and the
+    /// verifier's. Every deterministic detector, the dictionary and the
+    /// verifier's other checks still run. For text whose names are not
+    /// worth discovering, such as an agent harness's own instructions.
+    pub no_ner: bool,
+    /// Logins (the OS user's own account name, the home directory's last
+    /// component) that stay in clear where the path-name detector reads one
+    /// in a path position (`/Users/<login>/`, `~<login>`, a flattened
+    /// project directory). Compared ASCII case-insensitively. Such a range
+    /// is a protected range ([`crate::protect`]): no detector tokenizes it,
+    /// the verifier does not fail on it, and the leak check skips it. The
+    /// same value in free text is not affected.
+    pub preserved_logins: Vec<String>,
+    /// Treat the header an agent harness puts before a command's output
+    /// (`Script completed`, `Wall time 0.1 seconds`, `Output:`; see
+    /// [`harness_envelope`]) as a protected range, like a preserved login.
+    /// The header is fixed words and numbers and can carry no data, but a
+    /// model reads its capitalised words as names (`Wall`, 0.89).
+    pub harness_envelopes: bool,
 }
 
 /// One call's [`StoreDict`] and the [`store_fingerprint`] of the store it
@@ -174,6 +205,51 @@ fn current_store_dict(
         }),
     };
     Ok(s.dict.clone())
+}
+
+/// The range of the header an agent harness puts before a command's output
+/// at the start of `text`, if the whole header matches a known layout:
+///
+/// - `Script completed|failed|running with cell ID N`, then
+///   `Wall time 0.1 seconds`, then `Output:` (Codex's code mode);
+/// - `Exit code: N` or `Chunk ID: <hex>`, then `Wall time: 0.1 seconds`, then
+///   optionally `Process exited with code N` or `Process running with
+///   session ID N` and `Original token count: N`, then `Output:` (Codex's
+///   shell tools);
+/// - `x-anthropic-billing-header: cc_version=2.1.312.0cd; cc_entrypoint=sdk-cli;`
+///   (Claude Code's attribution block, the first block of its system prompt,
+///   which Anthropic validates: rewritten, the request is rate-limited).
+///
+/// Fixed words, numbers and a hex id only, so it holds no data. Anything that
+/// does not match in full, including a header with an extra word, is not a
+/// header: the text is judged as a whole.
+pub(crate) fn harness_envelope(text: &str) -> Option<std::ops::Range<usize>> {
+    use std::sync::OnceLock;
+    static BILLING: OnceLock<regex::Regex> = OnceLock::new();
+    let billing = BILLING.get_or_init(|| {
+        regex::Regex::new(concat!(
+            r"\Ax-anthropic-billing-header: cc_version=[0-9][0-9A-Za-z.]{0,31};",
+            r" cc_entrypoint=[a-z][a-z0-9_-]{0,31};",
+            r"(?: cch=[0-9a-f]{1,32};)?",
+        ))
+        .expect("the billing pattern is valid")
+    });
+    if let Some(m) = billing.find(text) {
+        return Some(m.range());
+    }
+    static RE: OnceLock<regex::Regex> = OnceLock::new();
+    let re = RE.get_or_init(|| {
+        regex::Regex::new(concat!(
+            r"\A(?:(?:Script (?:completed|failed|running with cell ID [0-9]{1,12})",
+            r"|Exit code: -?[0-9]{1,6}|Chunk ID: [0-9a-f]{1,32})\n)?",
+            r"Wall time:? [0-9]{1,9}(?:\.[0-9]{1,9})? seconds\n",
+            r"(?:Process (?:exited with code -?[0-9]{1,6}|running with session ID [0-9]{1,12})\n)?",
+            r"(?:Original token count: [0-9]{1,9}\n)?",
+            r"Output:\n?",
+        ))
+        .expect("the envelope pattern is valid")
+    });
+    re.find(text).map(|m| m.range())
 }
 
 impl std::fmt::Debug for Engine {
@@ -391,7 +467,44 @@ impl Engine {
             token_settings: TokenSettings::default(),
             aliases: Arc::new(AliasTable::empty()),
             linking: LinkingConfig::default(),
+            preserved_logins: Vec::new(),
+            harness_envelopes: false,
         }
+    }
+
+    /// The byte ranges of `text` (NFC) this engine leaves alone: a harness's
+    /// command-output header ([`EngineOptions::harness_envelopes`]) and the
+    /// logins it preserves ([`EngineOptions::preserved_logins`]) where the
+    /// path-name detector reads one. Sorted. Empty, and no detector run,
+    /// when the engine has neither option.
+    pub(crate) fn preserved_ranges(&self, text: &str) -> Vec<std::ops::Range<usize>> {
+        let mut out: Vec<std::ops::Range<usize>> = Vec::new();
+        if self.harness_envelopes
+            && let Some(r) = harness_envelope(text)
+        {
+            out.push(r);
+        }
+        if self.preserved_logins.is_empty() {
+            return out;
+        }
+        let Ok(spans) = PathNameDetector::new().detect(text, &DetectCtx::for_text(text)) else {
+            return out;
+        };
+        out.extend(
+            spans
+                .into_iter()
+                .filter(|sp| {
+                    text.get(sp.start..sp.end).is_some_and(|t| {
+                        self.preserved_logins
+                            .iter()
+                            .any(|l| l.eq_ignore_ascii_case(t))
+                    })
+                })
+                .map(|sp| sp.start..sp.end),
+        );
+        out.sort_by_key(|r| r.start);
+        out.dedup();
+        out
     }
 
     /// Assemble the standard detector stack from configuration.
@@ -419,6 +532,31 @@ impl Engine {
         sanitizer_ner: Option<Arc<dyn Detector>>,
         verifier_ner: Option<Arc<dyn Detector>>,
     ) -> Result<Self> {
+        Self::from_config_with(
+            cfg,
+            profile_name,
+            sanitizer_ner,
+            verifier_ner,
+            EngineOptions::default(),
+        )
+    }
+
+    /// [`Engine::from_config`] with [`EngineOptions`]. With
+    /// [`EngineOptions::no_ner`] the two NER arguments are ignored and the
+    /// profile is built as if it named no NER section and allowed the
+    /// verifier to run without one.
+    pub fn from_config_with(
+        cfg: &CoreConfig,
+        profile_name: &str,
+        sanitizer_ner: Option<Arc<dyn Detector>>,
+        verifier_ner: Option<Arc<dyn Detector>>,
+        opts: EngineOptions,
+    ) -> Result<Self> {
+        let (sanitizer_ner, verifier_ner) = if opts.no_ner {
+            (None, None)
+        } else {
+            (sanitizer_ner, verifier_ner)
+        };
         if let (Some(a), Some(b)) = (&sanitizer_ner, &verifier_ner) {
             if Arc::ptr_eq(a, b) {
                 return Err(Error::ConfigInvalid(
@@ -426,7 +564,12 @@ impl Engine {
                 ));
             }
         }
-        let profile = cfg.resolve_profile(profile_name)?;
+        let mut profile = cfg.resolve_profile(profile_name)?;
+        if opts.no_ner {
+            profile.ner_sanitizer = None;
+            profile.ner_verifier = None;
+            profile.verifier.allow_no_ner = true;
+        }
         if profile.ner_sanitizer.is_some() && sanitizer_ner.is_none() {
             return Err(Error::ModelUnavailable("ner_sanitizer".into()));
         }
@@ -435,7 +578,12 @@ impl Engine {
         }
         let retry_profile = match &profile.verifier.retry_profile {
             Some(name) if name != profile_name => {
-                let retry = cfg.resolve_profile(name)?;
+                let mut retry = cfg.resolve_profile(name)?;
+                if opts.no_ner {
+                    retry.ner_sanitizer = None;
+                    retry.ner_verifier = None;
+                    retry.verifier.allow_no_ner = true;
+                }
                 if retry.ner_sanitizer != profile.ner_sanitizer {
                     return Err(Error::ConfigInvalid(format!(
                         "profiles.{name}.ner_sanitizer"
@@ -482,6 +630,8 @@ impl Engine {
             token_settings: cfg.tokens.clone(),
             aliases,
             linking: cfg.linking.clone(),
+            preserved_logins: opts.preserved_logins,
+            harness_envelopes: opts.harness_envelopes,
         })
     }
 
@@ -1043,16 +1193,37 @@ impl Engine {
         // the store are protected. Detection sees them masked (same length,
         // offsets hold); raw spans overlapping them are clipped before
         // overlap resolution, never dropped (see `detect_nfc`).
-        let protected = crate::protect::find(text, ctx)?;
+        let tokens = crate::protect::find(text, ctx)?;
+        // Ranges this engine leaves alone (a preserved login in a path, a
+        // harness's output header) are protected as well, but the models read
+        // the real text and a span that touches one is dropped whole: clipped
+        // like a token, the rest of `Users/gruber/app` would be tokenized
+        // around the login and the path destroyed.
+        let preserved: Vec<Range<usize>> = self
+            .preserved_ranges(text)
+            .into_iter()
+            .filter(|r| !tokens.iter().any(|t| r.start < t.end && t.start < r.end))
+            .collect();
+        let mut protected = tokens.clone();
+        protected.extend(preserved.iter().cloned());
+        protected.sort_by_key(|r| r.start);
         let detected = {
             // A plaintext copy: wiped as soon as detection is done.
             let masked: Option<Zeroizing<String>> =
-                crate::protect::mask(text, &protected, ctx.settings()).map(Zeroizing::new);
+                crate::protect::mask(text, &tokens, ctx.settings()).map(Zeroizing::new);
             self.detect_nfc(
                 masked.as_deref().map_or(text, String::as_str),
-                &protected,
+                &tokens,
                 origin,
             )
+            .map(|mut spans| {
+                spans.retain(|sp| {
+                    !preserved
+                        .iter()
+                        .any(|r| sp.start < r.end && r.start < sp.end)
+                });
+                spans
+            })
         };
         let spans = match detected {
             Ok(s) => s,
@@ -2059,6 +2230,261 @@ mod tests {
         fn detect(&self, _: &str, _: &DetectCtx) -> Result<Vec<Span>> {
             Ok(Vec::new())
         }
+    }
+
+    /// The shipped `support-email` stack built with `opts`; the stand-in
+    /// sanitizer NER finds every needle as a PERSON.
+    fn shipped_with(opts: EngineOptions, ner: Vec<(&'static str, f32)>) -> Engine {
+        let cfg = CoreConfig::from_toml(include_str!("../../../configs/default.toml")).unwrap();
+        Engine::from_config_with(
+            &cfg,
+            "support-email",
+            Some(Arc::new(PersonNer(ner))),
+            Some(Arc::new(NoNer)),
+            opts,
+        )
+        .unwrap()
+    }
+
+    fn passed_text(o: Outcome) -> String {
+        match o {
+            Outcome::Pass { sanitized } | Outcome::PassUncertain { sanitized, .. } => {
+                sanitized.text.to_string()
+            }
+            Outcome::Blocked { reasons, .. } => panic!("blocked: {reasons:?}"),
+        }
+    }
+
+    /// A preserved login stays in clear where the path-name detector reads
+    /// it, the verifier does not refuse it, and any other login in a path
+    /// is still tokenized.
+    #[test]
+    fn a_preserved_login_stays_in_a_path_and_another_login_does_not() {
+        let preserving = shipped_with(
+            EngineOptions {
+                preserved_logins: vec!["Gruber".into()],
+                ..EngineOptions::default()
+            },
+            vec![],
+        );
+        let own = "cd /Users/gruber/project && ls ~gruber/notes";
+        let out = passed_text(preserving.process(own, &mut ctx()).unwrap());
+        assert_eq!(out, own, "the preserved login is kept (case-insensitive)");
+
+        let other = "tail /home/huber/app.log";
+        let out = passed_text(preserving.process(other, &mut ctx()).unwrap());
+        assert!(!out.contains("huber"), "another login is tokenized: {out}");
+
+        let mixed = "diff /Users/gruber/a /Users/huber/b";
+        let out = passed_text(preserving.process(mixed, &mut ctx()).unwrap());
+        assert!(out.contains("/Users/gruber/a"), "{out}");
+        assert!(!out.contains("huber"), "{out}");
+
+        // Without the option the same engine tokenizes the login: the
+        // preservation is the option's, not a side effect.
+        let plain = shipped_with(EngineOptions::default(), vec![]);
+        let out = passed_text(plain.process(own, &mut ctx()).unwrap());
+        assert!(!out.contains("gruber"), "{out}");
+    }
+
+    /// Codex's command-output headers, in the layouts of its code mode and
+    /// shell tools, are one range from the start of the text; a header with
+    /// anything else in it is not.
+    #[test]
+    fn the_harness_envelope_matches_known_headers_only() {
+        for text in [
+            "Script completed\nWall time 0.1 seconds\nOutput:\n",
+            "Script failed\nWall time 12 seconds\nOutput:\nboom",
+            "Script running with cell ID 7\nWall time 5.0 seconds\nOutput:\n",
+            "Exit code: 0\nWall time: 0 seconds\nOutput:\nx",
+            "Chunk ID: 1a2b3c\nWall time: 1.0010 seconds\nProcess exited with code 0\nOriginal token count: 5\nOutput:\nhi",
+        ] {
+            let r = harness_envelope(text).unwrap_or_else(|| panic!("no match: {text}"));
+            assert_eq!(r.start, 0, "{text}");
+            assert!(text[..r.end].ends_with("Output:\n"), "{text}");
+        }
+        for text in [
+            "x-anthropic-billing-header: cc_version=2.1.312.0cd; cc_entrypoint=sdk-cli;",
+            "x-anthropic-billing-header: cc_version=2.1.9.ab; cc_entrypoint=cli; cch=00a1f;",
+        ] {
+            let r = harness_envelope(text).unwrap_or_else(|| panic!("no match: {text}"));
+            assert_eq!(r, 0..text.len(), "{text}");
+        }
+        let text =
+            "x-anthropic-billing-header: cc_version=2.1.312.0cd; cc_entrypoint=sdk-cli; Sarah";
+        let r = harness_envelope(text).expect("the header part matches");
+        assert!(
+            r.end < text.len(),
+            "text after the header is not part of it"
+        );
+        for text in [
+            "x-anthropic-billing-header: cc_version=Sarah; cc_entrypoint=sdk-cli;",
+            "x-anthropic-billing-header: cc_version=2.1.312.0cd; cc_entrypoint=Sarah Leitner;",
+            "Note x-anthropic-billing-header: cc_version=2.1.3; cc_entrypoint=cli;",
+        ] {
+            assert!(harness_envelope(text).is_none(), "{text}");
+        }
+        for text in [
+            "Hi\nScript completed\nWall time 0.1 seconds\nOutput:\n",
+            "Script completed by Sarah\nWall time 0.1 seconds\nOutput:\n",
+            "Chunk ID: Sarah\nWall time: 1 seconds\nOutput:\n",
+            "Wall time: 1 seconds with Sarah\nOutput:\n",
+            "Wall time 0.1 seconds\n",
+        ] {
+            assert!(harness_envelope(text).is_none(), "{text}");
+        }
+    }
+
+    /// The header is protected, and only the header: a model reading `Wall`
+    /// as a name does not refuse the result, and the output after it is
+    /// judged as before.
+    #[test]
+    fn a_harness_envelope_is_not_judged_but_the_output_after_it_is() {
+        struct Wall;
+        impl Detector for Wall {
+            fn id(&self) -> crate::span::DetectorId {
+                crate::span::DetectorId::Ner
+            }
+            fn detect(&self, text: &str, _: &DetectCtx) -> Result<Vec<Span>> {
+                Ok(text
+                    .match_indices("Wall")
+                    .map(|(i, m)| {
+                        Span::new(
+                            i,
+                            i + m.len(),
+                            EntityKind::Person,
+                            0.89,
+                            crate::span::DetectorId::Ner,
+                        )
+                    })
+                    .collect())
+            }
+        }
+        let cfg = CoreConfig::from_toml(include_str!("../../../configs/default.toml")).unwrap();
+        let build = |envelopes: bool| {
+            Engine::from_config_with(
+                &cfg,
+                "support-email",
+                Some(Arc::new(PersonNer(vec![]))),
+                Some(Arc::new(Wall)),
+                EngineOptions {
+                    harness_envelopes: envelopes,
+                    ..EngineOptions::default()
+                },
+            )
+            .unwrap()
+        };
+        let header = "Script completed\nWall time 0.1 seconds\nOutput:\n";
+        let on = build(true);
+        assert_eq!(passed_text(on.process(header, &mut ctx()).unwrap()), header);
+        let with_data = format!("{header}Write to ops@example.at");
+        let out = passed_text(on.process(&with_data, &mut ctx()).unwrap());
+        assert!(out.starts_with(header), "{out}");
+        assert!(
+            !out.contains("ops@example.at"),
+            "the output is still judged: {out}"
+        );
+        // Off, the same header is refused: the pass above is the option's.
+        assert!(matches!(
+            build(false).process(header, &mut ctx()).unwrap(),
+            Outcome::Blocked { .. }
+        ));
+    }
+
+    /// A model span that reaches over a preserved login (`Users/gruber` as one
+    /// name) is dropped whole: it is not clipped to `Users/` and tokenized
+    /// around the login, which would destroy the path.
+    #[test]
+    fn a_model_span_over_a_preserved_login_is_dropped_whole() {
+        let e = shipped_with(
+            EngineOptions {
+                preserved_logins: vec!["gruber".into()],
+                ..EngineOptions::default()
+            },
+            vec![("Users/gruber", 0.95), ("gruber/app", 0.95)],
+        );
+        let text = "cd /Users/gruber/app";
+        assert_eq!(passed_text(e.process(text, &mut ctx()).unwrap()), text);
+    }
+
+    /// The same value outside a path position is not preserved: a name the
+    /// sanitizer's NER finds in running text is tokenized.
+    #[test]
+    fn a_preserved_login_is_not_preserved_in_free_text() {
+        let e = shipped_with(
+            EngineOptions {
+                preserved_logins: vec!["gruber".into()],
+                ..EngineOptions::default()
+            },
+            vec![("gruber", 0.99)],
+        );
+        let out = passed_text(
+            e.process("Hallo gruber, siehe /Users/gruber/a", &mut ctx())
+                .unwrap(),
+        );
+        assert!(out.ends_with("/Users/gruber/a"), "{out}");
+        assert!(!out.starts_with("Hallo gruber"), "{out}");
+    }
+
+    /// `no_ner` builds the profile without either NER model, whatever is
+    /// passed, and the deterministic stack still runs.
+    #[test]
+    fn no_ner_ignores_the_models_and_keeps_the_deterministic_stack() {
+        let e = shipped_with(
+            EngineOptions {
+                no_ner: true,
+                ..EngineOptions::default()
+            },
+            vec![("Sarah", 0.99)],
+        );
+        assert!(e.profile().ner_sanitizer.is_none() && e.profile().ner_verifier.is_none());
+        assert!(e.profile().verifier.allow_no_ner);
+        let out = passed_text(
+            e.process(
+                "Sarah, write to ops@example.at about HOW to call the tool.",
+                &mut ctx(),
+            )
+            .unwrap(),
+        );
+        assert!(
+            out.contains("Sarah,"),
+            "no NER: the name is not found: {out}"
+        );
+        assert!(out.contains("HOW to call the tool"), "{out}");
+        assert!(
+            !out.contains("ops@example.at"),
+            "email still tokenized: {out}"
+        );
+    }
+
+    /// The projection fast path does not model a preserved login's
+    /// protected range: it abandons, so the full engine runs.
+    #[test]
+    fn the_projection_abandons_on_a_preserved_login() {
+        let e = shipped_with(
+            EngineOptions {
+                preserved_logins: vec!["gruber".into()],
+                ..EngineOptions::default()
+            },
+            vec![],
+        );
+        let mut store = ctx();
+        let mut scratch = crate::engine::project::ProjectionScratch::default();
+        let r = e
+            .project(
+                "cd /Users/gruber/x",
+                &mut store,
+                &|_: &str, _: &[std::ops::Range<usize>]| Ok(true),
+                &mut scratch,
+            )
+            .unwrap();
+        assert!(matches!(
+            r,
+            crate::engine::project::Projection::Abandoned {
+                reason: crate::engine::project::Abandon::PreservedLogin,
+                ..
+            }
+        ));
     }
 
     /// Rulings L98 and L3-14: the origin reaches the sanitizer's technical

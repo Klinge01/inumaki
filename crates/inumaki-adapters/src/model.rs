@@ -170,7 +170,7 @@ pub enum ReasonCode {
     /// `model.base_url`) is not written by inumaki; chat is `Unverified`.
     HermesOauthNoOverride,
     /// Codex ChatGPT login: chat goes to ChatGPT directly, and routing it
-    /// through inumaki is a separate opt-in that is refused today.
+    /// through inumaki is a separate opt-in that is not verified yet.
     CodexChatgptUnverified,
     /// Chat is not routed through inumaki: the harness sends it straight to
     /// the provider, and inumaki does not see it.
@@ -239,7 +239,7 @@ impl ReasonCode {
                 "Hermes can route this login through inumaki only with a base-URL setting that inumaki does not write yet; chat text is not filtered until you add it by hand."
             }
             ReasonCode::CodexChatgptUnverified => {
-                "Chat is not protected: Codex with a ChatGPT login talks to ChatGPT directly. Routing it through inumaki is a separate opt-in, and it is refused today (privacy_block)."
+                "Chat is not protected: Codex with a ChatGPT login talks to ChatGPT directly. Routing it through inumaki is a separate opt-in, and it is not verified yet."
             }
             ReasonCode::ChatNotProtected => {
                 "Chat is not protected: it goes straight to the provider, and inumaki does not see it."
@@ -338,7 +338,7 @@ impl ConnectWarning {
                 "Every open Claude Code window now sends chat through inumaki, including other projects; with the support-email or strict profile its chat requests are refused today."
             }
             ConnectWarning::CodexChatLive => {
-                "Codex sends chat through inumaki from its next session; with the support-email or strict profile its chat requests are refused today."
+                "Codex sends chat through inumaki from its next session; restart Codex, because running sessions keep talking to their provider directly until then."
             }
             ConnectWarning::HermesChatLive => {
                 "Hermes Agent sends chat through inumaki at the latest from its next session; whether the support-email or strict profile refuses its chat requests is not measured."

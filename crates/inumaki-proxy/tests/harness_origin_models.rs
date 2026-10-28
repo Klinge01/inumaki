@@ -53,8 +53,8 @@ use inumaki_proxy::bench_text::harness_system;
 use inumaki_proxy::host::{HostBlock, HostError, ProxyEvent, ProxyHost, Scope};
 use inumaki_proxy::memo::NerMemo;
 use inumaki_proxy::{
-    BaseUrls, BinaryMode, Proxy, ProxyConfig, Script, ScriptedUpstream, Step, TripwireMode,
-    UncertainMode,
+    BaseUrls, BinaryMode, Proxy, ProxyConfig, Script, ScriptedUpstream, StaticNer, Step,
+    TripwireMode, UncertainMode,
 };
 use tower::ServiceExt;
 use zeroize::Zeroizing;
@@ -180,6 +180,7 @@ fn config(tokens: TokenSettings) -> ProxyConfig {
         extra_headers: Default::default(),
         session_tokens: tokens,
         static_cache: true,
+        static_ner: StaticNer::Scan,
         fingerprint: [0; 32],
     }
 }

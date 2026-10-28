@@ -316,6 +316,7 @@ async fn run(
                 &decoded,
                 &w,
                 mode,
+                task_inner.sh.cfg.static_ner == crate::config::StaticNer::Skip,
                 &mut times,
             )?;
             Ok((prepared, session))

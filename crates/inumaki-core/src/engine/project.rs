@@ -50,6 +50,11 @@ pub enum Abandon {
     Combination,
     /// The caller's check said no.
     Caller,
+    /// The text holds a login the engine preserves
+    /// ([`EngineOptions::preserved_logins`](crate::engine::EngineOptions)):
+    /// the projection does not model that protected range, so the full
+    /// engine runs.
+    PreservedLogin,
     /// A dictionary, detector, verifier, or caller check could not run.
     Error,
 }
@@ -346,6 +351,9 @@ impl Engine {
         // 2. NFC.
         if !unicode_normalization::is_nfc(text) {
             return abandon(Abandon::NotNfc, 0);
+        }
+        if !self.preserved_ranges(text).is_empty() {
+            return abandon(Abandon::PreservedLogin, 0);
         }
         // 3. Real tokens.
         let mut protected = crate::protect::find(text, store)?;

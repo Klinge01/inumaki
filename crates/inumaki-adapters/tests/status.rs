@@ -894,7 +894,12 @@ fn every_harness_warns_when_its_chat_route_is_written() {
     assert!(
         ConnectWarning::CodexChatLive
             .sentence()
-            .contains("refused today")
+            .contains("restart Codex"),
+        "the warning says Codex needs a restart"
+    );
+    assert!(
+        !ConnectWarning::CodexChatLive.sentence().contains("refused"),
+        "Codex chat is not refused any more"
     );
     for w in [
         ConnectWarning::HermesChatLive,

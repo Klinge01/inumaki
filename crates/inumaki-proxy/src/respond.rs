@@ -17,6 +17,7 @@ use std::ops::Range;
 use std::sync::Arc;
 
 use inumaki_core::TextOrigin;
+use inumaki_core::detect::path_names::PathNameDetector;
 use inumaki_core::detect::{DetectCtx, Detector};
 use inumaki_core::engine::normalize_input;
 use inumaki_core::policy::{Action, Profile};
@@ -300,7 +301,7 @@ fn unpreserved_organization(
     }
     let d = datasets.as_ref().ok_or(Fail::Internal)?;
     for t in nfc {
-        for sp in chat_spans(std::slice::from_ref(d), t)? {
+        for sp in chat_spans(std::slice::from_ref(d), t, &[])? {
             if sp.kind == EntityKind::Organization && !preserved(policy, t, &sp) {
                 return Ok(true);
             }
@@ -310,8 +311,14 @@ fn unpreserved_organization(
 }
 
 /// Chat hits (session originals, OS identity) at full-match confidence on
-/// NFC text; the per-dataset part comes from `ProxyHost::scan_known`.
-fn chat_spans(dets: &[Arc<dyn Detector>], text: &str) -> Result<Vec<Span>, Fail> {
+/// NFC text; the per-dataset part comes from `ProxyHost::scan_known`. A hit
+/// inside a preserved login in a path position (`preserved`, see
+/// `ProxyHost::preserved_logins`) is dropped: the model saw it in clear.
+fn chat_spans(
+    dets: &[Arc<dyn Detector>],
+    text: &str,
+    preserved: &[String],
+) -> Result<Vec<Span>, Fail> {
     let ctx = DetectCtx::for_text(text);
     let mut out = Vec::new();
     for d in dets {
@@ -321,6 +328,19 @@ fn chat_spans(dets: &[Arc<dyn Detector>], text: &str) -> Result<Vec<Span>, Fail>
                 .into_iter()
                 .filter(|s| s.confidence >= 0.9 && s.start < s.end),
         );
+    }
+    if !preserved.is_empty() && !out.is_empty() {
+        let kept: Vec<std::ops::Range<usize>> = PathNameDetector::new()
+            .detect(text, &ctx)
+            .map_err(|_| Fail::ModelUnavailable)?
+            .into_iter()
+            .filter(|p| {
+                text.get(p.start..p.end)
+                    .is_some_and(|t| preserved.iter().any(|l| l.eq_ignore_ascii_case(t)))
+            })
+            .map(|p| p.start..p.end)
+            .collect();
+        out.retain(|s| !kept.iter().any(|r| r.start <= s.start && s.end <= r.end));
     }
     Ok(out)
 }
@@ -385,7 +405,7 @@ pub(crate) fn tripwire_hits(
         }
         let mut chat: Vec<(EntityKind, u32)> = Vec::new();
         for t in &nfc {
-            for sp in chat_spans(&dets, t)? {
+            for sp in chat_spans(&dets, t, &sh.preserved_logins)? {
                 if preserved(&policy, t, &sp) {
                     continue;
                 }
@@ -685,6 +705,33 @@ mod tests {
         let hit = |t: &str| tripwire_hits(&sh, &s, UpstreamId::Anthropic, &[t], &[]).unwrap();
         assert!(hit("Kunde K-482913 angelegt."), "identifier-shaped");
         assert!(!hit("Die Qorvex Holding meldet sich."), "a preserved name");
+    }
+
+    /// A preserved login in a path is no tripwire hit (the model saw it in
+    /// clear and may write it); the same login in running text still is.
+    #[test]
+    fn a_preserved_login_in_a_path_is_no_tripwire_hit() {
+        use crate::session::{SessionKey, SessionStore};
+        use crate::testing::FakeHost;
+        let mut h = Arc::into_inner(FakeHost::new()).unwrap();
+        h.identity = vec![(EntityKind::Person, "gruber".into())];
+        h.preserved = vec!["gruber".into()];
+        let sh = crate::pipeline::test_shared(Arc::new(h));
+        let st = SessionStore::new(
+            std::time::Duration::from_secs(60),
+            4,
+            inumaki_core::config::TokenSettings::default(),
+            1 << 20,
+        );
+        let s = st.get(SessionKey([3; 32]));
+        let hit = |t: &str| tripwire_hits(&sh, &s, UpstreamId::Anthropic, &[t], &[]).unwrap();
+        assert!(!hit("cd /Users/gruber/project && ls"), "a path");
+        assert!(!hit("see ~gruber/notes"), "a tilde path");
+        assert!(hit("Hallo gruber, willkommen"), "running text");
+        assert!(
+            hit("cd /Users/gruber/project, ask gruber"),
+            "a path and a mention"
+        );
     }
 
     /// The same rule for a dataset row, which `scan_known` reports as a

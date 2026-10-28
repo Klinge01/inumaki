@@ -45,6 +45,21 @@ pub enum TripwireMode {
     Block,
 }
 
+/// Whether the NER models read the harness's own leading prompt
+/// (`[proxy] harness_static_ner`, M8 spec §20, amendment of 2026-10-28).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum StaticNer {
+    /// A harness-static leaf (the leading system and developer messages of a
+    /// trusted request) runs without the sanitizer's and the verifier's NER.
+    /// Every deterministic detector, the dictionary and the verifier's other
+    /// checks still run.
+    #[default]
+    Skip,
+    /// The models read it too (the behaviour before the amendment). The
+    /// static-prompt NER memo then serves it.
+    Scan,
+}
+
 /// Upstream base URLs. They hold no secret.
 #[derive(Debug, Clone)]
 pub struct BaseUrls {
@@ -125,6 +140,8 @@ pub struct ProxyConfig {
     pub uncertain: UncertainMode,
     /// Tripwire handling.
     pub tripwire: TripwireMode,
+    /// Whether the NER models read a harness-static leaf.
+    pub static_ner: StaticNer,
     /// Browser origins allowed to call the proxy.
     pub allowed_origins: Vec<String>,
     /// Upstream base URLs.

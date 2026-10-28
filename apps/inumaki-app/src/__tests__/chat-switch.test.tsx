@@ -246,11 +246,12 @@ describe("Codex chat", () => {
     expect(section.querySelector("[data-tone]")?.getAttribute("data-tone")).toBe("off");
   });
 
-  it("the opt-in label says it is refused today", async () => {
+  it("the opt-in label says the ChatGPT-login route is unverified", async () => {
     serve([codex()]);
     render(<Connection harness="codex" />);
     const label = await screen.findByText(CODEX_OPT_IN_LABEL);
-    expect(label.textContent).toContain("refused today");
+    expect(label.textContent).toContain("unverified");
+    expect(label.textContent).not.toContain("refused today");
   });
 
   it("a Revert reloads the prefs: the opt-in shows unticked", async () => {

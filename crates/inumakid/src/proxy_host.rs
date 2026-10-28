@@ -64,6 +64,10 @@ pub struct DaemonHost {
     /// fingerprint; `None` for a host built without a state (tests). Memory
     /// only; a restart drops it.
     memo: Option<Arc<NerMemo>>,
+    /// The OS user's login and home-directory name, which the proxy's
+    /// engines leave in clear where they stand in a path (the identity's
+    /// accounts; [`inumaki_core::engine::EngineOptions::preserved_logins`]).
+    preserved_logins: Vec<String>,
 }
 
 impl std::fmt::Debug for DaemonHost {
@@ -131,11 +135,19 @@ impl DaemonHost {
             accounts_dict: identity_dict(&id.accounts, build)?,
             dict: Mutex::new(None),
             memo,
+            preserved_logins: id.accounts.iter().map(|(_, v)| v.to_string()).collect(),
         })
     }
 
     fn state(&self) -> Result<Arc<AppState>, HostError> {
         self.state.upgrade().ok_or(HostError::Internal)
+    }
+
+    /// The logins this host's proxy engines leave in clear in a path
+    /// (the OS identity's accounts).
+    #[doc(hidden)]
+    pub fn preserved_logins(&self) -> &[String] {
+        &self.preserved_logins
     }
 }
 
@@ -158,15 +170,16 @@ impl Detector for UnionDetector {
 
 /// The engine [`ProxyHost::engine`] returns: with a memo, the proxy engine
 /// whose NER detectors it wraps ([`Engines::proxy_engine`]); without one,
-/// the shared unwrapped engine.
+/// the proxy's unwrapped engine ([`Engines::chat_engine`]).
 fn memo_engine(
     engines: &Engines,
     memo: Option<&Arc<NerMemo>>,
     profile: &str,
+    preserved: &[String],
 ) -> Result<Arc<Engine>, HostError> {
     match memo {
-        Some(m) => engines.proxy_engine(profile, m),
-        None => engines.engine(profile, None),
+        Some(m) => engines.proxy_engine_with(profile, m, preserved),
+        None => engines.chat_engine(profile, preserved, false),
     }
     .map_err(|e| engine_err(&e))
 }
@@ -174,8 +187,18 @@ fn memo_engine(
 /// The engine [`ProxyHost::engine_unmemoized`] returns (ruling L2-40): the
 /// unwrapped engine the gateway, the mirror and the hook share
 /// ([`Engines::engine`] with no dataset). Never a memo-wrapped one.
-fn plain_engine(engines: &Engines, profile: &str) -> Result<Arc<Engine>, HostError> {
-    engines.engine(profile, None).map_err(|e| engine_err(&e))
+///
+/// It is the proxy's own engine, not the shared one: it leaves a preserved
+/// login ([`DaemonHost::preserved_logins`]) and a harness's command-output
+/// header alone, and the gateway, the mirror and the hook keep judging both.
+fn plain_engine(
+    engines: &Engines,
+    profile: &str,
+    preserved: &[String],
+) -> Result<Arc<Engine>, HostError> {
+    engines
+        .chat_engine(profile, preserved, false)
+        .map_err(|e| engine_err(&e))
 }
 
 fn engine_err(e: &EngineError) -> HostError {
@@ -369,11 +392,23 @@ fn check_labels(checks: &[String]) -> Vec<CheckLabel> {
 
 impl ProxyHost for DaemonHost {
     fn engine(&self, profile: &str) -> Result<Arc<Engine>, HostError> {
-        memo_engine(&self.state()?.engines, self.memo.as_ref(), profile)
+        memo_engine(
+            &self.state()?.engines,
+            self.memo.as_ref(),
+            profile,
+            &self.preserved_logins,
+        )
     }
 
     fn engine_unmemoized(&self, profile: &str) -> Result<Arc<Engine>, HostError> {
-        plain_engine(&self.state()?.engines, profile)
+        plain_engine(&self.state()?.engines, profile, &self.preserved_logins)
+    }
+
+    fn engine_static(&self, profile: &str) -> Result<Arc<Engine>, HostError> {
+        self.state()?
+            .engines
+            .chat_engine(profile, &self.preserved_logins, true)
+            .map_err(|e| engine_err(&e))
     }
 
     fn ner_memo(&self) -> Option<Arc<NerMemo>> {
@@ -451,6 +486,10 @@ impl ProxyHost for DaemonHost {
 
     fn identity(&self) -> Vec<(EntityKind, Zeroizing<String>)> {
         self.identity.clone()
+    }
+
+    fn preserved_logins(&self) -> Vec<String> {
+        self.preserved_logins.clone()
     }
 
     fn dataset_token(
@@ -784,7 +823,7 @@ mod tests {
             e.process(&text, &mut ctx).unwrap();
         };
         let _scope = memo.scope(&text);
-        let wrapped = memo_engine(&engines, Some(&memo), "support-email").unwrap();
+        let wrapped = memo_engine(&engines, Some(&memo), "support-email", &[]).unwrap();
         run(&wrapped);
         run(&wrapped);
         assert_eq!(
@@ -793,7 +832,7 @@ mod tests {
             "the memo engine's repeat pass is a hit"
         );
         let before = memo.stats();
-        let plain = plain_engine(&engines, "support-email").unwrap();
+        let plain = plain_engine(&engines, "support-email", &[]).unwrap();
         assert!(!Arc::ptr_eq(&plain, &wrapped));
         run(&plain);
         run(&plain);
@@ -809,7 +848,7 @@ mod tests {
         );
         // Without a memo, `engine()` is that same unwrapped engine.
         assert!(Arc::ptr_eq(
-            &memo_engine(&engines, None, "support-email").unwrap(),
+            &memo_engine(&engines, None, "support-email", &[]).unwrap(),
             &plain
         ));
     }

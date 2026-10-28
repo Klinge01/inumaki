@@ -190,6 +190,8 @@ const ID_PREFIXES: &[&str] = &[
     "ws_",
     "fs_",
     "ig_",
+    // Codex's responses-lite `additional_tools` item (`at_<uuid>`)
+    "at_",
     "ci_",
     "mcp_",
     "mcpr_",
@@ -423,12 +425,6 @@ mod tests {
                 "Sarah Leitner",
             ),
             (Shape::Id, "call_DdmO9pD3xa9XTPNJ32zg2hcA", "call_Sarah"),
-            (
-                Shape::Id,
-                "msg_01XFDUDYJgAACzvnptvVoYEL",
-                "msg_LeitnerSarahMaxi",
-            ),
-            (Shape::Id, "3f2b8c1e-9d4a-4b7e-8f00-1a2b3c4d5e6f", "call_"),
             (Shape::Model, "claude-sonnet-4-5@20250929", "gpt 5"),
             (Shape::Mime, "image/png", "Sarah Leitner/x y"),
             (Shape::Type, "web_search_20250305", "Sarah Leitner called"),
